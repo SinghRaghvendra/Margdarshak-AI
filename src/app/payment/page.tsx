@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Map } from 'lucide-react';
+import { CreditCard, Download, Map } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { generateRoadmap, type GenerateRoadmapOutput } from '@/ai/flows/detailed-roadmap';
 import { useToast } from '@/hooks/use-toast';
@@ -56,8 +56,8 @@ export default function PaymentPage() {
         
         if (!career) router.replace('/career-suggestions');
         else if (!traits) router.replace('/psychometric-test');
-        else if (!country) router.replace('/signup'); // If country is missing, likely from an older session or skipped signup
-        else router.replace('/signup'); // Default fallback
+        else if (!country) router.replace('/signup'); 
+        else router.replace('/signup'); 
       }
     } catch (error) {
       toast({ title: 'Error loading data', description: 'Please try again.', variant: 'destructive'});
@@ -82,12 +82,13 @@ export default function PaymentPage() {
           userTraits: userTraits,
           country: userCountry,
         });
-        localStorage.setItem('margdarshak_roadmap', roadmapOutput.roadmap);
+        localStorage.setItem('margdarshak_roadmap_markdown', roadmapOutput.roadmapMarkdown);
         toast({ title: 'Payment Successful!', description: 'Generating your detailed roadmap...' });
         router.push('/roadmap');
       } catch (error) {
         console.error('Error generating roadmap:', error);
         toast({ title: 'Error', description: 'Could not generate roadmap. Please try again.', variant: 'destructive' });
+      } finally {
         setIsLoading(false);
       }
     }, 2000); 
@@ -97,7 +98,7 @@ export default function PaymentPage() {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   
-  if (!selectedCareer || !userCountry) { // Also check for userCountry
+  if (!selectedCareer || !userCountry) { 
      return (
       <div className="text-center py-10">
         <h1 className="text-2xl font-semibold mb-4">Required Information Missing</h1>
@@ -123,6 +124,7 @@ export default function PaymentPage() {
           <p className="text-lg mb-2">Report Fee: <span className="font-bold text-2xl">₹99</span></p>
           <p className="text-sm text-muted-foreground mb-6">
             This comprehensive report includes year-by-year guidance, expected salary ranges (localized for {userCountry}), and suggested courses.
+            You'll be able to download it as a PDF.
           </p>
           {isLoading ? (
             <LoadingSpinner />
