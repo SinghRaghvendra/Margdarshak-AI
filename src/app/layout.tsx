@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
@@ -22,6 +23,11 @@ export default function RootLayout({
         <main className="flex-grow container mx-auto px-4 py-8">
           {children}
         </main>
+        <footer className="py-4 text-center">
+          <p className="text-xs text-muted-foreground">
+            Powered by AI COUNCEL LAB
+          </p>
+        </footer>
         <Toaster />
       </body>
     </html>
