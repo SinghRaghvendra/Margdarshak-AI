@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,6 +42,8 @@ export default function SignupPage() {
 
   function onSubmit(data: SignupFormValues) {
     try {
+      // In a real application, you might want to save this data to a backend
+      // For this example, we'll just store it in local storage
       localStorage.setItem('margdarshak_user_info', JSON.stringify(data));
       toast({
         title: 'Signup Successful!',
@@ -57,19 +60,41 @@ export default function SignupPage() {
     }
   }
 
+  const handleSkipSignup = () => {
+    // Store a minimal placeholder if skipping signup, so other pages don't break
+    // when expecting user_info
+    try {
+       localStorage.setItem('margdarshak_user_info', JSON.stringify({ name: 'Guest', email: '', contact: '' }));
+       toast({
+        title: 'Skipping Signup',
+        description: 'Proceeding as Guest. Your progress might not be saved across sessions.',
+      });
+      router.push('/psychometric-test');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Could not proceed. Please try again.',
+        variant: 'destructive',
+      });
+      console.error('Skip signup error:', error);
+    }
+  };
+
   return (
-    <div className="flex justify-center items-center py-8">
+    <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
       <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="text-center">
-          <div className="mx-auto bg-primary/20 p-3 rounded-full w-fit mb-2">
-            <UserPlus className="h-10 w-10 text-primary" />
-          </div>
-          <CardTitle className="text-3xl font-bold">Join Margdarshak AI</CardTitle>
-          <CardDescription>Start your journey to a fulfilling career.</CardDescription>
+        <CardHeader className="space-y-1 text-center">
+          <UserPlus className="h-12 w-12 text-primary mx-auto mb-2" />
+          <CardTitle className="text-3xl font-bold">
+            Join Margdarshak AI
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Create an account to save your progress or start as a guest.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 py-4">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -109,11 +134,16 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full text-lg py-6">
-                Start Psychometric Test
+              <Button type="submit" className="w-full text-lg py-6 mt-2">
+                Sign Up & Start Test
               </Button>
             </form>
           </Form>
+          <div className="mt-4 text-center">
+            <Button variant="link" onClick={handleSkipSignup} className="text-primary hover:underline">
+              Start without signing up
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

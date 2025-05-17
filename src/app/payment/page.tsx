@@ -88,7 +88,7 @@ export default function PaymentPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="text-lg mb-2">Report Fee: <span className="font-bold text-2xl">₹499</span></p>
+          <p className="text-lg mb-2">Report Fee: <span className="font-bold text-2xl">₹99</span></p>
           <p className="text-sm text-muted-foreground mb-6">
             This comprehensive report includes year-by-year guidance, expected salary ranges, and suggested courses.
           </p>

@@ -9,6 +9,14 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 
 // Helper to format roadmap text
+const prompt = ai.definePrompt({
+      name: 'generateRoadmapPrompt',
+      input: {schema: GenerateRoadmapInputSchema}, // Assuming you add a country field to this schema
+      output: {schema: GenerateRoadmapOutputSchema},
+      prompt: `You are an expert career counselor. Generate a detailed 5-year career roadmap for the following career suggestion, considering the user traits and focusing on career prospects and salary expectations in the user's country. Include expected salary and suggested courses for each year.\n\nCareer Suggestion: {{{careerSuggestion}}}\nUser Traits: {{{userTraits}}}\nCountry: {{{country}}}`, // Added Country field
+    });
+
+
 const formatRoadmapText = (text: string) => {
   return text.split('\n').map((paragraph, index) => {
     if (paragraph.startsWith('Year ') || paragraph.startsWith('## Year')) {
