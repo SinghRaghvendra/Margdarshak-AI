@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Download, Map } from 'lucide-react';
+import { CreditCard, Download, Map, RadioTower } from 'lucide-react'; // Using RadioTower for UPI
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { generateRoadmap, type GenerateRoadmapOutput, type GenerateRoadmapInput } from '@/ai/flows/detailed-roadmap';
 import { useToast } from '@/hooks/use-toast';
@@ -106,7 +106,7 @@ export default function PaymentPage() {
       return;
     }
     setIsLoading(true);
-    toast({ title: 'Payment Processing', description: 'Simulating payment...' });
+    toast({ title: 'UPI Payment Processing', description: 'Simulating UPI payment...' });
 
     setTimeout(async () => {
       try {
@@ -141,25 +141,25 @@ export default function PaymentPage() {
     <div className="flex justify-center items-center py-8">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
-          <CreditCard className="h-12 w-12 text-primary mx-auto mb-4" />
-          <CardTitle className="text-3xl font-bold">Unlock Your Roadmap</CardTitle>
+          <RadioTower className="h-12 w-12 text-primary mx-auto mb-4" /> {/* Icon for UPI */}
+          <CardTitle className="text-3xl font-bold">Pay via UPI</CardTitle>
           <CardDescription>
-            Get a detailed 5-year career roadmap for <span className="font-semibold text-primary">{roadmapGenData.careerSuggestion}</span>, tailored for {roadmapGenData.country}.
+            Get your detailed 5-year career roadmap for <span className="font-semibold text-primary">{roadmapGenData.careerSuggestion}</span>, tailored for {roadmapGenData.country}.
             <br/>This includes personal insights and localized salary information.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-lg mb-2">Report Fee: <span className="font-bold text-2xl">₹99</span></p>
           <p className="text-sm text-muted-foreground mb-6">
-            This comprehensive report includes personal details, astrological & numerological insights, year-by-year guidance, expected salary ranges (localized for {roadmapGenData.country} with currency), and suggested courses.
+            Proceed with UPI payment to unlock your comprehensive report. It includes personal details, astrological & numerological insights, year-by-year guidance, expected salary ranges (localized for {roadmapGenData.country} with currency), and suggested courses.
             You'll be able to download it as a PDF.
           </p>
           {isLoading ? (
             <LoadingSpinner />
           ) : (
             <Button onClick={handlePayment} className="w-full text-lg py-6">
-              <Map className="mr-2 h-5 w-5" />
-              Pay and Generate Roadmap
+              <RadioTower className="mr-2 h-5 w-5" />
+              Pay ₹99 via UPI & Generate Roadmap
             </Button>
           )}
         </CardContent>
