@@ -9,9 +9,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ClipboardList, Lightbulb } from 'lucide-react';
+import { ClipboardList, Lightbulb, ArrowRight } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { suggestCareers, type CareerSuggestionOutput } from '@/ai/flows/career-suggestion';
+// Note: suggestCareers AI flow is not called here anymore. It's called on the suggestions page.
 import { useToast } from '@/hooks/use-toast';
 
 const TOTAL_QUESTIONS = psychometricTestQuestions.length;
@@ -21,8 +21,9 @@ export default function PsychometricTestPage() {
   const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Kept for future use if submission becomes async
   const [userInfo, setUserInfo] = useState<{name: string} | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
     try {
@@ -32,10 +33,21 @@ export default function PsychometricTestPage() {
       } else {
         toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive'});
         router.replace('/signup');
+        return;
       }
+      // Check if birth details exist, if not, redirect to birth-details page
+      const birthDetails = localStorage.getItem('margdarshak_birth_details');
+      if (!birthDetails) {
+        toast({ title: 'Birth details not found', description: 'Please provide your birth details first.', variant: 'destructive'});
+        router.replace('/birth-details');
+        return;
+      }
+
     } catch (error) {
-        toast({ title: 'Error loading user data', description: 'Please try signing up again.', variant: 'destructive'});
+        toast({ title: 'Error loading initial data', description: 'Please try again from signup.', variant: 'destructive'});
         router.replace('/signup');
+    } finally {
+      setPageLoading(false);
     }
   }, [router, toast]);
 
@@ -69,32 +81,42 @@ export default function PsychometricTestPage() {
       return;
     }
     
-    setIsLoading(true);
-    // For now, "traits" is a mock string. In a real app, this would be derived from answers.
-    const mockUserTraits = "User is analytical, creative, enjoys problem-solving, and prefers collaborative environments. They are detail-oriented and interested in technology and innovation.";
+    setIsLoading(true); // Keep for visual feedback even if not async
+    
+    // Create a summary of answers to represent "traits".
+    // This is a simplified approach. A real app would have a more complex scoring logic.
+    const traitSummaryParts: string[] = [];
+    for (const qId in answers) {
+      const question = psychometricTestQuestions.find(q => q.id === parseInt(qId));
+      if (question) {
+        traitSummaryParts.push(`For "${question.text}", user answered "${answers[qId]}".`);
+      }
+    }
+    const userTraits = traitSummaryParts.join(' ');
     
     try {
-      localStorage.setItem('margdarshak_user_traits', mockUserTraits);
-      // Now expecting an array of suggestions
-      const suggestionsOutput: CareerSuggestionOutput = await suggestCareers({ traits: mockUserTraits });
-      localStorage.setItem('margdarshak_career_suggestions', JSON.stringify(suggestionsOutput.careers));
-      // Clear any single selected career from a previous run if it exists
+      localStorage.setItem('margdarshak_user_traits', userTraits);
+      // Clear any old career suggestions or selected career if re-taking test
+      localStorage.removeItem('margdarshak_career_suggestions');
       localStorage.removeItem('margdarshak_selected_career');
-      toast({ title: 'Test Submitted!', description: 'Generating your career suggestions...' });
-      router.push('/career-suggestions'); // Navigate to the suggestions page
+
+      toast({ title: 'Test Submitted!', description: 'Proceeding to personalized questions...' });
+      router.push('/personalized-questions'); 
     } catch (error) {
-      console.error('Error suggesting careers:', error);
-      toast({ title: 'Error', description: 'Could not generate career suggestions. Please try again.', variant: 'destructive' });
+      console.error('Error saving traits:', error);
+      toast({ title: 'Error', description: 'Could not save test results. Please try again.', variant: 'destructive' });
+    } finally {
       setIsLoading(false);
     }
   };
   
-  if (!userInfo) {
+  if (pageLoading || !userInfo) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
   if (!currentQuestion) {
-    return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]">End of test. Processing...</div>;
+    // Should not happen if navigation is correct
+    return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]">Loading questions...</div>;
   }
 
   return (
@@ -108,7 +130,7 @@ export default function PsychometricTestPage() {
             </div>
             <span className="text-sm text-muted-foreground">Question {currentQuestionIndex + 1} of {TOTAL_QUESTIONS}</span>
           </div>
-          <CardDescription>Hi {userInfo.name}, answer these questions to help us understand your traits and suggest suitable careers.</CardDescription>
+          <CardDescription>Hi {userInfo.name}, answer these questions to help us understand your traits.</CardDescription>
           <Progress value={progress} className="w-full mt-2 h-3" />
         </CardHeader>
         <CardContent className="space-y-6">
@@ -132,9 +154,8 @@ export default function PsychometricTestPage() {
           ) : currentQuestionIndex < TOTAL_QUESTIONS - 1 ? (
             <Button onClick={handleNext} className="text-lg px-6 py-3" disabled={!answers[currentQuestion.id]}>Next Question</Button>
           ) : (
-            <Button onClick={handleSubmit} className="text-lg px-6 py-3 bg-green-500 hover:bg-green-600" disabled={!answers[currentQuestion.id]}>
-              <Lightbulb className="mr-2 h-5 w-5" />
-              Get Career Suggestions
+            <Button onClick={handleSubmit} className="text-lg px-6 py-3" disabled={!answers[currentQuestion.id]}>
+              Continue to Personalized Questions <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           )}
         </CardFooter>

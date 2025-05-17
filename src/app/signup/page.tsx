@@ -45,11 +45,19 @@ export default function SignupPage() {
   function onSubmit(data: SignupFormValues) {
     try {
       localStorage.setItem('margdarshak_user_info', JSON.stringify(data));
+      // Clear previous data for a new journey
+      localStorage.removeItem('margdarshak_birth_details');
+      localStorage.removeItem('margdarshak_user_traits');
+      localStorage.removeItem('margdarshak_personalized_answers');
+      localStorage.removeItem('margdarshak_career_suggestions');
+      localStorage.removeItem('margdarshak_selected_career');
+      localStorage.removeItem('margdarshak_roadmap_markdown');
+
       toast({
         title: 'Signup Successful!',
-        description: 'Redirecting to psychometric test...',
+        description: 'Redirecting to gather birth details...',
       });
-      router.push('/psychometric-test');
+      router.push('/birth-details');
     } catch (error) {
       toast({
         title: 'Signup Failed',
@@ -63,11 +71,19 @@ export default function SignupPage() {
   const handleSkipSignup = () => {
     try {
        localStorage.setItem('margdarshak_user_info', JSON.stringify({ name: 'Guest', email: '', contact: '', country: 'GuestCountry' }));
+       // Clear previous data for a new journey
+       localStorage.removeItem('margdarshak_birth_details');
+       localStorage.removeItem('margdarshak_user_traits');
+       localStorage.removeItem('margdarshak_personalized_answers');
+       localStorage.removeItem('margdarshak_career_suggestions');
+       localStorage.removeItem('margdarshak_selected_career');
+       localStorage.removeItem('margdarshak_roadmap_markdown');
+
        toast({
         title: 'Skipping Signup',
-        description: 'Proceeding as Guest. Your progress might not be saved across sessions.',
+        description: 'Proceeding as Guest to gather birth details.',
       });
-      router.push('/psychometric-test');
+      router.push('/birth-details');
     } catch (error) {
       toast({
         title: 'Error',
@@ -87,7 +103,7 @@ export default function SignupPage() {
             Join Margdarshak AI
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Create an account to save your progress or start as a guest.
+            Create an account or start as a guest to begin your career discovery.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -146,13 +162,13 @@ export default function SignupPage() {
                 )}
               />
               <Button type="submit" className="w-full text-lg py-6 mt-2">
-                Sign Up & Start Test
+                Sign Up & Continue
               </Button>
             </form>
           </Form>
           <div className="mt-4 text-center">
             <Button variant="link" onClick={handleSkipSignup} className="text-primary hover:underline">
-              Start without signing up
+              Continue as Guest
             </Button>
           </div>
         </CardContent>
