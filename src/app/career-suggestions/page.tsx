@@ -148,10 +148,10 @@ export default function CareerSuggestionsPage() {
                 <CardTitle className="text-2xl">{career.name}</CardTitle>
               </CardHeader>
               <CardContent className="flex-grow">
-                <CardDescription className="text-center text-sm">
-                  <span className="font-semibold text-foreground/80">Why this might be a fit:</span> {career.rationale}
-                </CardDescription>
-                 <p className="text-center text-xs text-muted-foreground mt-3">
+                <p className="text-center text-sm text-foreground/90 mb-3">
+                  <span className="font-semibold">Why this might be a fit:</span> {career.rationale}
+                </p>
+                 <p className="text-center text-xs text-muted-foreground">
                   Explore personalized astrological/numerological insights and a detailed 5-year roadmap for this career.
                 </p>
               </CardContent>
