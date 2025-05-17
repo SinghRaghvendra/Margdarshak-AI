@@ -23,6 +23,7 @@ const signupFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
   contact: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: 'Please enter a valid contact number (e.g., +1234567890).' }),
+  country: z.string().min(2, { message: 'Country must be at least 2 characters.' }),
 });
 
 type SignupFormValues = z.infer<typeof signupFormSchema>;
@@ -37,13 +38,12 @@ export default function SignupPage() {
       name: '',
       email: '',
       contact: '',
+      country: '',
     },
   });
 
   function onSubmit(data: SignupFormValues) {
     try {
-      // In a real application, you might want to save this data to a backend
-      // For this example, we'll just store it in local storage
       localStorage.setItem('margdarshak_user_info', JSON.stringify(data));
       toast({
         title: 'Signup Successful!',
@@ -61,10 +61,8 @@ export default function SignupPage() {
   }
 
   const handleSkipSignup = () => {
-    // Store a minimal placeholder if skipping signup, so other pages don't break
-    // when expecting user_info
     try {
-       localStorage.setItem('margdarshak_user_info', JSON.stringify({ name: 'Guest', email: '', contact: '' }));
+       localStorage.setItem('margdarshak_user_info', JSON.stringify({ name: 'Guest', email: '', contact: '', country: 'GuestCountry' }));
        toast({
         title: 'Skipping Signup',
         description: 'Proceeding as Guest. Your progress might not be saved across sessions.',
@@ -129,6 +127,19 @@ export default function SignupPage() {
                     <FormLabel>Contact Number</FormLabel>
                     <FormControl>
                       <Input type="tel" placeholder="+1 234 567 8900" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your Country" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
