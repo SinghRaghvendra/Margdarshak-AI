@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -34,8 +35,8 @@ export default function CareerSuggestionsPage() {
   const handleSelectCareer = (career: string) => {
     try {
       localStorage.setItem('margdarshak_selected_career', career);
-      toast({ title: `Selected: ${career}`, description: 'Proceed to payment for detailed roadmap.' });
-      router.push('/payment');
+      toast({ title: `Selected: ${career}`, description: 'Proceed to get personalized insights.' });
+      router.push('/career-insights'); // Changed from /payment
     } catch (error) {
       toast({ title: 'Error selecting career', description: 'Could not save your selection. Please try again.', variant: 'destructive'});
     }
@@ -73,12 +74,12 @@ export default function CareerSuggestionsPage() {
             </CardHeader>
             <CardContent className="flex-grow">
               <CardDescription className="text-center">
-                Explore a detailed 5-year roadmap for a career as a {career.toLowerCase()}.
+                Explore personalized insights and a detailed 5-year roadmap for a career as a {career.toLowerCase()}.
               </CardDescription>
             </CardContent>
             <CardFooter>
               <Button onClick={() => handleSelectCareer(career)} className="w-full text-md py-5">
-                Get Detailed Roadmap
+                Get Personalized Insights
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </CardFooter>
