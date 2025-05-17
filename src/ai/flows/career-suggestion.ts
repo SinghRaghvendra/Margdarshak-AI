@@ -1,11 +1,11 @@
-// src/ai/flows/career-suggestion.ts
+
 'use server';
 /**
  * @fileOverview Provides AI-powered career suggestions based on user traits.
  *
- * - suggestCareers - A function that takes user traits and returns a single career suggestion.
+ * - suggestCareers - A function that takes user traits and returns career suggestions.
  * - CareerSuggestionInput - The input type for the suggestCareers function.
- * - CareerSuggestionOutput - The return type for the suggestCareers function, containing a single career.
+ * - CareerSuggestionOutput - The return type for the suggestCareers function, containing an array of careers.
  */
 
 import {ai} from '@/ai/genkit';
@@ -21,10 +21,11 @@ const CareerSuggestionInputSchema = z.object({
 export type CareerSuggestionInput = z.infer<typeof CareerSuggestionInputSchema>;
 
 const CareerSuggestionOutputSchema = z.object({
-  career: z
-    .string()
+  careers: z
+    .array(z.string())
+    .length(3)
     .describe(
-      'The single most suitable career option based on the user traits.'
+      'An array of three distinct career options based on the user traits.'
     ),
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
@@ -37,11 +38,11 @@ const prompt = ai.definePrompt({
   name: 'careerSuggestionPrompt',
   input: {schema: CareerSuggestionInputSchema},
   output: {schema: CareerSuggestionOutputSchema},
-  prompt: `You are an expert career counselor. Based on the following traits, skills, and interests, suggest the single most suitable career option.
+  prompt: `You are an expert career counselor. Based on the following traits, skills, and interests, suggest three distinct and suitable career options.
 
 Traits: {{{traits}}}
 
-Return the single career as part of the JSON object.`,
+Return the three career suggestions as an array of strings within the JSON object. Ensure the array is named "careers" and contains exactly three string elements.`,
 });
 
 const suggestCareersFlow = ai.defineFlow(

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -74,15 +75,16 @@ export default function PsychometricTestPage() {
     
     try {
       localStorage.setItem('margdarshak_user_traits', mockUserTraits);
-      const suggestion: CareerSuggestionOutput = await suggestCareers({ traits: mockUserTraits });
-      localStorage.setItem('margdarshak_selected_career', suggestion.career);
-      // Remove the old array of suggestions if it exists, as it's no longer used in this flow
-      localStorage.removeItem('margdarshak_career_suggestions');
-      toast({ title: 'Test Submitted!', description: 'Generating your career suggestion and proceeding to payment...' });
-      router.push('/payment'); // Navigate directly to payment page
+      // Now expecting an array of suggestions
+      const suggestionsOutput: CareerSuggestionOutput = await suggestCareers({ traits: mockUserTraits });
+      localStorage.setItem('margdarshak_career_suggestions', JSON.stringify(suggestionsOutput.careers));
+      // Clear any single selected career from a previous run if it exists
+      localStorage.removeItem('margdarshak_selected_career');
+      toast({ title: 'Test Submitted!', description: 'Generating your career suggestions...' });
+      router.push('/career-suggestions'); // Navigate to the suggestions page
     } catch (error) {
-      console.error('Error suggesting career:', error);
-      toast({ title: 'Error', description: 'Could not generate career suggestion. Please try again.', variant: 'destructive' });
+      console.error('Error suggesting careers:', error);
+      toast({ title: 'Error', description: 'Could not generate career suggestions. Please try again.', variant: 'destructive' });
       setIsLoading(false);
     }
   };
@@ -132,7 +134,7 @@ export default function PsychometricTestPage() {
           ) : (
             <Button onClick={handleSubmit} className="text-lg px-6 py-3 bg-green-500 hover:bg-green-600" disabled={!answers[currentQuestion.id]}>
               <Lightbulb className="mr-2 h-5 w-5" />
-              Get Final Career Suggestion
+              Get Career Suggestions
             </Button>
           )}
         </CardFooter>
