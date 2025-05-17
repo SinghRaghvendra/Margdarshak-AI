@@ -67,7 +67,11 @@ export default function CareerInsightsPage() {
         // Automatically fetch insights if all data is present
         if (career && storedBd) {
           setIsLoading(true);
-          setInsights(null);
+          setInsights(null); // Clear previous insights
+          // Clear localStorage for insights before fetching new ones
+          localStorage.removeItem('margdarshak_career_insights_astro');
+          localStorage.removeItem('margdarshak_career_insights_numero');
+
           toast({ title: 'Generating Insights', description: 'Please wait while we prepare your personalized insights...' });
           
           const inputForAI: CareerInsightsInput = {
@@ -80,6 +84,9 @@ export default function CareerInsightsPage() {
           try {
             const result = await generateCareerInsights(inputForAI);
             setInsights(result);
+            // Save insights to localStorage
+            localStorage.setItem('margdarshak_career_insights_astro', result.astrologicalReview);
+            localStorage.setItem('margdarshak_career_insights_numero', result.numerologicalReview);
             toast({ title: 'Insights Generated!', description: 'Review your astrological and numerological insights below.' });
           } catch (error) {
             console.error('Error generating insights:', error);
@@ -90,7 +97,6 @@ export default function CareerInsightsPage() {
         }
       } catch (error) {
         toast({ title: 'Error loading page data', description: 'Please try again.', variant: 'destructive' });
-        // Decide on a safe fallback route
         if (!career) router.replace('/career-suggestions');
         else if (!storedBd) router.replace('/birth-details');
         else router.replace('/signup');
@@ -106,6 +112,10 @@ export default function CareerInsightsPage() {
     if (!selectedCareer) {
         toast({ title: 'Error', description: 'Selected career is missing.', variant: 'destructive'});
         return;
+    }
+    if (!localStorage.getItem('margdarshak_career_insights_astro') || !localStorage.getItem('margdarshak_career_insights_numero')) {
+      toast({ title: 'Insights not saved', description: 'Please wait for insights to generate or try again.', variant: 'destructive'});
+      return;
     }
     router.push('/payment');
   };
@@ -151,7 +161,7 @@ export default function CareerInsightsPage() {
             </div>
           )}
 
-          {!isLoading && !insights && !pageLoading && ( // Case where loading finished but no insights
+          {!isLoading && !insights && !pageLoading && ( 
              <div className="text-center py-6">
                 <p className="text-muted-foreground mb-4">Could not load insights at this time. You can try proceeding or refresh.</p>
              </div>

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, Download, Map } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { generateRoadmap, type GenerateRoadmapOutput } from '@/ai/flows/detailed-roadmap';
+import { generateRoadmap, type GenerateRoadmapOutput, type GenerateRoadmapInput } from '@/ai/flows/detailed-roadmap';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserInfo {
@@ -17,59 +17,92 @@ interface UserInfo {
   country: string;
 }
 
+interface BirthDetails {
+  dateOfBirth: string; // YYYY-MM-DD
+  placeOfBirth: string;
+  timeOfBirth: string;
+}
+
 export default function PaymentPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [selectedCareer, setSelectedCareer] = useState<string | null>(null);
-  const [userTraits, setUserTraits] = useState<string | null>(null);
-  const [userCountry, setUserCountry] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+
+  // State to hold all necessary data for roadmap generation
+  const [roadmapGenData, setRoadmapGenData] = useState<GenerateRoadmapInput | null>(null);
+
 
   useEffect(() => {
     try {
       const career = localStorage.getItem('margdarshak_selected_career');
       const traits = localStorage.getItem('margdarshak_user_traits');
       const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-      let country: string | null = null;
+      const storedBirthDetails = localStorage.getItem('margdarshak_birth_details');
+      const astroReview = localStorage.getItem('margdarshak_career_insights_astro');
+      const numeroReview = localStorage.getItem('margdarshak_career_insights_numero');
+
+      let userName: string | null = null;
+      let userCountry: string | null = null;
+      let dateOfBirth: string | null = null;
 
       if (storedUserInfo) {
         const userInfoParsed: UserInfo = JSON.parse(storedUserInfo);
-        country = userInfoParsed.country;
+        userName = userInfoParsed.name;
+        userCountry = userInfoParsed.country;
+      }
+      
+      if (storedBirthDetails) {
+        const birthDetailsParsed: BirthDetails = JSON.parse(storedBirthDetails);
+        dateOfBirth = birthDetailsParsed.dateOfBirth;
       }
 
-      if (career && traits && country) {
-        setSelectedCareer(career);
-        setUserTraits(traits);
-        setUserCountry(country);
+      if (career && traits && userName && userCountry && dateOfBirth && astroReview && numeroReview) {
+        setRoadmapGenData({
+          careerSuggestion: career,
+          userTraits: traits,
+          country: userCountry,
+          userName: userName,
+          dateOfBirth: dateOfBirth,
+          astrologicalReview: astroReview,
+          numerologicalReview: numeroReview,
+        });
       } else {
         let missingInfo = [];
         if (!career) missingInfo.push('selected career');
         if (!traits) missingInfo.push('user traits');
-        if (!country) missingInfo.push('user country');
+        if (!userName) missingInfo.push('user name');
+        if (!userCountry) missingInfo.push('user country');
+        if (!dateOfBirth) missingInfo.push('date of birth');
+        if (!astroReview) missingInfo.push('astrological review');
+        if (!numeroReview) missingInfo.push('numerological review');
         
         toast({ 
-          title: 'Missing information', 
-          description: `The following are missing: ${missingInfo.join(', ')}. Redirecting.`, 
-          variant: 'destructive'
+          title: 'Missing Information for Report', 
+          description: `The following are missing: ${missingInfo.join(', ')}. Please go back and complete all steps. Redirecting...`, 
+          variant: 'destructive',
+          duration: 5000,
         });
         
+        // Determine redirect based on missing info
         if (!career) router.replace('/career-suggestions');
         else if (!traits) router.replace('/psychometric-test');
-        else if (!country) router.replace('/signup'); 
-        else router.replace('/signup'); 
+        else if (!dateOfBirth) router.replace('/birth-details');
+        else if (!astroReview || !numeroReview) router.replace('/career-insights');
+        else if (!userName || !userCountry) router.replace('/signup');
+        else router.replace('/signup'); // Fallback
       }
     } catch (error) {
-      toast({ title: 'Error loading data', description: 'Please try again.', variant: 'destructive'});
-      router.replace('/career-suggestions');
+      toast({ title: 'Error loading data', description: 'Please try again from an earlier step.', variant: 'destructive'});
+      router.replace('/career-suggestions'); // Fallback
     } finally {
       setPageLoading(false);
     }
   }, [router, toast]);
 
   const handlePayment = async () => {
-    if (!selectedCareer || !userTraits || !userCountry) {
-      toast({ title: 'Error', description: 'Career, traits, or country missing.', variant: 'destructive' });
+    if (!roadmapGenData) {
+      toast({ title: 'Error', description: 'Required data for roadmap generation is missing.', variant: 'destructive' });
       return;
     }
     setIsLoading(true);
@@ -77,17 +110,13 @@ export default function PaymentPage() {
 
     setTimeout(async () => {
       try {
-        const roadmapOutput: GenerateRoadmapOutput = await generateRoadmap({
-          careerSuggestion: selectedCareer,
-          userTraits: userTraits,
-          country: userCountry,
-        });
+        const roadmapOutput: GenerateRoadmapOutput = await generateRoadmap(roadmapGenData);
         localStorage.setItem('margdarshak_roadmap_markdown', roadmapOutput.roadmapMarkdown);
         toast({ title: 'Payment Successful!', description: 'Generating your detailed roadmap...' });
         router.push('/roadmap');
       } catch (error) {
         console.error('Error generating roadmap:', error);
-        toast({ title: 'Error', description: 'Could not generate roadmap. Please try again.', variant: 'destructive' });
+        toast({ title: 'Error Generating Roadmap', description: 'Could not generate roadmap. Please try again.', variant: 'destructive' });
       } finally {
         setIsLoading(false);
       }
@@ -98,14 +127,12 @@ export default function PaymentPage() {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   
-  if (!selectedCareer || !userCountry) { 
+  if (!roadmapGenData) { 
      return (
       <div className="text-center py-10">
         <h1 className="text-2xl font-semibold mb-4">Required Information Missing</h1>
-        <p className="text-muted-foreground mb-6">Please ensure you have selected a career and provided your country information.</p>
-        <Button onClick={() => router.push(!selectedCareer ? '/career-suggestions' : '/signup')}>
-          {!selectedCareer ? 'View Suggestions' : 'Update Info'}
-        </Button>
+        <p className="text-muted-foreground mb-6">Some information needed for the report is missing. Please ensure all previous steps are completed.</p>
+        <Button onClick={() => router.push('/signup')}>Start Over</Button>
       </div>
     );
   }
@@ -117,13 +144,14 @@ export default function PaymentPage() {
           <CreditCard className="h-12 w-12 text-primary mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold">Unlock Your Roadmap</CardTitle>
           <CardDescription>
-            Get a detailed 5-year career roadmap for <span className="font-semibold text-primary">{selectedCareer}</span>, tailored for {userCountry}.
+            Get a detailed 5-year career roadmap for <span className="font-semibold text-primary">{roadmapGenData.careerSuggestion}</span>, tailored for {roadmapGenData.country}.
+            <br/>This includes personal insights and localized salary information.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-lg mb-2">Report Fee: <span className="font-bold text-2xl">₹99</span></p>
           <p className="text-sm text-muted-foreground mb-6">
-            This comprehensive report includes year-by-year guidance, expected salary ranges (localized for {userCountry}), and suggested courses.
+            This comprehensive report includes personal details, astrological & numerological insights, year-by-year guidance, expected salary ranges (localized for {roadmapGenData.country} with currency), and suggested courses.
             You'll be able to download it as a PDF.
           </p>
           {isLoading ? (
