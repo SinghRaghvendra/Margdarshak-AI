@@ -10,10 +10,15 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput } from '@/ai/flows/career-suggestion';
 
+interface CareerSuggestion {
+  name: string;
+  rationale: string;
+}
+
 export default function CareerSuggestionsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [suggestions, setSuggestions] = useState<string[] | null>(null);
+  const [suggestions, setSuggestions] = useState<CareerSuggestion[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(true); // For initial data checks
 
@@ -95,10 +100,10 @@ export default function CareerSuggestionsPage() {
 
   }, [router, toast]);
 
-  const handleSelectCareer = (career: string) => {
+  const handleSelectCareer = (careerName: string) => {
     try {
-      localStorage.setItem('margdarshak_selected_career', career);
-      toast({ title: `Selected: ${career}`, description: 'Proceed to get personalized insights.' });
+      localStorage.setItem('margdarshak_selected_career', careerName);
+      toast({ title: `Selected: ${careerName}`, description: 'Proceed to get personalized insights.' });
       router.push('/career-insights');
     } catch (error) {
       toast({ title: 'Error selecting career', description: 'Could not save your selection. Please try again.', variant: 'destructive'});
@@ -140,15 +145,18 @@ export default function CareerSuggestionsPage() {
                 <div className="p-3 bg-accent/30 rounded-full mb-3">
                   <Briefcase className="h-10 w-10 text-accent-foreground" />
                 </div>
-                <CardTitle className="text-2xl">{career}</CardTitle>
+                <CardTitle className="text-2xl">{career.name}</CardTitle>
               </CardHeader>
               <CardContent className="flex-grow">
-                <CardDescription className="text-center">
-                  Explore personalized astrological/numerological insights and a detailed 5-year roadmap for a career as a {career.toLowerCase()}.
+                <CardDescription className="text-center text-sm">
+                  <span className="font-semibold text-foreground/80">Why this might be a fit:</span> {career.rationale}
                 </CardDescription>
+                 <p className="text-center text-xs text-muted-foreground mt-3">
+                  Explore personalized astrological/numerological insights and a detailed 5-year roadmap for this career.
+                </p>
               </CardContent>
               <CardFooter>
-                <Button onClick={() => handleSelectCareer(career)} className="w-full text-md py-5">
+                <Button onClick={() => handleSelectCareer(career.name)} className="w-full text-md py-5">
                   Get Personalized Insights
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -160,3 +168,4 @@ export default function CareerSuggestionsPage() {
     </div>
   );
 }
+

@@ -3,9 +3,9 @@
 /**
  * @fileOverview Provides AI-powered career suggestions based on user traits and personalized answers.
  *
- * - suggestCareers - A function that takes user traits and personalized answers, and returns career suggestions.
+ * - suggestCareers - A function that takes user traits and personalized answers, and returns career suggestions with rationales.
  * - CareerSuggestionInput - The input type for the suggestCareers function.
- * - CareerSuggestionOutput - The return type for the suggestCareers function, containing an array of careers.
+ * - CareerSuggestionOutput - The return type for the suggestCareers function, containing an array of career objects (name and rationale).
  */
 
 import {ai} from '@/ai/genkit';
@@ -29,12 +29,17 @@ const CareerSuggestionInputSchema = z.object({
 });
 export type CareerSuggestionInput = z.infer<typeof CareerSuggestionInputSchema>;
 
+const CareerObjectSchema = z.object({
+  name: z.string().describe('The name of the suggested career.'),
+  rationale: z.string().describe('A brief 1-2 sentence explanation of why this career is a good fit, linking to the user\'s traits and personalized answers.'),
+});
+
 const CareerSuggestionOutputSchema = z.object({
   careers: z
-    .array(z.string())
+    .array(CareerObjectSchema)
     .length(3)
     .describe(
-      'An array of three distinct career options based on the user traits and personalized answers.'
+      'An array of three distinct career options, each with a name and a rationale, based on the user traits and personalized answers.'
     ),
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
@@ -48,6 +53,9 @@ const prompt = ai.definePrompt({
   input: {schema: CareerSuggestionInputSchema},
   output: {schema: CareerSuggestionOutputSchema},
   prompt: `You are an expert career counselor. Based on the following psychometric test traits and personalized answers, suggest three distinct and suitable career options.
+For each career suggestion, provide:
+1.  'name': The name of the career.
+2.  'rationale': A brief (1-2 sentences) explanation of why this career is a good fit, clearly linking it to the user's traits and personalized answers provided below.
 
 Psychometric Traits Summary:
 {{{traits}}}
@@ -59,8 +67,8 @@ Personalized Answers:
 4. Industry Interest: {{{personalizedAnswers.q4}}}
 5. Career Motivations: {{{personalizedAnswers.q5}}}
 
-Return the three career suggestions as an array of strings within the JSON object. Ensure the array is named "careers" and contains exactly three string elements.
-Consider all provided information to make relevant and diverse suggestions.
+Return the three career suggestions as an array of objects within the JSON object. Each object in the array must have a "name" field (string) and a "rationale" field (string). The array should be named "careers" and contain exactly three such objects.
+Consider all provided information to make relevant and diverse suggestions with insightful rationales.
 `,
 });
 
@@ -78,3 +86,4 @@ const suggestCareersFlow = ai.defineFlow(
     return output;
   }
 );
+
