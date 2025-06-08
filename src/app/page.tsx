@@ -35,10 +35,10 @@ export default function HomePage() {
           <Image
             src="https://placehold.co/1920x800.png"
             alt="Abstract background representing career aspirations"
-            layout="fill"
-            objectFit="cover"
-            className="opacity-20"
+            fill
+            className="opacity-20 object-cover"
             data-ai-hint="career future"
+            priority
           />
            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
         </div>

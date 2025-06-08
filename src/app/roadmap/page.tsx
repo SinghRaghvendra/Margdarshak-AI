@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import html2pdf from 'html2pdf.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPinned, Milestone, Download, Loader2, User } from 'lucide-react';
+import { MapPinned, Milestone, Download, Loader2 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 
