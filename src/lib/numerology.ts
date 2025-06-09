@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview Utility functions for numerology calculations.
  * - calculateLifePathNumber - Calculates the Life Path Number from a date of birth.

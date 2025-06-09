@@ -64,8 +64,7 @@ const GenerateRoadmapOutputSchema = z.object({
 11. "## Key Interests (Top 5):" (Derived from user traits and personalized answers, presented as a bulleted list).
 12. "## Expected Salary (Localized): Year 1, Year 5, Year 10" (Specific salary expectations for these milestones, localized with currency name/symbol).
 13. "## 20-Year Outlook & Future Trends for [Career Name]"
-14. Static promotional text: "---
-Need a professional career guide? We will offer a professional career guide who will keep you on track to achieve your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-"
+14. Concluding Section: This includes the promotional text "Need a professional career guide... Annual subscription of Rs. 2999/-", followed by clear, prominent Markdown links: one to contact a career counsellor (linking to /contact) and one to subscribe for professional guidance (linking to /subscribe-guidance, mentioning the price).
 Use Markdown headings (e.g. #, ##, ###) for all main sections and sub-sections as appropriate. Format lists clearly.`),
 });
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
@@ -159,6 +158,11 @@ Provide a forward-looking perspective on how the field of **{{{careerSuggestion}
 
 ---
 Need a professional career guide? We will offer a professional career guide who will keep you on track to achive your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-
+
+**For further assistance:**
+
+*   **[➡️ Contact Our Career Counsellor](/contact)** - Get personalized advice from our experts.
+*   **[➡️ Subscribe Now for Professional Guidance (Rs. 2999/-)](/subscribe-guidance)** - Unlock ongoing support and resources.
 --- END OF REPORT MARKDOWN ---
 `,
   config: {
@@ -183,3 +187,4 @@ const generateRoadmapFlow = ai.defineFlow(
     return output;
   }
 );
+
