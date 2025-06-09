@@ -16,14 +16,29 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { UserPlus, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+const languages = [
+  { value: 'English', label: 'English' },
+  { value: 'Telugu', label: 'Telugu' },
+  { value: 'Kannada', label: 'Kannada' },
+  { value: 'Marathi', label: 'Marathi' },
+  { value: 'Tamil', label: 'Tamil' },
+  { value: 'Hindi', label: 'Hindi' },
+  { value: 'Oriya', label: 'Oriya' },
+  { value: 'Spanish', label: 'Spanish' },
+  { value: 'Russian', label: 'Russian' },
+  { value: 'Arabic', label: 'Arabic' },
+];
 
 const signupFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
   contact: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: 'Please enter a valid contact number (e.g., +1234567890).' }),
   country: z.string().min(2, { message: 'Country must be at least 2 characters.' }),
+  language: z.string({ required_error: 'Please select a language.' }),
 });
 
 type SignupFormValues = z.infer<typeof signupFormSchema>;
@@ -39,6 +54,7 @@ export default function SignupPage() {
       email: '',
       contact: '',
       country: '',
+      language: 'English', // Default to English
     },
   });
 
@@ -46,13 +62,9 @@ export default function SignupPage() {
     localStorage.removeItem('margdarshak_birth_details');
     localStorage.removeItem('margdarshak_user_traits');
     localStorage.removeItem('margdarshak_personalized_answers');
-    localStorage.removeItem('margdarshak_career_suggestions'); // Old key
-    localStorage.removeItem('margdarshak_selected_career'); // Old key for single selection
-    localStorage.removeItem('margdarshak_selected_careers_list'); // New key for multiple selections
-    localStorage.removeItem('margdarshak_career_insights_astro'); // Old key
-    localStorage.removeItem('margdarshak_career_insights_numero'); // Old key
+    localStorage.removeItem('margdarshak_selected_careers_list'); 
+    localStorage.removeItem('margdarshak_all_career_suggestions');
     localStorage.removeItem('margdarshak_payment_successful');
-    // Clear any cached roadmaps
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('margdarshak_roadmap_')) {
         localStorage.removeItem(key);
@@ -81,7 +93,13 @@ export default function SignupPage() {
 
   const handleSkipSignup = () => {
     try {
-       localStorage.setItem('margdarshak_user_info', JSON.stringify({ name: 'Guest', email: '', contact: '', country: 'GuestCountry' }));
+       localStorage.setItem('margdarshak_user_info', JSON.stringify({ 
+         name: 'Guest', 
+         email: '', 
+         contact: '', 
+         country: 'GuestCountry',
+         language: 'English' // Default language for guest
+        }));
        clearLocalStorageForNewJourney();
        toast({
         title: 'Skipping Signup',
@@ -99,7 +117,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
+    <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] py-6">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <UserPlus className="h-12 w-12 text-primary mx-auto mb-2" />
@@ -161,6 +179,30 @@ export default function SignupPage() {
                     <FormControl>
                       <Input placeholder="Your Country" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="language"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center"><Globe className="mr-2 h-4 w-4 text-muted-foreground" />Preferred Language for Report</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a language" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {languages.map(lang => (
+                          <SelectItem key={lang.value} value={lang.value}>
+                            {lang.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
