@@ -36,7 +36,7 @@ const GenerateRoadmapInputSchema = z.object({
   personalizedAnswers: PersonalizedAnswersSchema.describe("User's answers to personalized questions."),
   matchScore: z.string().describe('The percentage match score for this career option (e.g., "85%").'),
   personalityProfile: z.string().describe('The descriptive personality profile associated with this career fit (e.g., "Analytical and Strategic", "Creative and Empathetic").'),
-  // Removed optional astrologicalReview and numerologicalReview, as they are now generated fresh within this flow.
+  lifePathNumber: z.number().describe("The user's calculated Life Path Number based on their date of birth."),
 });
 export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
 
@@ -55,7 +55,9 @@ const GenerateRoadmapOutputSchema = z.object({
     -   Textual overview/description of key zodiac placements based on birth details.
     -   Detailed Zodiac based prediction (approx. 500 words and 10 key bullet points).
 7.  "## Numerological Insights:"
-    -   Detailed Numerology based prediction (approx. 200 words and 10 key bullet points).
+    -   "**Life Path Number:** [Calculated Life Path Number]"
+    -   Brief explanation of the general meaning of the Life Path Number.
+    -   Detailed Numerology based prediction (approx. 200 words and 10 key bullet points) based on the Life Path Number and DOB, for the career.
 8.  "## Career Prospect & Why It Is a Good Fit for You?"
 9.  "## 10-Year Career Roadmap (Age-Specific for [Career Name]):" (For each of the 10 years, considering current age: title, description, localized expected salary with currency, suggested courses, key activities).
 10. "## Suggested Education, Courses & Programmes:"
@@ -92,6 +94,7 @@ Hobbies & Interests: {{{personalizedAnswers.q2}}}
 5-Year Vision: {{{personalizedAnswers.q3}}}
 Industry Interest: {{{personalizedAnswers.q4}}}
 Career Motivations: {{{personalizedAnswers.q5}}}
+User's Life Path Number: {{{lifePathNumber}}}
 
 --- START OF REPORT MARKDOWN ---
 
@@ -117,7 +120,10 @@ Follow this with a detailed Zodiac-based prediction for the career **{{{careerSu
 Frame this positively and as potential influences.
 
 ## Numerological Insights
-Based on the Date of Birth: {{{dateOfBirth}}}, provide a detailed Numerology-based prediction for the career **{{{careerSuggestion}}}**. This prediction should be approximately 200 words and conclude with **exactly 10 key bullet points summarizing the numerological outlook** for this career.
+**Life Path Number:** {{{lifePathNumber}}}
+
+Briefly explain the general meaning and characteristics typically associated with Life Path Number {{{lifePathNumber}}}.
+Then, based on this Life Path Number ({{{lifePathNumber}}}) and the user's full Date of Birth ({{{dateOfBirth}}}), provide a detailed Numerology-based prediction for the career **{{{careerSuggestion}}}**. This prediction should be approximately 200 words and conclude with **exactly 10 key bullet points summarizing the numerological outlook** for this career.
 Frame this positively and as potential influences.
 
 ## Career Prospect & Why It Is a Good Fit for You?
@@ -177,4 +183,3 @@ const generateRoadmapFlow = ai.defineFlow(
     return output;
   }
 );
-

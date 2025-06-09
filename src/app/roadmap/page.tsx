@@ -13,6 +13,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { generateRoadmap, type GenerateRoadmapInput, type GenerateRoadmapOutput } from '@/ai/flows/detailed-roadmap';
 import { differenceInYears, parseISO } from 'date-fns';
+import { calculateLifePathNumber } from '@/lib/numerology';
 
 interface UserInfo {
   name: string;
@@ -45,6 +46,9 @@ interface CareerSuggestionFromStorage {
 
 const REPORT_CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
+type BaseRoadmapInputDataType = Omit<GenerateRoadmapInput, 'careerSuggestion' | 'matchScore' | 'personalityProfile'>;
+
+
 export default function RoadmapPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -59,8 +63,7 @@ export default function RoadmapPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [userName, setUserName] = useState<string>('User');
   
-  // Base input common to all reports
-  const [baseRoadmapInputData, setBaseRoadmapInputData] = useState<Omit<GenerateRoadmapInput, 'careerSuggestion' | 'matchScore' | 'personalityProfile'> | null>(null);
+  const [baseRoadmapInputData, setBaseRoadmapInputData] = useState<BaseRoadmapInputDataType | null>(null);
   const [allCareerSuggestions, setAllCareerSuggestions] = useState<CareerSuggestionFromStorage[]>([]);
 
   const roadmapContentRef = useRef<HTMLDivElement>(null);
@@ -117,10 +120,14 @@ export default function RoadmapPage() {
       const birthDetailsParsed: BirthDetails = JSON.parse(storedBirthDetails);
       const personalizedAnswersParsed: PersonalizedAnswers = JSON.parse(storedPersonalizedAnswers);
       let age: number;
+      let lifePathNum: number;
+
       try {
         age = differenceInYears(new Date(), parseISO(birthDetailsParsed.dateOfBirth));
-      } catch(e) {
-        toast({ title: 'Error calculating age', description: 'Birth date might be invalid. Redirecting.', variant: 'destructive' });
+        lifePathNum = calculateLifePathNumber(birthDetailsParsed.dateOfBirth);
+      } catch(e: any) {
+        console.error("Error calculating age or life path:", e);
+        toast({ title: 'Error processing birth date', description: e.message || 'Birth date might be invalid. Redirecting.', variant: 'destructive' });
         router.replace('/birth-details');
         return;
       }
@@ -134,6 +141,7 @@ export default function RoadmapPage() {
         placeOfBirth: birthDetailsParsed.placeOfBirth,
         age: age,
         personalizedAnswers: personalizedAnswersParsed,
+        lifePathNumber: lifePathNum,
       });
 
     } catch (error) {
@@ -193,6 +201,7 @@ export default function RoadmapPage() {
       careerSuggestion: careerName,
       matchScore: careerDetails.matchScore,
       personalityProfile: careerDetails.personalityProfile,
+      // lifePathNumber is already in baseRoadmapInputData
     };
 
     try {
@@ -334,4 +343,3 @@ export default function RoadmapPage() {
     </div>
   );
 }
-
