@@ -3,9 +3,9 @@
 /**
  * @fileOverview Provides AI-powered career suggestions based on user traits and personalized answers.
  *
- * - suggestCareers - A function that takes user traits and personalized answers, and returns career suggestions with rationales.
+ * - suggestCareers - A function that takes user traits and personalized answers, and returns career suggestions with rationales, match scores, and personality profiles.
  * - CareerSuggestionInput - The input type for the suggestCareers function.
- * - CareerSuggestionOutput - The return type for the suggestCareers function, containing an array of career objects (name and rationale).
+ * - CareerSuggestionOutput - The return type for the suggestCareers function, containing an array of career objects.
  */
 
 import {ai} from '@/ai/genkit';
@@ -31,6 +31,8 @@ export type CareerSuggestionInput = z.infer<typeof CareerSuggestionInputSchema>;
 
 const CareerObjectSchema = z.object({
   name: z.string().describe('The name of the suggested career.'),
+  matchScore: z.string().describe('An estimated percentage match score (e.g., "85%") indicating the AI\'s assessment of fit based on user data. This is a qualitative assessment expressed numerically.'),
+  personalityProfile: z.string().describe('A brief descriptive personality profile (e.g., "Creative and Empathetic", "Analytical and Independent", "Strategic Thinker") derived from user traits that aligns with the suggested career.'),
   rationale: z.string().describe('A brief 1-2 sentence explanation of why this career is a good fit, linking to the user\'s traits and personalized answers.'),
 });
 
@@ -40,7 +42,7 @@ const CareerSuggestionOutputSchema = z.object({
     .min(7)
     .max(10) // Aim for 10 suggestions
     .describe(
-      'An array of seven to ten distinct career options, each with a name and a rationale, based on the user traits and personalized answers.'
+      'An array of seven to ten distinct career options, each with a name, matchScore, personalityProfile, and a rationale, based on the user traits and personalized answers.'
     ),
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
@@ -56,7 +58,9 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert career counselor. Based on the following psychometric test traits and personalized answers, suggest ten distinct and suitable career options.
 For each career suggestion, provide:
 1.  'name': The name of the career.
-2.  'rationale': A brief (1-2 sentences) explanation of why this career is a good fit, clearly linking it to the user's traits and personalized answers provided below.
+2.  'matchScore': An estimated percentage match score (e.g., "85%", "92%") based on the AI's assessment of how well the career aligns with the user's traits and answers. This score represents a qualitative assessment expressed numerically.
+3.  'personalityProfile': A brief descriptive personality profile (e.g., "Creative and Empathetic", "Analytical and Independent", "Strategic Thinker") derived from the user's traits that aligns with the suggested career. Avoid formal psychological classifications like MBTI unless explicitly derivable and highly relevant; focus on descriptive terms.
+4.  'rationale': A brief (1-2 sentences) explanation of why this career is a good fit, clearly linking it to the user's traits and personalized answers provided below.
 
 Psychometric Traits Summary:
 {{{traits}}}
@@ -68,8 +72,8 @@ Personalized Answers:
 4. Industry Interest: {{{personalizedAnswers.q4}}}
 5. Career Motivations: {{{personalizedAnswers.q5}}}
 
-Return the ten career suggestions as an array of objects within the JSON object. Each object in the array must have a "name" field (string) and a "rationale" field (string). The array should be named "careers" and contain ten such objects.
-Consider all provided information to make relevant and diverse suggestions with insightful rationales.
+Return the ten career suggestions as an array of objects within the JSON object. Each object in the array must have a "name" field (string), a "matchScore" field (string, e.g., "90%"), a "personalityProfile" field (string), and a "rationale" field (string). The array should be named "careers".
+Consider all provided information to make relevant and diverse suggestions with insightful details for each field.
 `,
 });
 
@@ -91,3 +95,4 @@ const suggestCareersFlow = ai.defineFlow(
     return output;
   }
 );
+

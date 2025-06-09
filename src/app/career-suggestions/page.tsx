@@ -7,13 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { ArrowRight, Briefcase, Lightbulb, Loader2 } from 'lucide-react';
+import { ArrowRight, Briefcase, Lightbulb, Loader2, Percent, Sparkles } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput } from '@/ai/flows/career-suggestion';
 
 interface CareerSuggestion {
   name: string;
+  matchScore: string;
+  personalityProfile: string;
   rationale: string;
 }
 
@@ -175,10 +177,20 @@ export default function CareerSuggestionsPage() {
             {allSuggestions.map((career, index) => (
               <Card key={index} className={`flex flex-col shadow-lg hover:shadow-xl transition-all duration-300 ${selectedCareers.includes(career.name) ? 'ring-2 ring-primary border-primary' : 'border-border'}`}>
                 <CardHeader className="items-center text-center pb-3">
-                  <div className="p-3 bg-accent/30 rounded-full mb-3">
+                  <div className="flex justify-between items-start w-full mb-2">
+                    <CardTitle className="text-xl leading-tight text-left flex-1">{career.name}</CardTitle>
+                    <div className="flex items-center text-primary font-bold ml-2">
+                       <Percent className="h-5 w-5 mr-1" /> 
+                       <span className="text-lg">{career.matchScore.replace('%','')}</span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-accent/30 rounded-full mb-2 self-center">
                     <Briefcase className="h-8 w-8 text-accent-foreground" />
                   </div>
-                  <CardTitle className="text-xl leading-tight">{career.name}</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground min-h-[2.5em]">
+                    <Sparkles className="h-3 w-3 inline-block mr-1 text-primary/80" />
+                    {career.personalityProfile}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow pt-0">
                   <p className="text-center text-xs text-foreground/80 mb-3 min-h-[3em]">
@@ -221,3 +233,4 @@ export default function CareerSuggestionsPage() {
     </div>
   );
 }
+
