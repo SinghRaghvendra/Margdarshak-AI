@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { ArrowRight, Briefcase, Lightbulb, Loader2 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
@@ -15,12 +17,15 @@ interface CareerSuggestion {
   rationale: string;
 }
 
+const MAX_SELECTIONS = 3;
+
 export default function CareerSuggestionsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [suggestions, setSuggestions] = useState<CareerSuggestion[] | null>(null);
+  const [allSuggestions, setAllSuggestions] = useState<CareerSuggestion[] | null>(null);
+  const [selectedCareers, setSelectedCareers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [pageLoading, setPageLoading] = useState(true); // For initial data checks
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -29,47 +34,41 @@ export default function CareerSuggestionsPage() {
         const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
         const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
 
-        if (!storedUserTraits) {
-          toast({ title: 'Psychometric test data not found', description: 'Redirecting to psychometric test.', variant: 'destructive' });
-          router.replace('/psychometric-test');
-          return;
-        }
-        if (!storedPersonalizedAnswers) {
-          toast({ title: 'Personalized answers not found', description: 'Redirecting to provide answers.', variant: 'destructive' });
-          router.replace('/personalized-questions');
+        if (!storedUserTraits || !storedPersonalizedAnswers) {
+          // Prerequisites check will handle redirection
           return;
         }
         
         const parsedPersonalizedAnswers = JSON.parse(storedPersonalizedAnswers);
-
         const input: CareerSuggestionInput = {
           traits: storedUserTraits,
           personalizedAnswers: parsedPersonalizedAnswers,
         };
         
-        toast({ title: 'Generating Career Suggestions', description: 'Please wait, this may take a moment...' });
+        toast({ title: 'Generating Top 10 Career Suggestions', description: 'Please wait, this may take a moment...' });
         const suggestionsOutput: CareerSuggestionOutput = await suggestCareers(input);
         
         if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length > 0) {
-          setSuggestions(suggestionsOutput.careers);
-          localStorage.setItem('margdarshak_career_suggestions', JSON.stringify(suggestionsOutput.careers));
+          setAllSuggestions(suggestionsOutput.careers);
+          // Load previously selected careers if any (e.g., if user navigated back)
+          const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
+          if (storedSelections) {
+            setSelectedCareers(JSON.parse(storedSelections));
+          }
         } else {
           toast({ title: 'Could not generate suggestions', description: 'Please try the previous steps again.', variant: 'destructive'});
-          setSuggestions([]); // Set to empty array to show "No suggestions" message
+          setAllSuggestions([]);
         }
       } catch (error) {
         console.error('Error fetching career suggestions:', error);
         toast({ title: 'Error Generating Suggestions', description: 'Could not generate career suggestions. Please try again.', variant: 'destructive' });
-        setSuggestions([]); // Set to empty array
+        setAllSuggestions([]);
       } finally {
         setIsLoading(false);
       }
     };
     
-    // Check prerequisite data before fetching suggestions
-    const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
-    const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-
+    // Prerequisite data checks
     if (!localStorage.getItem('margdarshak_user_info')) {
         toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive' });
         router.replace('/signup');
@@ -77,36 +76,68 @@ export default function CareerSuggestionsPage() {
         return;
     }
     if (!localStorage.getItem('margdarshak_birth_details')) {
-        toast({ title: 'Birth details missing', description: 'Redirecting to provide birth details.', variant: 'destructive' });
+        toast({ title: 'Birth details missing', description: 'Redirecting.', variant: 'destructive' });
         router.replace('/birth-details');
         setPageLoading(false);
         return;
     }
+    const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
     if (!storedUserTraits) {
-        toast({ title: 'Psychometric test data missing', description: 'Redirecting to psychometric test.', variant: 'destructive' });
+        toast({ title: 'Psychometric test data missing', description: 'Redirecting.', variant: 'destructive' });
         router.replace('/psychometric-test');
         setPageLoading(false);
         return;
     }
+    const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
     if (!storedPersonalizedAnswers) {
-        toast({ title: 'Personalized answers missing', description: 'Redirecting to personalized questions.', variant: 'destructive' });
+        toast({ title: 'Personalized answers missing', description: 'Redirecting.', variant: 'destructive' });
         router.replace('/personalized-questions');
         setPageLoading(false);
         return;
     }
 
-    setPageLoading(false); // All checks passed, proceed to fetch suggestions
+    setPageLoading(false);
     fetchSuggestions();
 
   }, [router, toast]);
 
   const handleSelectCareer = (careerName: string) => {
+    setSelectedCareers(prev => {
+      const isSelected = prev.includes(careerName);
+      if (isSelected) {
+        return prev.filter(name => name !== careerName);
+      } else {
+        if (prev.length < MAX_SELECTIONS) {
+          return [...prev, careerName];
+        } else {
+          toast({
+            title: `Maximum ${MAX_SELECTIONS} selections allowed`,
+            description: 'Please unselect one to choose another.',
+            variant: 'default'
+          });
+          return prev;
+        }
+      }
+    });
+  };
+
+  const handleProceedToPayment = () => {
+    if (selectedCareers.length !== MAX_SELECTIONS) {
+      toast({ title: `Please select ${MAX_SELECTIONS} careers`, description: `You have selected ${selectedCareers.length}.`, variant: 'destructive'});
+      return;
+    }
     try {
-      localStorage.setItem('margdarshak_selected_career', careerName);
-      toast({ title: `Selected: ${careerName}`, description: 'Proceed to get personalized insights.' });
-      router.push('/career-insights');
+      localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(selectedCareers));
+      // Remove single selected career key if it exists from old flow
+      localStorage.removeItem('margdarshak_selected_career');
+      // Remove old insight data
+      localStorage.removeItem('margdarshak_career_insights_astro');
+      localStorage.removeItem('margdarshak_career_insights_numero');
+
+      toast({ title: 'Selections Saved', description: 'Proceeding to payment for your detailed reports.' });
+      router.push('/payment');
     } catch (error) {
-      toast({ title: 'Error selecting career', description: 'Could not save your selection. Please try again.', variant: 'destructive'});
+      toast({ title: 'Error saving selection', description: 'Could not save your selections. Please try again.', variant: 'destructive'});
     }
   };
 
@@ -116,56 +147,77 @@ export default function CareerSuggestionsPage() {
   
   return (
     <div className="py-8">
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
         <Lightbulb className="h-16 w-16 text-primary mx-auto mb-4" />
-        <h1 className="text-4xl font-bold mb-3">Your Career Suggestions</h1>
+        <h1 className="text-4xl font-bold mb-3">Your Top Career Suggestions</h1>
         <p className="text-xl text-muted-foreground">Based on your test and answers, here are some career paths that might suit you.</p>
+        <p className="text-md text-primary mt-2">Please select your top 3 choices to generate detailed reports.</p>
       </div>
       
       {isLoading && (
-        <div className="flex justify-center items-center min-h-[20rem]">
+        <div className="flex flex-col justify-center items-center min-h-[20rem]">
           <LoadingSpinner size={48} />
-          <p className="ml-4 text-lg text-muted-foreground">Generating your suggestions...</p>
+          <p className="ml-4 mt-4 text-lg text-muted-foreground">Generating your top 10 suggestions...</p>
         </div>
       )}
 
-      {!isLoading && (!suggestions || suggestions.length === 0) && (
+      {!isLoading && (!allSuggestions || allSuggestions.length === 0) && (
         <div className="text-center py-10">
           <h1 className="text-2xl font-semibold mb-4">No Career Suggestions Available</h1>
-          <p className="text-muted-foreground mb-6">We couldn't generate career suggestions for you at this time. You can try adjusting your answers.</p>
+          <p className="text-muted-foreground mb-6">We couldn't generate career suggestions. You can try adjusting your answers.</p>
           <Button onClick={() => router.push('/personalized-questions')}>Review Answers</Button>
         </div>
       )}
 
-      {!isLoading && suggestions && suggestions.length > 0 && (
-        <div className="grid md:grid-cols-3 gap-8">
-          {suggestions.map((career, index) => (
-            <Card key={index} className="flex flex-col shadow-xl hover:shadow-2xl transition-shadow duration-300">
-              <CardHeader className="items-center text-center">
-                <div className="p-3 bg-accent/30 rounded-full mb-3">
-                  <Briefcase className="h-10 w-10 text-accent-foreground" />
-                </div>
-                <CardTitle className="text-2xl">{career.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-center text-sm text-foreground/90 mb-3">
-                  <span className="font-semibold">Why this might be a fit:</span> {career.rationale}
-                </p>
-                 <p className="text-center text-xs text-muted-foreground">
-                  Explore personalized astrological/numerological insights and a detailed 5-year roadmap for this career.
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button onClick={() => handleSelectCareer(career.name)} className="w-full text-md py-5">
-                  Get Personalized Insights
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+      {!isLoading && allSuggestions && allSuggestions.length > 0 && (
+        <>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {allSuggestions.map((career, index) => (
+              <Card key={index} className={`flex flex-col shadow-lg hover:shadow-xl transition-all duration-300 ${selectedCareers.includes(career.name) ? 'ring-2 ring-primary border-primary' : 'border-border'}`}>
+                <CardHeader className="items-center text-center pb-3">
+                  <div className="p-3 bg-accent/30 rounded-full mb-3">
+                    <Briefcase className="h-8 w-8 text-accent-foreground" />
+                  </div>
+                  <CardTitle className="text-xl leading-tight">{career.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow pt-0">
+                  <p className="text-center text-xs text-foreground/80 mb-3 min-h-[3em]">
+                    <span className="font-semibold">Rationale:</span> {career.rationale}
+                  </p>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <Label
+                    htmlFor={`career-${index}`}
+                    className={`w-full flex items-center justify-center p-3 rounded-md border cursor-pointer transition-colors
+                                ${selectedCareers.includes(career.name) ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-secondary hover:bg-secondary/80'}`}
+                  >
+                    <Checkbox
+                      id={`career-${index}`}
+                      checked={selectedCareers.includes(career.name)}
+                      onCheckedChange={() => handleSelectCareer(career.name)}
+                      className="mr-2 border-background data-[state=checked]:bg-primary-foreground data-[state=checked]:text-primary"
+                      disabled={!selectedCareers.includes(career.name) && selectedCareers.length >= MAX_SELECTIONS}
+                    />
+                    {selectedCareers.includes(career.name) ? 'Selected' : 'Select this Career'}
+                  </Label>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Button 
+              onClick={handleProceedToPayment} 
+              className="text-lg py-6 px-10"
+              disabled={selectedCareers.length !== MAX_SELECTIONS}
+            >
+              Proceed with {selectedCareers.length} of {MAX_SELECTIONS} selections <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            {selectedCareers.length !== MAX_SELECTIONS && (
+                 <p className="text-sm text-muted-foreground mt-2">Please select exactly {MAX_SELECTIONS} careers to continue.</p>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
 }
-

@@ -81,9 +81,20 @@ export default function PersonalizedQuestionsPage() {
     toast({ title: 'Saving Your Answers', description: 'Getting ready to suggest careers...' });
     try {
       localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
-      // Clear any old career suggestions or selected career
-      localStorage.removeItem('margdarshak_career_suggestions');
-      localStorage.removeItem('margdarshak_selected_career');
+      // Clear any old career suggestions or selected career from single-select flow
+      localStorage.removeItem('margdarshak_career_suggestions'); // Old key for AI output
+      localStorage.removeItem('margdarshak_selected_career'); // Old key for single selected career
+      localStorage.removeItem('margdarshak_selected_careers_list'); // New key for multiple selected careers
+      localStorage.removeItem('margdarshak_career_insights_astro');
+      localStorage.removeItem('margdarshak_career_insights_numero');
+      localStorage.removeItem('margdarshak_payment_successful');
+      // Clear cached roadmaps
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('margdarshak_roadmap_')) {
+          localStorage.removeItem(key);
+        }
+      });
+
       router.push('/career-suggestions');
     } catch (error) {
       console.error('Error saving personalized answers:', error);

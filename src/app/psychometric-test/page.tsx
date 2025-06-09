@@ -11,7 +11,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { ClipboardList, Lightbulb, ArrowRight } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
-// Note: suggestCareers AI flow is not called here anymore. It's called on the suggestions page.
 import { useToast } from '@/hooks/use-toast';
 
 const TOTAL_QUESTIONS = psychometricTestQuestions.length;
@@ -21,7 +20,7 @@ export default function PsychometricTestPage() {
   const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [isLoading, setIsLoading] = useState(false); // Kept for future use if submission becomes async
+  const [isLoading, setIsLoading] = useState(false);
   const [userInfo, setUserInfo] = useState<{name: string} | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -35,7 +34,6 @@ export default function PsychometricTestPage() {
         router.replace('/signup');
         return;
       }
-      // Check if birth details exist, if not, redirect to birth-details page
       const birthDetails = localStorage.getItem('margdarshak_birth_details');
       if (!birthDetails) {
         toast({ title: 'Birth details not found', description: 'Please provide your birth details first.', variant: 'destructive'});
@@ -81,10 +79,8 @@ export default function PsychometricTestPage() {
       return;
     }
     
-    setIsLoading(true); // Keep for visual feedback even if not async
+    setIsLoading(true);
     
-    // Create a summary of answers to represent "traits".
-    // This is a simplified approach. A real app would have a more complex scoring logic.
     const traitSummaryParts: string[] = [];
     for (const qId in answers) {
       const question = psychometricTestQuestions.find(q => q.id === parseInt(qId));
@@ -96,9 +92,20 @@ export default function PsychometricTestPage() {
     
     try {
       localStorage.setItem('margdarshak_user_traits', userTraits);
-      // Clear any old career suggestions or selected career if re-taking test
-      localStorage.removeItem('margdarshak_career_suggestions');
-      localStorage.removeItem('margdarshak_selected_career');
+      // Clear data from subsequent steps as user is re-taking/completing this step
+      localStorage.removeItem('margdarshak_personalized_answers');
+      localStorage.removeItem('margdarshak_career_suggestions'); // Old key
+      localStorage.removeItem('margdarshak_selected_career'); // Old key
+      localStorage.removeItem('margdarshak_selected_careers_list'); // New key
+      localStorage.removeItem('margdarshak_career_insights_astro');
+      localStorage.removeItem('margdarshak_career_insights_numero');
+      localStorage.removeItem('margdarshak_payment_successful');
+      Object.keys(localStorage).forEach(key => { // Clear cached roadmaps
+        if (key.startsWith('margdarshak_roadmap_')) {
+          localStorage.removeItem(key);
+        }
+      });
+
 
       toast({ title: 'Test Submitted!', description: 'Proceeding to personalized questions...' });
       router.push('/personalized-questions'); 
@@ -115,7 +122,6 @@ export default function PsychometricTestPage() {
   }
 
   if (!currentQuestion) {
-    // Should not happen if navigation is correct
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]">Loading questions...</div>;
   }
 

@@ -42,17 +42,28 @@ export default function SignupPage() {
     },
   });
 
+  const clearLocalStorageForNewJourney = () => {
+    localStorage.removeItem('margdarshak_birth_details');
+    localStorage.removeItem('margdarshak_user_traits');
+    localStorage.removeItem('margdarshak_personalized_answers');
+    localStorage.removeItem('margdarshak_career_suggestions'); // Old key
+    localStorage.removeItem('margdarshak_selected_career'); // Old key for single selection
+    localStorage.removeItem('margdarshak_selected_careers_list'); // New key for multiple selections
+    localStorage.removeItem('margdarshak_career_insights_astro'); // Old key
+    localStorage.removeItem('margdarshak_career_insights_numero'); // Old key
+    localStorage.removeItem('margdarshak_payment_successful');
+    // Clear any cached roadmaps
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('margdarshak_roadmap_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  }
+
   function onSubmit(data: SignupFormValues) {
     try {
       localStorage.setItem('margdarshak_user_info', JSON.stringify(data));
-      // Clear previous data for a new journey
-      localStorage.removeItem('margdarshak_birth_details');
-      localStorage.removeItem('margdarshak_user_traits');
-      localStorage.removeItem('margdarshak_personalized_answers');
-      localStorage.removeItem('margdarshak_career_suggestions');
-      localStorage.removeItem('margdarshak_selected_career');
-      localStorage.removeItem('margdarshak_roadmap_markdown');
-
+      clearLocalStorageForNewJourney();
       toast({
         title: 'Signup Successful!',
         description: 'Redirecting to gather birth details...',
@@ -71,14 +82,7 @@ export default function SignupPage() {
   const handleSkipSignup = () => {
     try {
        localStorage.setItem('margdarshak_user_info', JSON.stringify({ name: 'Guest', email: '', contact: '', country: 'GuestCountry' }));
-       // Clear previous data for a new journey
-       localStorage.removeItem('margdarshak_birth_details');
-       localStorage.removeItem('margdarshak_user_traits');
-       localStorage.removeItem('margdarshak_personalized_answers');
-       localStorage.removeItem('margdarshak_career_suggestions');
-       localStorage.removeItem('margdarshak_selected_career');
-       localStorage.removeItem('margdarshak_roadmap_markdown');
-
+       clearLocalStorageForNewJourney();
        toast({
         title: 'Skipping Signup',
         description: 'Proceeding as Guest to gather birth details.',

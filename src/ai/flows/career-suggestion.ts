@@ -37,9 +37,10 @@ const CareerObjectSchema = z.object({
 const CareerSuggestionOutputSchema = z.object({
   careers: z
     .array(CareerObjectSchema)
-    .length(3)
+    .min(7)
+    .max(10) // Aim for 10 suggestions
     .describe(
-      'An array of three distinct career options, each with a name and a rationale, based on the user traits and personalized answers.'
+      'An array of seven to ten distinct career options, each with a name and a rationale, based on the user traits and personalized answers.'
     ),
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
@@ -52,7 +53,7 @@ const prompt = ai.definePrompt({
   name: 'careerSuggestionWithPersonalizationPrompt',
   input: {schema: CareerSuggestionInputSchema},
   output: {schema: CareerSuggestionOutputSchema},
-  prompt: `You are an expert career counselor. Based on the following psychometric test traits and personalized answers, suggest three distinct and suitable career options.
+  prompt: `You are an expert career counselor. Based on the following psychometric test traits and personalized answers, suggest ten distinct and suitable career options.
 For each career suggestion, provide:
 1.  'name': The name of the career.
 2.  'rationale': A brief (1-2 sentences) explanation of why this career is a good fit, clearly linking it to the user's traits and personalized answers provided below.
@@ -67,7 +68,7 @@ Personalized Answers:
 4. Industry Interest: {{{personalizedAnswers.q4}}}
 5. Career Motivations: {{{personalizedAnswers.q5}}}
 
-Return the three career suggestions as an array of objects within the JSON object. Each object in the array must have a "name" field (string) and a "rationale" field (string). The array should be named "careers" and contain exactly three such objects.
+Return the ten career suggestions as an array of objects within the JSON object. Each object in the array must have a "name" field (string) and a "rationale" field (string). The array should be named "careers" and contain ten such objects.
 Consider all provided information to make relevant and diverse suggestions with insightful rationales.
 `,
 });
@@ -83,7 +84,10 @@ const suggestCareersFlow = ai.defineFlow(
     if (!output) {
         throw new Error("The AI model did not return a valid output for career suggestions.");
     }
+    // Ensure we return a maximum of 10, even if the model provides more (though schema should cap it)
+    if (output.careers.length > 10) {
+      output.careers = output.careers.slice(0, 10);
+    }
     return output;
   }
 );
-
