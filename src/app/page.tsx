@@ -34,10 +34,10 @@ export default function HomePage() {
         <div className="absolute inset-0">
           <Image
             src="https://placehold.co/1920x800.png"
-            alt="Person climbing a mountain hoisting a career success flag"
+            alt="Abstract background image for hero section"
             fill
             className="opacity-20 object-cover"
-            data-ai-hint="mountain success"
+            data-ai-hint="abstract background"
             priority
           />
            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
