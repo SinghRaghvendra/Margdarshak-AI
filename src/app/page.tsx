@@ -12,18 +12,18 @@ export default function HomePage() {
   const features = [
     {
       icon: <ClipboardList className="h-10 w-10 text-primary mb-4" />,
-      title: 'Personalized Psychometric Testing',
-      description: 'Understand your unique strengths, traits, and work style with our comprehensive psychometric assessments.',
+      title: 'Deep Dive into Your Potential',
+      description: 'Uncover your innate strengths, personality traits, and ideal work style through our insightful psychometric assessment. Gain self-awareness to make confident career choices.',
     },
     {
       icon: <Lightbulb className="h-10 w-10 text-primary mb-4" />,
-      title: 'AI-Powered Career Suggestions',
-      description: 'Receive intelligent career recommendations tailored to your profile, interests, and astrological insights.',
+      title: 'Discover Your Ideal Career Paths',
+      description: 'Get a curated list of top 10 career options, complete with match scores and personality alignments, all powered by AI and tailored to your unique profile and aspirations.',
     },
     {
       icon: <MapPinned className="h-10 w-10 text-primary mb-4" />,
-      title: 'Detailed 5-Year Roadmaps',
-      description: 'Get a step-by-step plan for your chosen career, including skills, courses, and salary expectations.',
+      title: 'Comprehensive Career Blueprints',
+      description: 'Receive an in-depth 10-year roadmap for your chosen careers, including localized salary insights, educational guidance, skill development strategies, astrological/numerological perspectives, and a 20-year future outlook.',
     },
   ];
 
@@ -34,10 +34,10 @@ export default function HomePage() {
         <div className="absolute inset-0">
           <Image
             src="https://placehold.co/1920x800.png"
-            alt="Abstract background image for hero section"
+            alt="Generic hero image representing opportunity and discovery"
             fill
             className="opacity-20 object-cover"
-            data-ai-hint="abstract background"
+            data-ai-hint="opportunity discovery"
             priority
           />
            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
