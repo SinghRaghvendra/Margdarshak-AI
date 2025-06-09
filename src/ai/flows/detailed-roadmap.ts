@@ -5,6 +5,7 @@
  * @fileOverview A flow that provides a detailed career report in Markdown format.
  * Includes personal details, astrological/numerological reviews, a 10-year age-specific roadmap (localized salary, courses, activities),
  * education guidance, study goals, skills focus, key interests and a 20-year outlook based on future trends.
+ * Also includes the career's match score and aligned personality profile.
  *
  * - generateRoadmap - A function that generates a detailed career roadmap.
  * - GenerateRoadmapInput - The input type for the generateRoadmap function.
@@ -33,31 +34,36 @@ const GenerateRoadmapInputSchema = z.object({
   placeOfBirth: z.string().describe("User's city and country of birth."),
   age: z.number().describe("User's current age."),
   personalizedAnswers: PersonalizedAnswersSchema.describe("User's answers to personalized questions."),
-  astrologicalReview: z.string().optional().describe("A previously generated general astrological review. The new detailed astrological prediction will be primary."),
-  numerologicalReview: z.string().optional().describe("A previously generated general numerological review. The new detailed numerological prediction will be primary."),
+  matchScore: z.string().describe('The percentage match score for this career option (e.g., "85%").'),
+  personalityProfile: z.string().describe('The descriptive personality profile associated with this career fit (e.g., "Analytical and Strategic", "Creative and Empathetic").'),
+  // Removed optional astrologicalReview and numerologicalReview, as they are now generated fresh within this flow.
 });
 export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
 
 const GenerateRoadmapOutputSchema = z.object({
   roadmapMarkdown: z.string().describe(`A comprehensive career report in Markdown format. It must follow this structure EXACTLY:
-1.  "Career Option: [Career Name]"
-2.  "Career Fit Assessment: [Qualitative assessment of fit]"
-3.  "Name: [User Name]"
-4.  "DOB: [User DOB]"
-5.  "Age: [User Age]"
-6.  "Country: [User Country]"
-7.  "Astrological Insights & Zodiac Chart Overview:"
+1.  "# Career Option: [Career Name]"
+2.  "## Match Score: [Percentage Match Score, e.g., 85%]"
+3.  "## Career Fit Assessment: [Qualitative assessment of fit]"
+4.  "## Personal Details"
+    -   "**Name:** [User Name]"
+    -   "**DOB:** [User DOB]"
+    -   "**Age:** [User Age]"
+    -   "**Country:** [User Country]"
+5.  "## Personality Profile Alignment: [Descriptive Personality Profile]"
+6.  "## Astrological Insights & Zodiac Chart Overview:"
     -   Textual overview/description of key zodiac placements based on birth details.
     -   Detailed Zodiac based prediction (approx. 500 words and 10 key bullet points).
-8.  "Numerological Insights:"
+7.  "## Numerological Insights:"
     -   Detailed Numerology based prediction (approx. 200 words and 10 key bullet points).
-9.  "Career Prospect & Why It Is a Good Fit for You?"
-10. "10-Year Career Roadmap (Age-Specific):" (For each of the 10 years, considering current age: title, description, localized expected salary with currency, suggested courses, key activities).
-11. "Suggested Education, Courses & Programmes:"
-12. "Key Interests (Top 5):" (Derived from user traits and personalized answers, presented as a bulleted list).
-13. "Expected Salary (Localized): Year 1, Year 5, Year 10" (Specific salary expectations for these milestones, localized with currency name/symbol).
-14. "20-Year Outlook & Future Trends for [Career Name]"
-15. Static promotional text: "Need a professional career guide? We will offer a professional career guide who will keep you on track to achieve your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-"
+8.  "## Career Prospect & Why It Is a Good Fit for You?"
+9.  "## 10-Year Career Roadmap (Age-Specific for [Career Name]):" (For each of the 10 years, considering current age: title, description, localized expected salary with currency, suggested courses, key activities).
+10. "## Suggested Education, Courses & Programmes:"
+11. "## Key Interests (Top 5):" (Derived from user traits and personalized answers, presented as a bulleted list).
+12. "## Expected Salary (Localized): Year 1, Year 5, Year 10" (Specific salary expectations for these milestones, localized with currency name/symbol).
+13. "## 20-Year Outlook & Future Trends for [Career Name]"
+14. Static promotional text: "---
+Need a professional career guide? We will offer a professional career guide who will keep you on track to achieve your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-"
 Use Markdown headings (e.g. #, ##, ###) for all main sections and sub-sections as appropriate. Format lists clearly.`),
 });
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
@@ -91,14 +97,19 @@ Career Motivations: {{{personalizedAnswers.q5}}}
 
 # Career Option: {{{careerSuggestion}}}
 
+## Match Score: {{{matchScore}}}
+
 ## Career Fit Assessment
-Provide a qualitative assessment (2-3 sentences) of why this career is a strong, moderate, or developing fit for {{{userName}}}, based on their traits and answers.
+Provide a qualitative assessment (2-3 sentences) of why this career is a strong, moderate, or developing fit for {{{userName}}}, based on their traits, answers, and personality profile alignment.
 
 ## Personal Details
 - **Name:** {{{userName}}}
 - **DOB:** {{{dateOfBirth}}}
 - **Age:** {{{age}}}
 - **Country:** {{{country}}}
+
+## Personality Profile Alignment: {{{personalityProfile}}}
+Briefly elaborate (1-2 sentences) on how the user's personality profile ({{{personalityProfile}}}) aligns with the demands and characteristics of the career in {{{careerSuggestion}}}.
 
 ## Astrological Insights & Zodiac Chart Overview
 Provide a textual overview that describes key zodiac placements or characteristics based on the user's birth details (Date of Birth: {{{dateOfBirth}}}, Time of Birth: {{{timeOfBirth}}}, Place of Birth: {{{placeOfBirth}}}).
@@ -110,7 +121,7 @@ Based on the Date of Birth: {{{dateOfBirth}}}, provide a detailed Numerology-bas
 Frame this positively and as potential influences.
 
 ## Career Prospect & Why It Is a Good Fit for You?
-Elaborate on the prospects of the career **{{{careerSuggestion}}}** generally, and then specifically explain why it is a good fit for {{{userName}}}, drawing connections to their stated traits: ({{{userTraits}}}) and personalized answers.
+Elaborate on the prospects of the career **{{{careerSuggestion}}}** generally, and then specifically explain why it is a good fit for {{{userName}}}, drawing connections to their stated traits: ({{{userTraits}}}), personality profile ({{{personalityProfile}}}), and personalized answers.
 
 ## 10-Year Career Roadmap (Age-Specific for {{{careerSuggestion}}})
 Generate a detailed 10-year career roadmap for {{{userName}}}, starting from their current age of {{{age}}}.
@@ -166,3 +177,4 @@ const generateRoadmapFlow = ai.defineFlow(
     return output;
   }
 );
+

@@ -8,7 +8,7 @@ import html2pdf from 'html2pdf.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPinned, Milestone, Download, Loader2, Sparkles, Wand2 } from 'lucide-react';
+import { MapPinned, Milestone, Download, Loader2 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { generateRoadmap, type GenerateRoadmapInput, type GenerateRoadmapOutput } from '@/ai/flows/detailed-roadmap';
@@ -16,8 +16,8 @@ import { differenceInYears, parseISO } from 'date-fns';
 
 interface UserInfo {
   name: string;
-  email: string; // Not directly used in roadmap gen but good to have
-  contact: string; // Not directly used
+  email: string;
+  contact: string;
   country: string;
 }
 
@@ -36,6 +36,13 @@ interface StoredRoadmapData {
   generatedAt: number; // Timestamp
 }
 
+interface CareerSuggestionFromStorage {
+  name: string;
+  matchScore: string;
+  personalityProfile: string;
+  rationale: string;
+}
+
 const REPORT_CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 export default function RoadmapPage() {
@@ -51,8 +58,11 @@ export default function RoadmapPage() {
   
   const [pageLoading, setPageLoading] = useState(true);
   const [userName, setUserName] = useState<string>('User');
-  const [baseRoadmapInput, setBaseRoadmapInput] = useState<Omit<GenerateRoadmapInput, 'careerSuggestion' | 'astrologicalReview' | 'numerologicalReview'> | null>(null);
   
+  // Base input common to all reports
+  const [baseRoadmapInputData, setBaseRoadmapInputData] = useState<Omit<GenerateRoadmapInput, 'careerSuggestion' | 'matchScore' | 'personalityProfile'> | null>(null);
+  const [allCareerSuggestions, setAllCareerSuggestions] = useState<CareerSuggestionFromStorage[]>([]);
+
   const roadmapContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -84,6 +94,15 @@ export default function RoadmapPage() {
         return;
       }
 
+      const storedAllSuggestions = localStorage.getItem('margdarshak_all_career_suggestions');
+      if (storedAllSuggestions) {
+        setAllCareerSuggestions(JSON.parse(storedAllSuggestions));
+      } else {
+        toast({ title: 'Career suggestion data missing', description: 'Could not load full suggestion details. Redirecting.', variant: 'destructive' });
+        router.replace('/career-suggestions');
+        return;
+      }
+
       // Prepare base input for roadmap generation
       const traits = localStorage.getItem('margdarshak_user_traits');
       const storedBirthDetails = localStorage.getItem('margdarshak_birth_details');
@@ -91,7 +110,7 @@ export default function RoadmapPage() {
 
       if (!userInfoParsed || !traits || !storedBirthDetails || !storedPersonalizedAnswers) {
         toast({ title: 'Missing data for report', description: 'Please ensure all previous steps are complete. Redirecting.', variant: 'destructive' });
-        router.replace('/signup'); // Go back to start if essential data is missing
+        router.replace('/signup'); 
         return;
       }
       
@@ -106,7 +125,7 @@ export default function RoadmapPage() {
         return;
       }
 
-      setBaseRoadmapInput({
+      setBaseRoadmapInputData({
         userTraits: traits,
         country: userInfoParsed.country,
         userName: userInfoParsed.name,
@@ -127,17 +146,24 @@ export default function RoadmapPage() {
 
   // Effect to generate report when active tab changes and data is ready
   useEffect(() => {
-    if (activeCareerTab && baseRoadmapInput) {
+    if (activeCareerTab && baseRoadmapInputData && allCareerSuggestions.length > 0) {
       fetchAndSetRoadmap(activeCareerTab);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCareerTab, baseRoadmapInput]);
+  }, [activeCareerTab, baseRoadmapInputData, allCareerSuggestions]);
 
 
   const fetchAndSetRoadmap = async (careerName: string) => {
-    if (!baseRoadmapInput) {
+    if (!baseRoadmapInputData) {
       toast({ title: 'Error', description: 'Cannot generate report, essential data missing.', variant: 'destructive' });
       return;
+    }
+
+    const careerDetails = allCareerSuggestions.find(s => s.name === careerName);
+    if (!careerDetails) {
+        toast({ title: 'Error', description: `Details for career "${careerName}" not found.`, variant: 'destructive' });
+        setCurrentRoadmapMarkdown(`## Report Generation Failed\n\nCould not find details for the career: ${careerName}.`);
+        return;
     }
 
     // Check cache first
@@ -158,23 +184,21 @@ export default function RoadmapPage() {
       }
     }
 
-
     setIsGeneratingReport(true);
     setCurrentRoadmapMarkdown(null); // Clear previous report
     toast({ title: `Generating Report for ${careerName}`, description: 'This may take a moment...' });
 
     const roadmapInput: GenerateRoadmapInput = {
-      ...baseRoadmapInput,
+      ...baseRoadmapInputData,
       careerSuggestion: careerName,
-      // Astrological and Numerological reviews are now generated fresh by the detailed-roadmap flow
-      // So, no need to pass pre-generated ones.
+      matchScore: careerDetails.matchScore,
+      personalityProfile: careerDetails.personalityProfile,
     };
 
     try {
       const roadmapOutput: GenerateRoadmapOutput = await generateRoadmap(roadmapInput);
       setCurrentRoadmapMarkdown(roadmapOutput.roadmapMarkdown);
       
-      // Cache the new report
       const newCachedReport: StoredRoadmapData = { markdown: roadmapOutput.roadmapMarkdown, generatedAt: Date.now() };
       localStorage.setItem(cachedReportKey, JSON.stringify(newCachedReport));
 
@@ -182,7 +206,7 @@ export default function RoadmapPage() {
     } catch (error) {
       console.error(`Error generating roadmap for ${careerName}:`, error);
       toast({ title: `Error Generating Report for ${careerName}`, description: 'Could not generate roadmap. Please try again or contact support.', variant: 'destructive', duration: 7000 });
-      setCurrentRoadmapMarkdown('## Report Generation Failed\n\nWe encountered an error while generating the report for this career. Please try again later.');
+      setCurrentRoadmapMarkdown(`## Report Generation Failed\n\nWe encountered an error while generating the report for ${careerName}. Please try again later.`);
     } finally {
       setIsGeneratingReport(false);
     }
@@ -223,12 +247,12 @@ export default function RoadmapPage() {
       });
   };
 
-  if (pageLoading || !baseRoadmapInput) {
+  if (pageLoading || !baseRoadmapInputData) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
   if (selectedCareers.length === 0) {
-    return ( // Fallback if somehow selections are lost but payment was made
+    return ( 
       <div className="text-center py-10">
         <h1 className="text-2xl font-semibold mb-4">No Careers to Display</h1>
         <p className="text-muted-foreground mb-6">It seems your selected careers are missing.</p>
@@ -310,3 +334,4 @@ export default function RoadmapPage() {
     </div>
   );
 }
+

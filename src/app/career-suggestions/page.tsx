@@ -52,6 +52,9 @@ export default function CareerSuggestionsPage() {
         
         if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length > 0) {
           setAllSuggestions(suggestionsOutput.careers);
+          // Save all suggestions to localStorage for later use in detailed report
+          localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsOutput.careers));
+
           // Load previously selected careers if any (e.g., if user navigated back)
           const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
           if (storedSelections) {
@@ -60,11 +63,13 @@ export default function CareerSuggestionsPage() {
         } else {
           toast({ title: 'Could not generate suggestions', description: 'Please try the previous steps again.', variant: 'destructive'});
           setAllSuggestions([]);
+          localStorage.removeItem('margdarshak_all_career_suggestions');
         }
       } catch (error) {
         console.error('Error fetching career suggestions:', error);
         toast({ title: 'Error Generating Suggestions', description: 'Could not generate career suggestions. Please try again.', variant: 'destructive' });
         setAllSuggestions([]);
+        localStorage.removeItem('margdarshak_all_career_suggestions');
       } finally {
         setIsLoading(false);
       }
