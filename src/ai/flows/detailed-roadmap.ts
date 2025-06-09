@@ -3,8 +3,8 @@
 
 /**
  * @fileOverview A flow that provides a detailed career report in Markdown format.
- * Includes personal details, astrological/numerological reviews, a 5-year roadmap (localized salary, courses, activities),
- * education guidance, study goals, skills focus, and a 20-year outlook based on future trends.
+ * Includes personal details, astrological/numerological reviews, a 10-year age-specific roadmap (localized salary, courses, activities),
+ * education guidance, study goals, skills focus, key interests and a 20-year outlook based on future trends.
  *
  * - generateRoadmap - A function that generates a detailed career roadmap.
  * - GenerateRoadmapInput - The input type for the generateRoadmap function.
@@ -14,28 +14,51 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+// Define PersonalizedAnswersSchema here to be used in GenerateRoadmapInputSchema
+const PersonalizedAnswersSchema = z.object({
+  q1: z.string().describe("Answer to: Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?"),
+  q2: z.string().describe("Answer to: What are some of your hobbies or activities you genuinely enjoy outside of work or study? What do you like about them?"),
+  q3: z.string().describe("Answer to: Imagine yourself 5 years from now. What achievements, big or small, would make you feel proud and fulfilled in your professional life?"),
+  q4: z.string().describe("Answer to: Are there any specific industries or types of companies that particularly interest you or you feel drawn to? Why?"),
+  q5: z.string().describe("Answer to: What are your primary motivations when thinking about a career? (e.g., financial security, making an impact, continuous learning, work-life balance, creativity, leadership, etc.). Please elaborate."),
+});
+
 const GenerateRoadmapInputSchema = z.object({
   careerSuggestion: z.string().describe('The suggested career for which to generate the roadmap.'),
   userTraits: z.string().describe('The user traits to consider when generating the roadmap.'),
   country: z.string().describe('The country of the user, to help localize salary expectations and career prospects.'),
   userName: z.string().describe("The user's full name."),
   dateOfBirth: z.string().describe("User's date of birth in YYYY-MM-DD format."),
-  astrologicalReview: z.string().describe("The astrological review previously generated for the user and selected career. This should be included as-is in the report."),
-  numerologicalReview: z.string().describe("The numerological review previously generated for the user and selected career. This should be included as-is in the report."),
+  timeOfBirth: z.string().describe("User's time of birth, including AM/PM if applicable (e.g., \"10:30 AM\" or \"14:45\")."),
+  placeOfBirth: z.string().describe("User's city and country of birth."),
+  age: z.number().describe("User's current age."),
+  personalizedAnswers: PersonalizedAnswersSchema.describe("User's answers to personalized questions."),
+  astrologicalReview: z.string().optional().describe("A previously generated general astrological review. The new detailed astrological prediction will be primary."),
+  numerologicalReview: z.string().optional().describe("A previously generated general numerological review. The new detailed numerological prediction will be primary."),
 });
 export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
 
 const GenerateRoadmapOutputSchema = z.object({
-  roadmapMarkdown: z.string().describe(`A comprehensive career report in Markdown format. It should include the following sections in order:
-1.  "Personal Details" (Name, DOB, Country).
-2.  "Astrological Review".
-3.  "Numerological Review".
-4.  "5-Year Career Roadmap": For each year, include a title, a descriptive paragraph, expected salary (localized for the user's country, including currency symbol/name like "₹7,00,000 - ₹8,50,000 INR" or "$70,000 - $85,000 USD"), a list of suggested courses, and a list of key activities.
-5.  "Education Guidance": Advice on relevant degrees, certifications, or academic paths.
-6.  "Study Goals": Specific learning objectives and milestones.
-7.  "Skills to Focus On": Key technical and soft skills.
-8.  "20-Year Outlook & Future Trends": Perspective on career evolution over two decades, considering future trends and long-term growth.
-Use Markdown headings for all sections and sub-sections.`),
+  roadmapMarkdown: z.string().describe(`A comprehensive career report in Markdown format. It must follow this structure EXACTLY:
+1.  "Career Option: [Career Name]"
+2.  "Career Fit Assessment: [Qualitative assessment of fit]"
+3.  "Name: [User Name]"
+4.  "DOB: [User DOB]"
+5.  "Age: [User Age]"
+6.  "Country: [User Country]"
+7.  "Astrological Insights & Zodiac Chart Overview:"
+    -   Textual overview/description of key zodiac placements based on birth details.
+    -   Detailed Zodiac based prediction (approx. 500 words and 10 key bullet points).
+8.  "Numerological Insights:"
+    -   Detailed Numerology based prediction (approx. 200 words and 10 key bullet points).
+9.  "Career Prospect & Why It Is a Good Fit for You?"
+10. "10-Year Career Roadmap (Age-Specific):" (For each of the 10 years, considering current age: title, description, localized expected salary with currency, suggested courses, key activities).
+11. "Suggested Education, Courses & Programmes:"
+12. "Key Interests (Top 5):" (Derived from user traits and personalized answers, presented as a bulleted list).
+13. "Expected Salary (Localized): Year 1, Year 5, Year 10" (Specific salary expectations for these milestones, localized with currency name/symbol).
+14. "20-Year Outlook & Future Trends for [Career Name]"
+15. Static promotional text: "Need a professional career guide? We will offer a professional career guide who will keep you on track to achieve your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-"
+Use Markdown headings (e.g. #, ##, ###) for all main sections and sub-sections as appropriate. Format lists clearly.`),
 });
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
 
@@ -44,69 +67,104 @@ export async function generateRoadmap(input: GenerateRoadmapInput): Promise<Gene
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateComprehensiveRoadmapPrompt',
+  name: 'generateFinalComprehensiveReportPrompt',
   input: {schema: GenerateRoadmapInputSchema},
   output: {schema: GenerateRoadmapOutputSchema},
-  prompt: `You are an expert career counselor preparing a comprehensive career report. The report must be in Markdown format and include the following sections in this exact order:
+  prompt: `You are an expert career counselor preparing a comprehensive, personalized career report. The report MUST be in Markdown format and STRICTLY follow the structure and content guidelines below.
 
-1.  **# Personal Details**
-    -   **Name:** {{{userName}}}
-    -   **Date of Birth:** {{{dateOfBirth}}}
-    -   **Country for Career Focus:** {{{country}}}
+Report for: {{{userName}}}
+Chosen Career: {{{careerSuggestion}}}
+User's Current Age: {{{age}}}
+User's Country (for localization): {{{country}}}
+User's Date of Birth: {{{dateOfBirth}}}
+User's Time of Birth: {{{timeOfBirth}}}
+User's Place of Birth: {{{placeOfBirth}}}
+User Traits Summary: {{{userTraits}}}
+User's Personalized Answers:
+Ideal Workday: {{{personalizedAnswers.q1}}}
+Hobbies & Interests: {{{personalizedAnswers.q2}}}
+5-Year Vision: {{{personalizedAnswers.q3}}}
+Industry Interest: {{{personalizedAnswers.q4}}}
+Career Motivations: {{{personalizedAnswers.q5}}}
 
-2.  **# Astrological Review**
-    {{{astrologicalReview}}}
+--- START OF REPORT MARKDOWN ---
 
-3.  **# Numerological Review**
-    {{{numerologicalReview}}}
+# Career Option: {{{careerSuggestion}}}
 
-4.  **# 5-Year Career Roadmap for {{{careerSuggestion}}}**
-    Generate a detailed 5-year career roadmap for the career: **{{{careerSuggestion}}}**, considering the user traits: {{{userTraits}}} and their country: {{{country}}}.
-    The roadmap should be well-structured and easy to read.
-    For each of the 5 years, include the following sections using Markdown:
-    -   A main heading for the year (e.g., "## Year 1: Foundation Building").
-    -   **Title:** A concise title for the year's focus.
-    -   **Description:** A paragraph describing the objectives and focus for that year.
-    -   **Expected Salary:** Provide an estimated salary range, localized for {{{country}}}. Crucially, **include the local currency symbol or name** (e.g., "₹7,00,000 - ₹8,50,000 INR", "$70,000 - $85,000 USD", "€60,000 - €75,000 EUR").
-    -   **Suggested Courses:** A bulleted list of relevant courses.
-    -   **Key Activities:** A bulleted list of activities to undertake (e.g., networking, projects).
+## Career Fit Assessment
+Provide a qualitative assessment (2-3 sentences) of why this career is a strong, moderate, or developing fit for {{{userName}}}, based on their traits and answers.
 
-    User Traits to consider for the roadmap: {{{userTraits}}}
+## Personal Details
+- **Name:** {{{userName}}}
+- **DOB:** {{{dateOfBirth}}}
+- **Age:** {{{age}}}
+- **Country:** {{{country}}}
 
-5.  **# Education Guidance**
-    Provide guidance on relevant degrees (e.g., Bachelor's, Master's, PhD), important certifications, and other academic paths beneficial for pursuing a career in {{{careerSuggestion}}}. Tailor this advice considering general best practices for this field.
+## Astrological Insights & Zodiac Chart Overview
+Provide a textual overview that describes key zodiac placements or characteristics based on the user's birth details (Date of Birth: {{{dateOfBirth}}}, Time of Birth: {{{timeOfBirth}}}, Place of Birth: {{{placeOfBirth}}}).
+Follow this with a detailed Zodiac-based prediction for the career **{{{careerSuggestion}}}**. This prediction should be approximately 500 words and conclude with **exactly 10 key bullet points summarizing the astrological outlook** for this career.
+Frame this positively and as potential influences.
 
-6.  **# Study Goals**
-    Outline specific, actionable study goals for someone starting out in {{{careerSuggestion}}}. These could include mastering foundational concepts, learning specific tools or technologies, or achieving certain academic milestones. Phrase these as bullet points.
+## Numerological Insights
+Based on the Date of Birth: {{{dateOfBirth}}}, provide a detailed Numerology-based prediction for the career **{{{careerSuggestion}}}**. This prediction should be approximately 200 words and conclude with **exactly 10 key bullet points summarizing the numerological outlook** for this career.
+Frame this positively and as potential influences.
 
-7.  **# Skills to Focus On**
-    Detail the key skills (technical, soft, and domain-specific if applicable) that are crucial for success and growth in {{{careerSuggestion}}}. Explain why each skill is important. Present as bullet points or short paragraphs for each skill cluster.
+## Career Prospect & Why It Is a Good Fit for You?
+Elaborate on the prospects of the career **{{{careerSuggestion}}}** generally, and then specifically explain why it is a good fit for {{{userName}}}, drawing connections to their stated traits: ({{{userTraits}}}) and personalized answers.
 
-8.  **# 20-Year Outlook & Future Trends for {{{careerSuggestion}}}**
-    Provide a forward-looking perspective on how the field of {{{careerSuggestion}}} might evolve over the next 20 years. Discuss potential technological advancements, shifts in demand, emerging specializations, and key future trends. What skills will likely remain valuable or become even more critical? How can one prepare for long-term success?
+## 10-Year Career Roadmap (Age-Specific for {{{careerSuggestion}}})
+Generate a detailed 10-year career roadmap for {{{userName}}}, starting from their current age of {{{age}}}.
+For each of the 10 years:
+-   Use a main heading (e.g., "### Year 1 (Age {{{age}}}): Foundation Building"). Increment age for subsequent years.
+-   **Title:** A concise title for the year's focus.
+-   **Description:** A paragraph describing objectives and focus.
+-   **Expected Salary:** Estimated salary range, **localized for {{{country}}} with currency symbol/name** (e.g., "₹X,XX,XXX - ₹Y,YY,YYY INR" or "$XX,000 - $YY,000 USD").
+-   **Suggested Courses:** Bulleted list of relevant courses.
+-   **Key Activities:** Bulleted list of activities (networking, projects).
 
-Ensure the entire output is a single Markdown string. Format lists clearly.
-Example for courses:
-- Course Name 1
-- Course Name 2
+## Suggested Education, Courses & Programmes
+Provide specific guidance on relevant degrees (Bachelor's, Master's, PhD), important certifications, online courses, and other academic/vocational programmes beneficial for pursuing a career in **{{{careerSuggestion}}}**.
 
-Example for activities:
-- Activity 1
-- Activity 2
+## Key Interests (Top 5)
+Based on the user's traits ({{{userTraits}}}) and personalized answers (Hobbies: {{{personalizedAnswers.q2}}}, Motivations: {{{personalizedAnswers.q5}}}, Ideal Workday: {{{personalizedAnswers.q1}}}), identify and list their Top 5 Key Interests relevant to career exploration. Present as a bulleted list.
+- Interest 1
+- Interest 2
+- ...
+
+## Expected Salary (Localized for {{{country}}})
+Provide specific, localized salary expectations for {{{careerSuggestion}}} in {{{country}}} at these milestones:
+-   **Year 1 (Starting):** [Salary Range with Currency]
+-   **Year 5:** [Salary Range with Currency]
+-   **Year 10:** [Salary Range with Currency]
+
+## 20-Year Outlook & Future Trends for {{{careerSuggestion}}}
+Provide a forward-looking perspective on how the field of **{{{careerSuggestion}}}** might evolve over the next 20 years. Discuss potential technological advancements, shifts in demand, emerging specializations, and key future trends. What skills will likely remain valuable or become even more critical? How can one prepare for long-term success in this career, especially considering future technological integration?
+
+---
+Need a professional career guide? We will offer a professional career guide who will keep you on track to achive your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-
+--- END OF REPORT MARKDOWN ---
 `,
+  config: {
+    safetySettings: [
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, // Astrology/numerology
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+    ],
+  },
 });
 
 const generateRoadmapFlow = ai.defineFlow(
   {
-    name: 'generateComprehensiveRoadmapFlow',
+    name: 'generateFinalComprehensiveReportFlow',
     inputSchema: GenerateRoadmapInputSchema,
     outputSchema: GenerateRoadmapOutputSchema,
   },
   async input => {
     const {output} = await prompt(input);
     if (!output) {
-      throw new Error("The AI model did not return a valid roadmap output.");
+      throw new Error("The AI model did not return a valid roadmap output for the final report.");
     }
     return output;
   }
 );
+
+```
