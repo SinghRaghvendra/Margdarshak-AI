@@ -5,14 +5,16 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Loader2, ListChecks } from 'lucide-react'; 
+import { CreditCard, Loader2, ListChecks, ArrowRight } from 'lucide-react'; 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
+
+const RAZORPAY_PAYMENT_LINK = 'https://rzp.io/rzp/rjxEWZu1';
 
 export default function PaymentPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentInitiated, setPaymentInitiated] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [selectedCareersList, setSelectedCareersList] = useState<string[]>([]);
   const [userName, setUserName] = useState<string>('Guest');
@@ -77,30 +79,17 @@ export default function PaymentPage() {
     }
   }, [router, toast]);
 
-  const handlePayment = async () => {
-    setIsProcessingPayment(true);
-    toast({ title: 'Payment Processing', description: 'Simulating payment...' });
-
-    // Simulate payment delay
-    setTimeout(async () => {
-      try {
-        // On successful payment, we don't generate the roadmap here anymore.
-        // We just navigate to the roadmap page where the user can generate reports one by one.
-        localStorage.setItem('margdarshak_payment_successful', 'true'); // Flag payment success
-        
-        // Clear any single roadmap markdown from previous flows if it exists
-        localStorage.removeItem('margdarshak_roadmap_markdown');
-
-        toast({ title: 'Payment Successful!', description: 'Proceeding to view your selected career roadmaps...' });
-        router.push('/roadmap');
-      } catch (error) {
-        console.error('Error during payment/redirect:', error);
-        toast({ title: 'Error after payment', description: 'Could not proceed to roadmaps. Please try again or contact support.', variant: 'destructive', duration: 7000 });
-        localStorage.removeItem('margdarshak_payment_successful');
-      } finally {
-        setIsProcessingPayment(false);
-      }
-    }, 2000); 
+  const handlePayment = () => {
+    toast({ title: 'Redirecting to Payment', description: 'Opening Razorpay in a new tab...' });
+    window.open(RAZORPAY_PAYMENT_LINK, '_blank');
+    setPaymentInitiated(true);
+  };
+  
+  const handleProceedAfterPayment = () => {
+    localStorage.setItem('margdarshak_payment_successful', 'true');
+    localStorage.removeItem('margdarshak_roadmap_markdown');
+    toast({ title: 'Payment Confirmed!', description: 'Proceeding to view your selected career roadmaps...' });
+    router.push('/roadmap');
   };
 
   if (pageLoading) {
@@ -141,17 +130,24 @@ export default function PaymentPage() {
           <p className="text-sm text-muted-foreground mb-6">
             This one-time payment allows you to generate and download comprehensive reports for all three selected careers.
           </p>
-          {isProcessingPayment ? (
-            <div className="flex flex-col items-center">
-                <LoadingSpinner />
-                <p className="mt-2 text-muted-foreground">Processing payment...</p>
-            </div>
-          ) : (
-            <Button onClick={handlePayment} className="w-full text-lg py-6">
+          
+          {!paymentInitiated ? (
+             <Button onClick={handlePayment} className="w-full text-lg py-6">
               <CreditCard className="mr-2 h-5 w-5" />
               Pay ₹99 & Access Reports
             </Button>
+          ) : (
+            <div className="mt-8 p-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-md text-center">
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Payment Initiated!</h3>
+                <p className="text-sm text-green-700 dark:text-green-300 mt-1 mb-4">
+                    Please complete your payment in the new tab. Once finished, click the button below to continue.
+                </p>
+                 <Button onClick={handleProceedAfterPayment} className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white">
+                    I've Paid, Continue to Roadmaps <ArrowRight className="ml-2 h-5 w-5" />
+                 </Button>
+            </div>
           )}
+
         </CardContent>
       </Card>
     </div>
