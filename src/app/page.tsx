@@ -34,10 +34,10 @@ export default function HomePage() {
         <div className="absolute inset-0">
           <Image
             src="https://placehold.co/1920x800.png"
-            alt="Generic hero image representing opportunity and discovery"
+            alt="Generic hero image representing career journey"
             fill
             className="opacity-20 object-cover"
-            data-ai-hint="opportunity discovery"
+            data-ai-hint="career journey"
             priority
           />
            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
@@ -47,7 +47,7 @@ export default function HomePage() {
             Unlock Your Future: <br className="hidden sm:block" />Find Your Dream Career Today
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Margdarshak AI combines psychometrics, personalized insights, and AI to guide you on your unique career path towards fulfillment and success.
+            Our service combines psychometrics, personalized insights, and AI to guide you on your unique career path towards fulfillment and success.
           </p>
           <Link href="/signup" passHref>
             <Button size="lg" className="text-lg py-7 px-10 shadow-lg">
@@ -61,7 +61,7 @@ export default function HomePage() {
       <section id="features" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Choose Margdarshak AI?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Choose AI Councel?</h2>
             <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
               We provide a holistic approach to career guidance, leveraging technology and personalized data.
             </p>

@@ -240,7 +240,7 @@ export default function RoadmapPage() {
     const element = roadmapContentRef.current;
     const safeUserName = userName.replace(/\s+/g, '_') || 'User';
     const safeCareerName = activeCareerTab.toLowerCase().replace(/\s+/g, '_');
-    const filename = `MargdarshakAI_Report_${safeUserName}_${safeCareerName}_${preferredLanguage}.pdf`;
+    const filename = `AI_Councel_Report_${safeUserName}_${safeCareerName}_${preferredLanguage}.pdf`;
 
     const opt = {
       margin:       [0.5, 0.5, 0.5, 0.5],

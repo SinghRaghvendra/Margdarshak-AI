@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 
 export const metadata: Metadata = {
-  title: 'Margdarshak AI',
+  title: 'AI Councel',
   description: 'AI-Powered Career Guidance',
 };
 
@@ -25,7 +25,7 @@ export default function RootLayout({
         </main>
         <footer className="py-4 text-center">
           <p className="text-xs text-muted-foreground">
-            Powered by AI COUNCEL LAB
+            Powered by Margdarshak AI
           </p>
         </footer>
         <Toaster />
