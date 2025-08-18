@@ -13,7 +13,7 @@ export default function WelcomeGuestPage() {
       <Card className="w-full max-w-lg mx-auto shadow-xl text-center">
         <CardHeader>
           <Gift className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="text-3xl font-bold">Welcome to AI Councel!</CardTitle>
+          <CardTitle className="text-3xl font-bold">Welcome to Margdarshak AI!</CardTitle>
           <CardDescription className="text-lg text-muted-foreground mt-2">
             We're excited to help you on your personalized career discovery journey.
             Click the button below to begin.

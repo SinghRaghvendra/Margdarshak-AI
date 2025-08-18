@@ -44,7 +44,7 @@ export default function HomePage() {
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
-            Unlock Your Future: <br className="hidden sm:block" />Find Your Dream Career Today
+            Unlock Your Future with Margdarshak AI
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
             Our service combines psychometrics, personalized insights, and AI to guide you on your unique career path towards fulfillment and success.
@@ -61,7 +61,7 @@ export default function HomePage() {
       <section id="features" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Choose AI Councel?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Choose Margdarshak AI?</h2>
             <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
               We provide a holistic approach to career guidance, leveraging technology and personalized data.
             </p>

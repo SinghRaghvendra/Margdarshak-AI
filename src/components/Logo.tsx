@@ -6,7 +6,7 @@ export default function Logo() {
   return (
     <Link href="/" className="flex items-center space-x-2 text-2xl font-bold text-primary hover:text-primary/90 transition-colors">
       <Compass className="h-8 w-8" />
-      <span>AI Councel</span>
+      <span>Margdarshak AI</span>
     </Link>
   );
 }

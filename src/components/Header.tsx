@@ -12,13 +12,14 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn } from 'lucide-react'; // Added Menu and other icons
+import { Menu, Home, Info, DollarSign, Mail, LogIn, FileText } from 'lucide-react';
 
 export default function Header() {
   const navItems = [
-    { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" /> },
-    { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" /> },
-    { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" /> },
+    { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" />, external: false },
+    { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" />, external: false },
+    { label: 'Free Resume Tailor', href: 'https://resume-tailor.web.app/', icon: <FileText className="mr-2 h-5 w-5" />, external: true },
+    { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" />, external: false },
   ];
 
   return (
@@ -27,10 +28,12 @@ export default function Header() {
         <Logo />
         <nav className="hidden md:flex items-center space-x-1">
           {navItems.map((item) => (
-            <Link key={item.label} href={item.href} passHref>
-              <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
-                {item.label}
-              </Button>
+            <Link key={item.label} href={item.href} passHref legacyBehavior>
+              <a target={item.external ? '_blank' : '_self'} rel={item.external ? 'noopener noreferrer' : ''}>
+                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
+                  {item.label}
+                </Button>
+              </a>
             </Link>
           ))}
           <Link href="/signup" passHref>
@@ -63,10 +66,12 @@ export default function Header() {
                 </SheetClose>
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.label}>
-                    <Link href={item.href} passHref>
-                      <Button variant="ghost" className="w-full justify-start text-base py-3">
-                        {item.icon} {item.label}
-                      </Button>
+                    <Link href={item.href} passHref legacyBehavior>
+                       <a target={item.external ? '_blank' : '_self'} rel={item.external ? 'noopener noreferrer' : ''} className="block">
+                          <Button variant="ghost" className="w-full justify-start text-base py-3">
+                            {item.icon} {item.label}
+                          </Button>
+                       </a>
                     </Link>
                   </SheetClose>
                 ))}

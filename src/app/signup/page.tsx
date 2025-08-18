@@ -122,7 +122,7 @@ export default function SignupPage() {
         <CardHeader className="space-y-1 text-center">
           <UserPlus className="h-12 w-12 text-primary mx-auto mb-2" />
           <CardTitle className="text-3xl font-bold">
-            Join AI Councel
+            Join Margdarshak AI
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             Create an account or start as a guest to begin your career discovery.
