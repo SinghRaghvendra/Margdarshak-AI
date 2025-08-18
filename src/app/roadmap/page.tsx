@@ -4,7 +4,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-import html2pdf from 'html2pdf.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -229,13 +228,15 @@ export default function RoadmapPage() {
     }
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     if (!roadmapContentRef.current || !currentRoadmapMarkdown || !activeCareerTab) {
       toast({ title: 'Error', description: 'Roadmap content not available for download.', variant: 'destructive' });
       return;
     }
     setIsGeneratingPdf(true);
     toast({ title: 'Generating PDF', description: `Your ${preferredLanguage} roadmap PDF is being prepared...` });
+
+    const html2pdf = (await import('html2pdf.js')).default;
 
     const element = roadmapContentRef.current;
     const safeUserName = userName.replace(/\s+/g, '_') || 'User';
