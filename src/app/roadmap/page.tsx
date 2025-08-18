@@ -229,6 +229,10 @@ export default function RoadmapPage() {
   };
 
   const handleDownloadPdf = async () => {
+    if (typeof window === 'undefined') {
+        // This should not happen because of the "use client" directive, but as a safeguard
+        return;
+    }
     if (!roadmapContentRef.current || !currentRoadmapMarkdown || !activeCareerTab) {
       toast({ title: 'Error', description: 'Roadmap content not available for download.', variant: 'destructive' });
       return;
@@ -352,5 +356,3 @@ export default function RoadmapPage() {
     </div>
   );
 }
-
-    
