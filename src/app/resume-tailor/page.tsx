@@ -18,6 +18,7 @@ import { tailorResume } from '@/ai/flows/resume-tailor-flow';
 import { ResumeTailorInputSchema, type ResumeTailorOutput } from '@/ai/schemas/resume-tailor-schema';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { FileText, Briefcase, Wand2, ArrowRight, TrendingUp, CheckCircle, Upload } from 'lucide-react';
+import * as pdfjs from 'pdfjs-dist';
 
 type ResumeTailorFormValues = z.infer<typeof ResumeTailorInputSchema>;
 
@@ -48,15 +49,14 @@ export default function ResumeTailorPage() {
     toast({ title: 'Parsing PDF...', description: 'Please wait while we extract text from your resume.' });
 
     try {
-      const pdfjsLib = await import('pdfjs-dist/build/pdf');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
       const reader = new FileReader();
       reader.onload = async (e) => {
         if (!e.target?.result) return;
         const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
         try {
-          const pdf = await pdfjsLib.getDocument(typedArray).promise;
+          const pdf = await pdfjs.getDocument(typedArray).promise;
           let fullText = '';
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
@@ -73,7 +73,7 @@ export default function ResumeTailorPage() {
       };
       reader.readAsArrayBuffer(file);
     } catch (importError) {
-       console.error('Error importing pdfjs-dist:', importError);
+       console.error('Error with pdfjs-dist:', importError);
        toast({ title: 'Error', description: 'Could not load PDF parser. Please paste the text manually.', variant: 'destructive' });
     }
   };
@@ -218,10 +218,10 @@ export default function ResumeTailorPage() {
                 <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
                 <TabsTrigger value="insights">ATS Insights</TabsTrigger>
               </TabsList>
-              <TabsContent value="resume" className="mt-4 prose max-w-none prose-sm sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert">
+              <TabsContent value="resume" className="mt-4 prose max-w-none prose-sm sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert bg-white p-4 rounded-md">
                 <ReactMarkdown>{aiResult.tailoredResume}</ReactMarkdown>
               </TabsContent>
-              <TabsContent value="cover-letter" className="mt-4 prose max-w-none prose-sm sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert">
+              <TabsContent value="cover-letter" className="mt-4 prose max-w-none prose-sm sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert bg-white p-4 rounded-md">
                 <ReactMarkdown>{aiResult.coverLetter}</ReactMarkdown>
               </TabsContent>
               <TabsContent value="insights" className="mt-4">
@@ -268,3 +268,5 @@ export default function ResumeTailorPage() {
     </div>
   );
 }
+
+    
