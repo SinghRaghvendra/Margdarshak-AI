@@ -54,7 +54,7 @@ export default function PromotionalBanner() {
         </p>
         <div className="flex items-center gap-3 bg-background/20 text-accent-foreground px-3 py-1 rounded-full">
            <p className="font-bold">
-             Claim your report now: <span className="line-through text-red-500/80">₹499</span> <span className="text-lg text-white">₹99 only!</span>
+             Claim your report now: <span className="line-through text-red-500/80">₹499</span> <span className="text-lg text-green-500">₹99 only!</span>
            </p>
            {timeLeft && (
             <div className="flex items-center gap-1 font-semibold">
