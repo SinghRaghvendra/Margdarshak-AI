@@ -18,10 +18,10 @@ export default function PromotionalBanner() {
       <div className="container mx-auto flex items-center justify-center gap-2">
         <Info className="h-5 w-5 hidden sm:inline-block" />
         <p>
-          AICouncel has created the Margdarshak app to help people find their right career with the help of AI. 
+          Don’t leave your career to chance! Margdarshak by AI Councel gives you AI-powered guidance.
           <Link href="/signup" passHref>
             <Button variant="link" className="p-0 h-auto ml-1 text-accent-foreground font-bold hover:underline">
-               For just ₹99, get your own report now!
+               Claim your career report now for only ₹99!
             </Button>
           </Link>
         </p>
