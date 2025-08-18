@@ -19,6 +19,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UserPlus, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { auth, db } from '@/lib/firebase/config';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 const languages = [
   { value: 'English', label: 'English' },
@@ -36,6 +39,7 @@ const languages = [
 const signupFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
   contact: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: 'Please enter a valid contact number (e.g., +1234567890).' }),
   country: z.string().min(2, { message: 'Country must be at least 2 characters.' }),
   language: z.string({ required_error: 'Please select a language.' }),
@@ -52,68 +56,66 @@ export default function SignupPage() {
     defaultValues: {
       name: '',
       email: '',
+      password: '',
       contact: '',
       country: '',
-      language: 'English', // Default to English
+      language: 'English',
     },
   });
 
-  const clearLocalStorageForNewJourney = () => {
-    localStorage.removeItem('margdarshak_birth_details');
-    localStorage.removeItem('margdarshak_user_traits');
-    localStorage.removeItem('margdarshak_personalized_answers');
-    localStorage.removeItem('margdarshak_selected_careers_list'); 
-    localStorage.removeItem('margdarshak_all_career_suggestions');
-    localStorage.removeItem('margdarshak_payment_successful');
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('margdarshak_roadmap_')) {
-        localStorage.removeItem(key);
-      }
-    });
-  }
-
-  function onSubmit(data: SignupFormValues) {
+  async function onSubmit(data: SignupFormValues) {
     try {
-      localStorage.setItem('margdarshak_user_info', JSON.stringify(data));
+      const { name, email, password, contact, country, language } = data;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save additional user info to Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        name,
+        email,
+        contact,
+        country,
+        language,
+        createdAt: new Date(),
+      });
+
+      // Clear any previous anonymous journey data
       clearLocalStorageForNewJourney();
+
       toast({
         title: 'Signup Successful!',
         description: 'Redirecting to gather birth details...',
       });
       router.push('/birth-details');
-    } catch (error) {
+    } catch (error: any) {
+      let errorMessage = 'Could not create your account. Please try again.';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already in use. Please log in or use a different email.';
+      }
       toast({
         title: 'Signup Failed',
-        description: 'Could not save your information. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
       console.error('Signup error:', error);
     }
   }
+  
+  const clearLocalStorageForNewJourney = () => {
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('margdarshak_')) {
+            localStorage.removeItem(key);
+        }
+    });
+  }
 
   const handleSkipSignup = () => {
-    try {
-       localStorage.setItem('margdarshak_user_info', JSON.stringify({ 
-         name: 'Guest', 
-         email: '', 
-         contact: '', 
-         country: 'GuestCountry',
-         language: 'English' // Default language for guest
-        }));
-       clearLocalStorageForNewJourney();
-       toast({
-        title: 'Skipping Signup',
-        description: 'Proceeding as Guest to gather birth details.',
-      });
-      router.push('/birth-details');
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Could not proceed. Please try again.',
-        variant: 'destructive',
-      });
-      console.error('Skip signup error:', error);
-    }
+    clearLocalStorageForNewJourney();
+    toast({
+        title: 'Proceeding as Guest',
+        description: "Your progress won't be saved. Create an account to save your journey.",
+    });
+    router.push('/birth-details');
   };
 
   return (
@@ -125,7 +127,7 @@ export default function SignupPage() {
             Join Margdarshak AI
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Create an account or start as a guest to begin your career discovery.
+            Create an account to save your progress or continue as a guest.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -152,6 +154,19 @@ export default function SignupPage() {
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder="your.email@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

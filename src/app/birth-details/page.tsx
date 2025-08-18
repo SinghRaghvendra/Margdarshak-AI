@@ -14,6 +14,9 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Cake, UserCircle, ArrowRight, MapPinIcon, ClockIcon } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { auth, db } from '@/lib/firebase/config';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 const birthDetailsFormSchema = z.object({
   birthDay: z.string()
@@ -38,7 +41,6 @@ const birthDetailsFormSchema = z.object({
     const day = parseInt(data.birthDay);
     const month = parseInt(data.birthMonth);
     const year = parseInt(data.birthYear);
-    // If any part is not a number yet, or out of typical single field range, let individual validators handle it.
     if (isNaN(day) || isNaN(month) || isNaN(year) || month < 1 || month > 12 || day < 1 || day > 31 || year < 1900) {
       return true; 
     }
@@ -46,7 +48,7 @@ const birthDetailsFormSchema = z.object({
       const daysInMonth = new Date(year, month, 0).getDate();
       return day >= 1 && day <= daysInMonth;
     } catch (e) {
-      return false; // Invalid date components
+      return false;
     }
 }, {
     message: "The day is not valid for the selected month and year.",
@@ -55,7 +57,7 @@ const birthDetailsFormSchema = z.object({
 
 type BirthDetailsFormValues = z.infer<typeof birthDetailsFormSchema>;
 
-interface StoredBirthDetailsForInsights {
+interface StoredBirthDetails {
   dateOfBirth: string; // YYYY-MM-DD
   placeOfBirth: string;
   timeOfBirth: string; // HH:MM (24-hour)
@@ -65,7 +67,8 @@ export default function BirthDetailsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [pageLoading, setPageLoading] = useState(true);
-  const [userName, setUserName] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userName, setUserName] = useState<string>('Guest');
 
   const form = useForm<BirthDetailsFormValues>({
     resolver: zodResolver(birthDetailsFormSchema),
@@ -77,42 +80,53 @@ export default function BirthDetailsPage() {
       birthHour: '',
       birthMinute: '',
     },
-    mode: 'onBlur', // Validate on blur for better UX with manual inputs
+    mode: 'onBlur',
   });
 
- useEffect(() => {
-    try {
-      const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-      if (storedUserInfo) {
-        const userInfo = JSON.parse(storedUserInfo);
-        setUserName(userInfo.name || 'Guest');
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserName(userDoc.data().name || 'User');
+          const birthDetails = userDoc.data().birthDetails;
+          if (birthDetails) {
+            const [year, month, day] = birthDetails.dateOfBirth.split('-').map((s:string) => s.padStart(2, '0'));
+            const [hour, minute] = birthDetails.timeOfBirth.split(':').map((s:string) => s.padStart(2, '0'));
+            form.reset({
+              birthDay: day,
+              birthMonth: month,
+              birthYear: year,
+              placeOfBirth: birthDetails.placeOfBirth,
+              birthHour: hour,
+              birthMinute: minute,
+            });
+          }
+        }
       } else {
-        toast({ title: 'User info not found', description: 'Redirecting to signup.', variant: 'destructive' });
-        router.replace('/signup');
-        return;
+        // Handle guest user
+        setUserName('Guest');
+        const storedDetails = localStorage.getItem('margdarshak_birth_details');
+        if (storedDetails) {
+          const parsedDetails: StoredBirthDetails = JSON.parse(storedDetails);
+          const [year, month, day] = parsedDetails.dateOfBirth.split('-').map(s => s.padStart(2, '0'));
+          const [hour, minute] = parsedDetails.timeOfBirth.split(':').map(s => s.padStart(2, '0'));
+          form.reset({
+            birthDay: day,
+            birthMonth: month,
+            birthYear: year,
+            placeOfBirth: parsedDetails.placeOfBirth,
+            birthHour: hour,
+            birthMinute: minute,
+          });
+        }
       }
-
-      const storedDetails = localStorage.getItem('margdarshak_birth_details');
-      if (storedDetails) {
-        const parsedDetails: StoredBirthDetailsForInsights = JSON.parse(storedDetails);
-        const [year, month, day] = parsedDetails.dateOfBirth.split('-').map(s => s.padStart(2, '0'));
-        const [hour, minute] = parsedDetails.timeOfBirth.split(':').map(s => s.padStart(2, '0'));
-        
-        form.reset({
-          birthDay: day,
-          birthMonth: month,
-          birthYear: year,
-          placeOfBirth: parsedDetails.placeOfBirth,
-          birthHour: hour,
-          birthMinute: minute,
-        });
-      }
-    } catch (error) {
-      toast({ title: 'Error loading data', description: 'Please try again.', variant: 'destructive' });
-    } finally {
       setPageLoading(false);
-    }
-  }, [router, toast, form]);
+    });
+    return () => unsubscribe();
+  }, [form, router]);
 
 
   async function onSubmit(data: BirthDetailsFormValues) {
@@ -121,14 +135,21 @@ export default function BirthDetailsPage() {
     const formattedDateOfBirth = `${data.birthYear}-${data.birthMonth.padStart(2, '0')}-${data.birthDay.padStart(2, '0')}`;
     const formattedTimeOfBirth = `${data.birthHour.padStart(2, '0')}:${data.birthMinute.padStart(2, '0')}`;
 
-    const detailsToStore: StoredBirthDetailsForInsights = {
+    const detailsToStore: StoredBirthDetails = {
       dateOfBirth: formattedDateOfBirth,
       placeOfBirth: data.placeOfBirth,
       timeOfBirth: formattedTimeOfBirth,
     };
 
     try {
-      localStorage.setItem('margdarshak_birth_details', JSON.stringify(detailsToStore));
+      if (currentUser) {
+        // Save to Firestore for logged-in user
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await setDoc(userDocRef, { birthDetails: detailsToStore }, { merge: true });
+      } else {
+        // Save to localStorage for guest user
+        localStorage.setItem('margdarshak_birth_details', JSON.stringify(detailsToStore));
+      }
       router.push('/psychometric-test');
     } catch (error) {
       console.error('Error saving birth details:', error);
@@ -147,7 +168,7 @@ export default function BirthDetailsPage() {
           <Cake className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold">Your Birth Details</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Hi {userName || 'there'}! Please provide your birth information. This will be used later for personalized astrological and numerological insights.
+            Hi {userName}! Please provide your birth information. This helps create personalized insights.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -249,4 +270,3 @@ export default function BirthDetailsPage() {
     </div>
   );
 }
-
