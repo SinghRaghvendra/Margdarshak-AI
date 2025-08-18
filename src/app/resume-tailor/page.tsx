@@ -132,14 +132,14 @@ export default function ResumeTailorPage() {
                         </Button>
                       </div>
                       <FormControl>
-                        <>
+                        <div>
                           <Textarea
                             placeholder="Paste your full resume text here..."
                             className="min-h-[300px] h-full resize-y"
                             {...field}
                           />
-                           <Input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
-                        </>
+                          <Input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
