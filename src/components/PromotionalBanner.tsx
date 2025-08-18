@@ -46,18 +46,18 @@ export default function PromotionalBanner() {
   }
 
   return (
-    <div className="bg-accent text-accent-foreground p-3 text-center text-sm relative">
+    <div className="bg-primary text-primary-foreground p-3 text-center text-sm relative">
       <div className="container mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
         <Info className="h-5 w-5 hidden sm:inline-block" />
         <p className="font-medium">
           AI Councel presents Margdarshak – Your AI-powered career guide. Don’t leave your career to chance!
         </p>
-        <div className="flex items-center gap-3 bg-primary/20 text-primary-foreground px-3 py-1 rounded-full">
-           <p className="font-bold text-background">
-             Claim your report now: <span className="line-through text-red-200">₹499</span> <span className="text-lg text-white">₹99 only!</span>
+        <div className="flex items-center gap-3 bg-background/20 text-primary-foreground px-3 py-1 rounded-full">
+           <p className="font-bold">
+             Claim your report now: <span className="line-through text-red-300">₹499</span> <span className="text-lg">₹99 only!</span>
            </p>
            {timeLeft && (
-            <div className="flex items-center gap-1 text-white font-semibold">
+            <div className="flex items-center gap-1 font-semibold">
                 <Timer className="h-4 w-4" />
                 <span>Offer ends in: {timeLeft}</span>
             </div>
@@ -65,7 +65,7 @@ export default function PromotionalBanner() {
         </div>
          <button 
           onClick={() => setIsVisible(false)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-accent-foreground/20 transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-primary-foreground/20 transition-colors"
           aria-label="Dismiss promotional banner"
         >
             <X className="h-4 w-4" />
