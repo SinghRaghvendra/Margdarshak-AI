@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef } from 'react';
@@ -125,7 +126,7 @@ export default function ResumeTailorPage() {
                           <Upload className="mr-2 h-4 w-4" /> Upload PDF
                         </Button>
                       </div>
-                       <FormControl>
+                      <FormControl>
                         <Textarea
                           placeholder="Paste your full resume text here..."
                           className="min-h-[300px] h-full resize-y"
@@ -187,14 +188,14 @@ export default function ResumeTailorPage() {
       </Card>
 
       {isLoading && (
-         <Card className="w-full max-w-4xl mx-auto shadow-xl mt-10">
-            <CardContent className="pt-6">
-                <div className="flex flex-col items-center justify-center min-h-[300px]">
-                    <LoadingSpinner size={48} />
-                    <p className="mt-4 text-muted-foreground text-center">AI is analyzing and writing... this can take up to a minute.</p>
-                </div>
-            </CardContent>
-         </Card>
+        <Card className="w-full max-w-4xl mx-auto shadow-xl mt-10">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center min-h-[300px]">
+              <LoadingSpinner size={48} />
+              <p className="mt-4 text-muted-foreground text-center">AI is analyzing and writing... this can take up to a minute.</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {aiResult && (
@@ -213,46 +214,46 @@ export default function ResumeTailorPage() {
                 <TabsTrigger value="insights">ATS Insights</TabsTrigger>
               </TabsList>
               <TabsContent value="resume" className="mt-4 prose max-w-none">
-                 <ReactMarkdown>{aiResult.tailoredResume}</ReactMarkdown>
+                <ReactMarkdown>{aiResult.tailoredResume}</ReactMarkdown>
               </TabsContent>
               <TabsContent value="cover-letter" className="mt-4 prose max-w-none">
-                 <ReactMarkdown>{aiResult.coverLetter}</ReactMarkdown>
+                <ReactMarkdown>{aiResult.coverLetter}</ReactMarkdown>
               </TabsContent>
               <TabsContent value="insights" className="mt-4">
                 <div className="grid md:grid-cols-2 gap-6">
-                    <Card>
-                        <CardHeader className="pb-2">
-                           <CardTitle className="text-lg flex items-center"><TrendingUp className="mr-2"/>ATS Score</CardTitle>
-                        </Header>
-                        <CardContent>
-                            <p className="text-3xl font-bold">
-                                <span className="line-through text-muted-foreground/70">{aiResult.atsScoreBefore}%</span>
-                                <ArrowRight className="inline mx-2"/>
-                                <span className="text-primary">{aiResult.atsScoreAfter}%</span>
-                            </p>
-                            <p className="text-sm text-muted-foreground">Estimated improvement in passing automated screening.</p>
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader className="pb-2">
-                           <CardTitle className="text-lg flex items-center"><CheckCircle className="mr-2"/>Matched Keywords</CardTitle>
-                        </Header>
-                        <CardContent>
-                            <ul className="list-disc pl-5 space-y-1 text-sm">
-                                {aiResult.matchedKeywords.map((kw, i) => <li key={i}>{kw}</li>)}
-                            </ul>
-                        </CardContent>
-                    </Card>
-                </div>
-                <Card className="mt-6">
-                     <CardHeader className="pb-2">
-                       <CardTitle className="text-lg">Further Suggestions</CardTitle>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center"><TrendingUp className="mr-2"/>ATS Score</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="list-disc pl-5 space-y-1 text-sm">
-                           {aiResult.improvementSuggestions.map((sugg, i) => <li key={i}>{sugg}</li>)}
-                        </ul>
+                      <p className="text-3xl font-bold">
+                        <span className="line-through text-muted-foreground/70">{aiResult.atsScoreBefore}%</span>
+                        <ArrowRight className="inline mx-2"/>
+                        <span className="text-primary">{aiResult.atsScoreAfter}%</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">Estimated improvement in passing automated screening.</p>
                     </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center"><CheckCircle className="mr-2"/>Matched Keywords</CardTitle>
+                    </Header>
+                    <CardContent>
+                      <ul className="list-disc pl-5 space-y-1 text-sm">
+                        {aiResult.matchedKeywords.map((kw, i) => <li key={i}>{kw}</li>)}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+                <Card className="mt-6">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Further Suggestions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      {aiResult.improvementSuggestions.map((sugg, i) => <li key={i}>{sugg}</li>)}
+                    </ul>
+                  </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
