@@ -13,7 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { tailorResume, ResumeTailorInputSchema, type ResumeTailorOutput } from '@/ai/flows/resume-tailor-flow';
+import { tailorResume } from '@/ai/flows/resume-tailor-flow';
+import { ResumeTailorInputSchema, type ResumeTailorOutput } from '@/ai/schemas/resume-tailor-schema';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { FileText, Briefcase, Wand2, ArrowRight, TrendingUp, CheckCircle } from 'lucide-react';
 
