@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight } from 'lucide-react';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -23,9 +23,18 @@ export default function HomePage() {
     {
       icon: <MapPinned className="h-10 w-10 text-primary mb-4" />,
       title: 'Comprehensive Career Blueprints',
-      description: 'Receive an in-depth 10-year roadmap for your chosen careers, including localized salary insights, educational guidance, skill development strategies, astrological/numerological perspectives, and a 20-year future outlook.',
+      description: 'Receive an in-depth 10-year roadmap for your chosen careers, including localized salary insights, educational guidance, skill development strategies, and a 20-year future outlook.',
     },
   ];
+
+  const painPoints = [
+      { point: "Overwhelmed by countless career options with no clear direction." },
+      { point: "Anxious about making a wrong choice that will impact your future." },
+      { point: "Unsure how your skills and interests translate into a real-world job." },
+      { point: "Lacking a concrete plan to achieve your long-term career goals." },
+      { point: "Feeling stuck or unfulfilled in your current academic or career path." },
+  ];
+
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-10rem)]">
@@ -63,7 +72,7 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Choose Margdarshak AI?</h2>
             <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-              We provide a holistic approach to career guidance, leveraging technology and personalized data.
+              We provide a holistic, data-driven approach to career guidance, leveraging technology and personalized data.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -82,8 +91,34 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Pain Points Section */}
+       <section id="pain-points" className="py-16 md:py-24 bg-secondary/30">
+        <div className="container mx-auto px-4">
+           <div className="text-center mb-12 md:mb-16">
+            <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
+            <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
+              Choosing a career path is one of life's biggest decisions, and it's normal to feel uncertain. Do any of these sound familiar?
+            </p>
+          </div>
+          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-x-12 gap-y-6">
+            {painPoints.map((item, index) => (
+                <div key={index} className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                    <p className="text-foreground/80">{item.point}</p>
+                </div>
+            ))}
+          </div>
+           <div className="text-center mt-12">
+             <p className="text-lg text-foreground max-w-3xl mx-auto">
+                Delaying clarity can lead to years of dissatisfaction and missed opportunities. <span className="font-semibold text-primary">Margdarshak AI</span> replaces confusion with a data-driven, personalized action plan, so you can move forward with confidence and purpose as soon as possible.
+             </p>
+           </div>
+        </div>
+      </section>
+
       {/* Final Call to Action Section */}
-      <section className="py-16 md:py-24 bg-secondary/30">
+      <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Discover Your Path?</h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
