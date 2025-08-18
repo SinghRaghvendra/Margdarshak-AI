@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Logo from '@/components/Logo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -12,9 +13,64 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, FileText } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, FileText, User, LogOut } from 'lucide-react';
+import { auth, db } from '@/lib/firebase/config';
+import { onAuthStateChanged, signOut, type User as FirebaseUser } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+
+interface AppUser {
+  uid: string;
+  name: string;
+  email: string | null;
+}
 
 export default function Header() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user: FirebaseUser | null) => {
+      if (user) {
+        // User is signed in.
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setCurrentUser({
+            uid: user.uid,
+            name: userData.name || 'User',
+            email: user.email,
+          });
+        } else {
+           // This case can happen if user exists in Auth but not in Firestore.
+           // For robustness, you could create the Firestore doc here, or sign them out.
+           setCurrentUser({ uid: user.uid, name: 'User', email: user.email });
+        }
+      } else {
+        // User is signed out.
+        setCurrentUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+      router.push('/'); // Redirect to home page after logout
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({ title: 'Logout Failed', description: 'Could not log you out. Please try again.', variant: 'destructive' });
+    }
+  };
+
   const navItems = [
     { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" /> },
     { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" /> },
@@ -36,11 +92,22 @@ export default function Header() {
               </a>
             </Link>
           ))}
-          <Link href="/signup" passHref>
-            <Button className="text-sm ml-2 px-4 py-2">
-              Login / Sign Up
-            </Button>
-          </Link>
+          {isLoading ? (
+            <div className="w-24 h-8 bg-muted rounded-md animate-pulse ml-2" />
+          ) : currentUser ? (
+            <>
+              <span className="text-sm text-muted-foreground ml-4 mr-2">Welcome, {currentUser.name}</span>
+              <Button onClick={handleLogout} variant="ghost" size="sm" className="text-sm">
+                <LogOut className="mr-1 h-4 w-4" /> Logout
+              </Button>
+            </>
+          ) : (
+            <Link href="/login" passHref>
+              <Button className="text-sm ml-2 px-4 py-2">
+                Login / Sign Up
+              </Button>
+            </Link>
+          )}
         </nav>
         <div className="md:hidden">
           <Sheet>
@@ -73,13 +140,25 @@ export default function Header() {
                     </Link>
                   </SheetClose>
                 ))}
-                <SheetClose asChild>
-                  <Link href="/signup" passHref>
-                    <Button variant="default" className="w-full text-base py-3 mt-4">
-                       <LogIn className="mr-2 h-5 w-5" /> Login / Sign Up
-                    </Button>
-                  </Link>
-                </SheetClose>
+
+                {isLoading ? (
+                  <div className="w-full h-10 bg-muted rounded-md animate-pulse mt-4" />
+                ) : currentUser ? (
+                   <SheetClose asChild>
+                      <Button onClick={handleLogout} variant="destructive" className="w-full text-base py-3 mt-4">
+                         <LogOut className="mr-2 h-5 w-5" /> Logout
+                      </Button>
+                   </SheetClose>
+                ) : (
+                  <SheetClose asChild>
+                    <Link href="/login" passHref>
+                      <Button variant="default" className="w-full text-base py-3 mt-4">
+                         <LogIn className="mr-2 h-5 w-5" /> Login / Sign Up
+                      </Button>
+                    </Link>
+                  </SheetClose>
+                )}
+
               </div>
             </SheetContent>
           </Sheet>

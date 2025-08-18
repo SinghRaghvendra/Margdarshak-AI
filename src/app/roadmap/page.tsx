@@ -10,32 +10,37 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPinned, Milestone, Download, Loader2 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
-import { generateRoadmap, type GenerateRoadmapInput, type GenerateRoadmapOutput } from '@/ai/flows/detailed-roadmap';
+import { generateRoadmap, type GenerateRoadmapInput } from '@/ai/flows/detailed-roadmap';
 import { differenceInYears, parseISO } from 'date-fns';
 import { calculateLifePathNumber } from '@/lib/numerology';
+import { auth, db } from '@/lib/firebase/config';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-interface UserInfo {
+
+interface UserData {
   name: string;
-  email: string;
-  contact: string;
   country: string;
-  language: string; // Added language
-}
-
-interface BirthDetails {
-  dateOfBirth: string; // YYYY-MM-DD
-  placeOfBirth: string;
-  timeOfBirth: string;
-}
-
-interface PersonalizedAnswers {
-  q1: string; q2: string; q3: string; q4: string; q5: string;
+  language: string;
+  birthDetails: {
+    dateOfBirth: string; // YYYY-MM-DD
+    placeOfBirth: string;
+    timeOfBirth: string;
+  };
+  personalizedAnswers: {
+    q1: string; q2: string; q3: string; q4: string; q5:string;
+  };
+  userTraits: string;
+  payment?: { successful: boolean; timestamp: string };
+  allCareerSuggestions?: CareerSuggestionFromStorage[];
+  selectedCareersList?: string[];
+  roadmaps?: Record<string, StoredRoadmapData>; // e.g. { "Software_Engineer_English": { ... } }
 }
 
 interface StoredRoadmapData {
   markdown: string;
   generatedAt: number; // Timestamp
-  language: string; // Store language for which report was generated
+  language: string;
 }
 
 interface CareerSuggestionFromStorage {
@@ -46,9 +51,6 @@ interface CareerSuggestionFromStorage {
 }
 
 const REPORT_CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
-
-type BaseRoadmapInputDataType = Omit<GenerateRoadmapInput, 'careerSuggestion' | 'matchScore' | 'personalityProfile' | 'preferredLanguage'>;
-
 
 export default function RoadmapPage() {
   const router = useRouter();
@@ -62,225 +64,231 @@ export default function RoadmapPage() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   
   const [pageLoading, setPageLoading] = useState(true);
-  const [userName, setUserName] = useState<string>('User');
-  const [preferredLanguage, setPreferredLanguage] = useState<string>('English'); // Default
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   
-  const [baseRoadmapInputData, setBaseRoadmapInputData] = useState<BaseRoadmapInputDataType | null>(null);
-  const [allCareerSuggestions, setAllCareerSuggestions] = useState<CareerSuggestionFromStorage[]>([]);
-
   const roadmapContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let languageFromStorage = 'English'; // Default
-    try {
-      if (localStorage.getItem('margdarshak_payment_successful') !== 'true') {
-        toast({ title: 'Payment Required', description: 'Please complete payment to access roadmaps.', variant: 'destructive' });
-        router.replace('/payment');
-        return;
-      }
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
 
-      const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-      const userInfoParsed: UserInfo | null = storedUserInfo ? JSON.parse(storedUserInfo) : null;
-      setUserName(userInfoParsed?.name || 'User');
-      if (userInfoParsed?.language) {
-        setPreferredLanguage(userInfoParsed.language);
-        languageFromStorage = userInfoParsed.language;
-      }
+        if (userDoc.exists()) {
+            const data = userDoc.data() as UserData;
+            setUserData(data);
 
+            if (!data.payment?.successful) {
+              toast({ title: 'Payment Required', description: 'Redirecting to payment.', variant: 'destructive' });
+              router.replace('/payment');
+              return;
+            }
 
-      const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
-      if (storedSelections) {
-        const parsedSelections: string[] = JSON.parse(storedSelections);
-        if (parsedSelections.length === 3) {
-          setSelectedCareers(parsedSelections);
-          setActiveCareerTab(parsedSelections[0]); 
+            const selections = data.selectedCareersList || JSON.parse(localStorage.getItem('margdarshak_selected_careers_list') || '[]');
+            if (selections.length > 0) {
+                 setSelectedCareers(selections);
+                 setActiveCareerTab(selections[0]);
+            } else {
+                 toast({ title: 'No careers selected', description: 'Redirecting.', variant: 'destructive' });
+                 router.replace('/career-suggestions');
+                 return;
+            }
+
         } else {
-          toast({ title: 'Career selection error', description: 'Redirecting.', variant: 'destructive' });
-          router.replace('/career-suggestions');
+           toast({ title: 'User data not found', description: 'Please sign up again.', variant: 'destructive' });
+           router.replace('/signup');
+           return;
+        }
+
+      } else { // Guest user
+        setCurrentUser(null);
+        if (localStorage.getItem('margdarshak_payment_successful') !== 'true') {
+          toast({ title: 'Payment Required', description: 'Please complete payment to access roadmaps.', variant: 'destructive' });
+          router.replace('/payment');
           return;
         }
-      } else {
-        toast({ title: 'No careers selected', description: 'Redirecting.', variant: 'destructive' });
-        router.replace('/career-suggestions');
-        return;
+        const selections = JSON.parse(localStorage.getItem('margdarshak_selected_careers_list') || '[]');
+        if (selections.length > 0) {
+            setSelectedCareers(selections);
+            setActiveCareerTab(selections[0]);
+        } else {
+            toast({ title: 'No careers selected', description: 'Redirecting.', variant: 'destructive' });
+            router.replace('/career-suggestions');
+            return;
+        }
       }
-
-      const storedAllSuggestions = localStorage.getItem('margdarshak_all_career_suggestions');
-      if (storedAllSuggestions) {
-        setAllCareerSuggestions(JSON.parse(storedAllSuggestions));
-      } else {
-        toast({ title: 'Career suggestion data missing', description: 'Could not load full suggestion details. Redirecting.', variant: 'destructive' });
-        router.replace('/career-suggestions');
-        return;
-      }
-
-      const traits = localStorage.getItem('margdarshak_user_traits');
-      const storedBirthDetails = localStorage.getItem('margdarshak_birth_details');
-      const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-
-      if (!userInfoParsed || !traits || !storedBirthDetails || !storedPersonalizedAnswers) {
-        toast({ title: 'Missing data for report', description: 'Please ensure all previous steps are complete. Redirecting.', variant: 'destructive' });
-        router.replace('/signup'); 
-        return;
-      }
-      
-      const birthDetailsParsed: BirthDetails = JSON.parse(storedBirthDetails);
-      const personalizedAnswersParsed: PersonalizedAnswers = JSON.parse(storedPersonalizedAnswers);
-      let age: number;
-      let lifePathNum: number;
-
-      try {
-        age = differenceInYears(new Date(), parseISO(birthDetailsParsed.dateOfBirth));
-        lifePathNum = calculateLifePathNumber(birthDetailsParsed.dateOfBirth);
-      } catch(e: any) {
-        console.error("Error calculating age or life path:", e);
-        toast({ title: 'Error processing birth date', description: e.message || 'Birth date might be invalid. Redirecting.', variant: 'destructive' });
-        router.replace('/birth-details');
-        return;
-      }
-
-      setBaseRoadmapInputData({
-        userTraits: traits,
-        country: userInfoParsed.country,
-        userName: userInfoParsed.name,
-        dateOfBirth: birthDetailsParsed.dateOfBirth,
-        timeOfBirth: birthDetailsParsed.timeOfBirth,
-        placeOfBirth: birthDetailsParsed.placeOfBirth,
-        age: age,
-        personalizedAnswers: personalizedAnswersParsed,
-        lifePathNumber: lifePathNum,
-        // preferredLanguage is handled separately by the main preferredLanguage state
-      });
-
-    } catch (error) {
-       toast({ title: 'Error loading roadmap page', description: 'Please try again.', variant: 'destructive'});
-       router.replace('/payment');
-    } finally {
       setPageLoading(false);
-    }
+    });
+
+    return () => unsubscribe();
   }, [router, toast]);
 
 
   useEffect(() => {
-    if (activeCareerTab && baseRoadmapInputData && allCareerSuggestions.length > 0 && preferredLanguage) {
-      fetchAndSetRoadmap(activeCareerTab, preferredLanguage);
+    if (activeCareerTab) {
+      fetchAndSetRoadmap(activeCareerTab);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCareerTab, baseRoadmapInputData, allCareerSuggestions, preferredLanguage]);
+  }, [activeCareerTab, userData]);
 
 
-  const fetchAndSetRoadmap = async (careerName: string, language: string) => {
-    if (!baseRoadmapInputData) {
-      toast({ title: 'Error', description: 'Cannot generate report, essential data missing.', variant: 'destructive' });
-      return;
+  const fetchAndSetRoadmap = async (careerName: string) => {
+    const language = userData?.language || 'English'; // Default to English for guests or if not set
+    const reportKey = `${careerName.replace(/\s+/g, '_')}_${language}`;
+
+    // 1. Check for saved report in Firestore (for logged-in users)
+    if (currentUser && userData?.roadmaps?.[reportKey]) {
+      const cachedReport = userData.roadmaps[reportKey];
+      if (Date.now() - cachedReport.generatedAt < REPORT_CACHE_DURATION) {
+        setCurrentRoadmapMarkdown(cachedReport.markdown);
+        toast({ title: 'Report Loaded', description: `Showing saved report for ${careerName}.` });
+        return;
+      }
+    }
+    
+    // 2. Check for saved report in Local Storage (for guests)
+    const localReportKey = `margdarshak_roadmap_${reportKey}`;
+    const localCachedData = localStorage.getItem(localReportKey);
+    if (!currentUser && localCachedData) {
+        const cachedReport: StoredRoadmapData = JSON.parse(localCachedData);
+        if (Date.now() - cachedReport.generatedAt < REPORT_CACHE_DURATION) {
+            setCurrentRoadmapMarkdown(cachedReport.markdown);
+            toast({ title: 'Report Loaded from Cache', description: `Showing cached report for ${careerName}.` });
+            return;
+        }
     }
 
-    const careerDetails = allCareerSuggestions.find(s => s.name === careerName);
-    if (!careerDetails) {
-        toast({ title: 'Error', description: `Details for career "${careerName}" not found.`, variant: 'destructive' });
-        setCurrentRoadmapMarkdown(`## Report Generation Failed\n\nCould not find details for the career: ${careerName}.`);
+
+    setIsGeneratingReport(true);
+    setCurrentRoadmapMarkdown(null);
+    toast({ title: `Generating Report for ${careerName}`, description: `This may take a moment... Language: ${language}` });
+    
+    // 3. Assemble data and generate a new report
+    let inputData: GenerateRoadmapInput;
+    try {
+      let careerDetails: CareerSuggestionFromStorage | undefined;
+      if (currentUser && userData?.allCareerSuggestions) {
+          careerDetails = userData.allCareerSuggestions.find(s => s.name === careerName);
+      } else {
+          const storedSuggestions = JSON.parse(localStorage.getItem('margdarshak_all_career_suggestions') || '[]');
+          careerDetails = storedSuggestions.find((s: CareerSuggestionFromStorage) => s.name === careerName);
+      }
+
+      if (!careerDetails) throw new Error(`Details for career "${careerName}" not found.`);
+
+      if (currentUser && userData) {
+        const age = differenceInYears(new Date(), parseISO(userData.birthDetails.dateOfBirth));
+        const lifePathNum = calculateLifePathNumber(userData.birthDetails.dateOfBirth);
+        inputData = {
+          userTraits: userData.userTraits,
+          country: userData.country,
+          userName: userData.name,
+          dateOfBirth: userData.birthDetails.dateOfBirth,
+          timeOfBirth: userData.birthDetails.timeOfBirth,
+          placeOfBirth: userData.birthDetails.placeOfBirth,
+          age,
+          personalizedAnswers: userData.personalizedAnswers,
+          lifePathNumber: lifePathNum,
+          careerSuggestion: careerName,
+          matchScore: careerDetails.matchScore,
+          personalityProfile: careerDetails.personalityProfile,
+          preferredLanguage: language,
+        };
+      } else { // Guest flow
+          const guestBirthDetails = JSON.parse(localStorage.getItem('margdarshak_birth_details_guest') || '{}');
+          const guestTraits = localStorage.getItem('margdarshak_user_traits') || '';
+          const guestAnswers = JSON.parse(localStorage.getItem('margdarshak_personalized_answers_guest') || '{}');
+
+          const age = differenceInYears(new Date(), parseISO(guestBirthDetails.dateOfBirth));
+          const lifePathNum = calculateLifePathNumber(guestBirthDetails.dateOfBirth);
+
+          inputData = {
+              userTraits: guestTraits,
+              country: 'your country', // Guest data is limited
+              userName: 'Guest User',
+              dateOfBirth: guestBirthDetails.dateOfBirth,
+              timeOfBirth: guestBirthDetails.timeOfBirth,
+              placeOfBirth: guestBirthDetails.placeOfBirth,
+              age,
+              personalizedAnswers: guestAnswers,
+              lifePathNumber: lifePathNum,
+              careerSuggestion: careerName,
+              matchScore: careerDetails.matchScore,
+              personalityProfile: careerDetails.personalityProfile,
+              preferredLanguage: language,
+          };
+      }
+    } catch (error: any) {
+        console.error("Error assembling report data:", error);
+        toast({ title: 'Error Preparing Report', description: error.message, variant: 'destructive'});
+        setIsGeneratingReport(false);
         return;
     }
 
-    const cachedReportKey = `margdarshak_roadmap_${careerName.replace(/\s+/g, '_')}_${language}`;
-    const cachedDataString = localStorage.getItem(cachedReportKey);
-    if (cachedDataString) {
-      try {
-        const cachedReport: StoredRoadmapData = JSON.parse(cachedDataString);
-        if (Date.now() - cachedReport.generatedAt < REPORT_CACHE_DURATION && cachedReport.language === language) {
-          setCurrentRoadmapMarkdown(cachedReport.markdown);
-          toast({ title: 'Report Loaded from Cache', description: `Showing cached ${language} report for ${careerName}.` });
-          return;
-        } else {
-          localStorage.removeItem(cachedReportKey); 
-        }
-      } catch (e) {
-        localStorage.removeItem(cachedReportKey); 
-      }
-    }
-
-    setIsGeneratingReport(true);
-    setCurrentRoadmapMarkdown(null); 
-    toast({ title: `Generating ${language} Report for ${careerName}`, description: 'This may take a moment...' });
-
-    const roadmapInput: GenerateRoadmapInput = {
-      ...baseRoadmapInputData,
-      careerSuggestion: careerName,
-      matchScore: careerDetails.matchScore,
-      personalityProfile: careerDetails.personalityProfile,
-      preferredLanguage: language,
-    };
 
     try {
-      const roadmapOutput: GenerateRoadmapOutput = await generateRoadmap(roadmapInput);
-      setCurrentRoadmapMarkdown(roadmapOutput.roadmapMarkdown);
+      const roadmapOutput = await generateRoadmap(inputData);
+      const newMarkdown = roadmapOutput.roadmapMarkdown;
+      setCurrentRoadmapMarkdown(newMarkdown);
       
-      const newCachedReport: StoredRoadmapData = { markdown: roadmapOutput.roadmapMarkdown, generatedAt: Date.now(), language: language };
-      localStorage.setItem(cachedReportKey, JSON.stringify(newCachedReport));
+      const newCachedReport: StoredRoadmapData = { markdown: newMarkdown, generatedAt: Date.now(), language: language };
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await setDoc(userDocRef, { roadmaps: { [reportKey]: newCachedReport } }, { merge: true });
+      } else {
+        localStorage.setItem(localReportKey, JSON.stringify(newCachedReport));
+      }
 
-      toast({ title: 'Report Generated!', description: `Detailed ${language} roadmap for ${careerName} is ready.` });
+      toast({ title: 'Report Generated!', description: `Detailed roadmap for ${careerName} is ready.` });
     } catch (error) {
-      console.error(`Error generating ${language} roadmap for ${careerName}:`, error);
-      toast({ title: `Error Generating Report for ${careerName}`, description: `Could not generate ${language} roadmap. Please try again or contact support.`, variant: 'destructive', duration: 7000 });
-      setCurrentRoadmapMarkdown(`## Report Generation Failed\n\nWe encountered an error while generating the ${language} report for ${careerName}. Please try again later.`);
+      console.error(`Error generating roadmap for ${careerName}:`, error);
+      toast({ title: `Error Generating Report for ${careerName}`, description: `Could not generate roadmap. Please try again or contact support.`, variant: 'destructive', duration: 7000 });
+      setCurrentRoadmapMarkdown(`## Report Generation Failed\n\nWe encountered an error while generating the report for ${careerName}. Please try again later.`);
     } finally {
       setIsGeneratingReport(false);
     }
   };
 
   const handleDownloadPdf = async () => {
-    if (typeof window === 'undefined') {
-        // This should not happen because of the "use client" directive, but as a safeguard
-        return;
-    }
+    if (typeof window === 'undefined') return;
+    
     if (!roadmapContentRef.current || !currentRoadmapMarkdown || !activeCareerTab) {
       toast({ title: 'Error', description: 'Roadmap content not available for download.', variant: 'destructive' });
       return;
     }
     setIsGeneratingPdf(true);
-    toast({ title: 'Generating PDF', description: `Your ${preferredLanguage} roadmap PDF is being prepared...` });
+    toast({ title: 'Generating PDF', description: `Your roadmap PDF is being prepared...` });
 
-    const html2pdf = (await import('html2pdf.js')).default;
+    try {
+        const html2pdf = (await import('html2pdf.js')).default;
+        const element = roadmapContentRef.current;
+        const safeUserName = userData?.name.replace(/\s+/g, '_') || 'User';
+        const safeCareerName = activeCareerTab.toLowerCase().replace(/\s+/g, '_');
+        const filename = `AI_Councel_Report_${safeUserName}_${safeCareerName}.pdf`;
 
-    const element = roadmapContentRef.current;
-    const safeUserName = userName.replace(/\s+/g, '_') || 'User';
-    const safeCareerName = activeCareerTab.toLowerCase().replace(/\s+/g, '_');
-    const filename = `AI_Councel_Report_${safeUserName}_${safeCareerName}_${preferredLanguage}.pdf`;
+        const opt = {
+          margin:       [0.5, 0.5, 0.5, 0.5],
+          filename:     filename,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: -window.scrollY, allowTaint: true },
+          jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+          pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
 
-    const opt = {
-      margin:       [0.5, 0.5, 0.5, 0.5],
-      filename:     filename,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: -window.scrollY, allowTaint: true },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    html2pdf().from(element).set(opt).save()
-      .then(() => {
-        toast({ title: 'PDF Downloaded', description: `Report for ${activeCareerTab} saved as ${filename}` });
-      })
-      .catch((err) => {
+        await html2pdf().from(element).set(opt).save();
+        toast({ title: 'PDF Downloaded', description: `Report saved as ${filename}` });
+    } catch(err) {
         console.error("Error generating PDF:", err);
         toast({ title: 'PDF Generation Failed', description: 'Could not generate PDF. Please try again.', variant: 'destructive' });
-      })
-      .finally(() => {
+    } finally {
         setIsGeneratingPdf(false);
-      });
+    }
   };
 
-  if (pageLoading || !baseRoadmapInputData) {
+  if (pageLoading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
-  }
-
-  if (selectedCareers.length === 0) {
-    return ( 
-      <div className="text-center py-10">
-        <h1 className="text-2xl font-semibold mb-4">No Careers to Display</h1>
-        <p className="text-muted-foreground mb-6">It seems your selected careers are missing.</p>
-        <Button onClick={() => router.push('/career-suggestions')}>Re-select Careers</Button>
-      </div>
-    );
   }
 
   return (
@@ -290,11 +298,11 @@ export default function RoadmapPage() {
           <MapPinned className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="text-4xl font-bold">Your Career Roadmaps</CardTitle>
           <CardDescription className="text-xl text-muted-foreground">
-            Detailed reports for {userName}'s chosen career paths (Report Language: {preferredLanguage}).
+            Detailed reports for {userData?.name || 'Guest'}'s chosen career paths.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-2 sm:px-6 py-4">
-          <Tabs value={activeCareerTab || selectedCareers[0]} onValueChange={setActiveCareerTab} className="w-full">
+          <Tabs value={activeCareerTab || ''} onValueChange={setActiveCareerTab} className="w-full">
             <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-6 h-auto sm:h-10">
               {selectedCareers.map(career => (
                 <TabsTrigger key={career} value={career} className="py-2 sm:py-1.5 text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap h-full">
@@ -308,11 +316,11 @@ export default function RoadmapPage() {
                 {isGeneratingReport && activeCareerTab === career && (
                   <div className="flex flex-col items-center justify-center min-h-[300px]">
                     <LoadingSpinner size={48} />
-                    <p className="mt-4 text-muted-foreground">Generating detailed {preferredLanguage} report for {career}...</p>
+                    <p className="mt-4 text-muted-foreground">Generating detailed report for {career}...</p>
                   </div>
                 )}
                 {!isGeneratingReport && activeCareerTab === career && currentRoadmapMarkdown && (
-                  <div ref={roadmapContentRef} className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-foreground">
+                  <div ref={roadmapContentRef} className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-foreground bg-white p-4 rounded-md">
                     <ReactMarkdown
                       components={{
                         h1: ({node, ...props}) => <h1 className="text-3xl font-bold mt-8 mb-4 text-primary border-b pb-2" {...props} />,
@@ -328,11 +336,6 @@ export default function RoadmapPage() {
                       {currentRoadmapMarkdown}
                     </ReactMarkdown>
                   </div>
-                )}
-                {!isGeneratingReport && activeCareerTab === career && !currentRoadmapMarkdown && (
-                   <div className="text-center py-10">
-                        <p className="text-muted-foreground">Report for {career} in {preferredLanguage} will be generated. If this persists, try re-selecting the tab.</p>
-                   </div>
                 )}
               </TabsContent>
             ))}

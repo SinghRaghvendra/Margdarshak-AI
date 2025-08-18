@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Edit3, ArrowRight } from 'lucide-react';
+import { auth, db } from '@/lib/firebase/config';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const personalizedQuestions = [
   { id: 'q1', label: 'Ideal Workday', text: 'Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?' },
@@ -36,7 +39,8 @@ export default function PersonalizedQuestionsPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [userName, setUserName] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('Guest');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const form = useForm<PersonalizedAnswersSchemaValues>({
     resolver: zodResolver(personalizedAnswersSchema),
@@ -47,50 +51,60 @@ export default function PersonalizedQuestionsPage() {
   });
 
   useEffect(() => {
-    try {
-      const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-      if (storedUserInfo) {
-        const userInfo = JSON.parse(storedUserInfo);
-        setUserName(userInfo.name || 'Guest');
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUserName(userData.name || 'User');
+          if (userData.personalizedAnswers) {
+            form.reset(userData.personalizedAnswers);
+          }
+        }
       } else {
-        toast({ title: 'User info not found', description: 'Redirecting to signup.', variant: 'destructive' });
-        router.replace('/signup');
-        return;
+        setCurrentUser(null);
+        setUserName('Guest');
+        const storedAnswers = localStorage.getItem('margdarshak_personalized_answers_guest');
+        if (storedAnswers) {
+          form.reset(JSON.parse(storedAnswers));
+        }
       }
-      
-      const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
-      if (!storedUserTraits) {
-        toast({ title: 'Psychometric test data not found', description: 'Please complete the psychometric test first.', variant: 'destructive' });
-        router.replace('/psychometric-test');
-        return;
-      }
-
-      const storedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-      if (storedAnswers) {
-        form.reset(JSON.parse(storedAnswers));
-      }
-    } catch (error) {
-      toast({ title: 'Error loading page data', description: 'Please try again.', variant: 'destructive' });
-    } finally {
       setPageLoading(false);
-    }
-  }, [router, toast, form]);
+    });
+
+    return () => unsubscribe();
+  }, [form, router]);
+
 
   const onSubmit = async (data: PersonalizedAnswersSchemaValues) => {
     setIsLoading(true);
     toast({ title: 'Saving Your Answers', description: 'Proceeding to payment...' });
+    
+    // Clear any data from a previous run to ensure a fresh start
+    localStorage.removeItem('margdarshak_all_career_suggestions'); 
+    localStorage.removeItem('margdarshak_selected_careers_list'); 
+    localStorage.removeItem('margdarshak_payment_successful');
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('margdarshak_roadmap_')) {
+        localStorage.removeItem(key);
+      }
+    });
+
     try {
-      localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
-      // Clear any old career suggestions data to ensure fresh generation
-      localStorage.removeItem('margdarshak_all_career_suggestions'); 
-      localStorage.removeItem('margdarshak_selected_careers_list'); 
-      localStorage.removeItem('margdarshak_payment_successful');
-      // Clear cached roadmaps
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('margdarshak_roadmap_')) {
-          localStorage.removeItem(key);
-        }
-      });
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await setDoc(userDocRef, { personalizedAnswers: data }, { merge: true });
+        // For logged-in users, we still save to local storage for the *current session*
+        // to avoid re-fetching data on the next page.
+        localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
+      } else {
+        // Save to a guest-specific key in local storage
+        localStorage.setItem('margdarshak_personalized_answers_guest', JSON.stringify(data));
+        // Also save to the generic key for the current guest session
+        localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
+      }
 
       router.push('/payment');
     } catch (error) {
@@ -99,6 +113,7 @@ export default function PersonalizedQuestionsPage() {
       setIsLoading(false);
     }
   };
+
 
   if (pageLoading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
@@ -111,7 +126,7 @@ export default function PersonalizedQuestionsPage() {
           <Edit3 className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold">A Little More About You</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Hi {userName || 'there'}! Your insights here will help us tailor career suggestions. Please answer thoughtfully.
+            Hi {userName}! Your insights here will help us tailor career suggestions. Please answer thoughtfully.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">

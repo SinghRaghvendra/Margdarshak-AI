@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Cake, UserCircle, ArrowRight, MapPinIcon, ClockIcon } from 'lucide-react';
+import { Cake, ArrowRight, MapPinIcon } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { auth, db } from '@/lib/firebase/config';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -90,8 +90,9 @@ export default function BirthDetailsPage() {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          setUserName(userDoc.data().name || 'User');
-          const birthDetails = userDoc.data().birthDetails;
+          const userData = userDoc.data();
+          setUserName(userData.name || 'User');
+          const birthDetails = userData.birthDetails;
           if (birthDetails) {
             const [year, month, day] = birthDetails.dateOfBirth.split('-').map((s:string) => s.padStart(2, '0'));
             const [hour, minute] = birthDetails.timeOfBirth.split(':').map((s:string) => s.padStart(2, '0'));
@@ -104,11 +105,16 @@ export default function BirthDetailsPage() {
               birthMinute: minute,
             });
           }
+        } else {
+          // This case handles a user authenticated with Firebase but without a user document yet.
+          // This can happen if they just signed up.
+          setUserName('User');
         }
       } else {
         // Handle guest user
+        setCurrentUser(null);
         setUserName('Guest');
-        const storedDetails = localStorage.getItem('margdarshak_birth_details');
+        const storedDetails = localStorage.getItem('margdarshak_birth_details_guest');
         if (storedDetails) {
           const parsedDetails: StoredBirthDetails = JSON.parse(storedDetails);
           const [year, month, day] = parsedDetails.dateOfBirth.split('-').map(s => s.padStart(2, '0'));
@@ -126,7 +132,7 @@ export default function BirthDetailsPage() {
       setPageLoading(false);
     });
     return () => unsubscribe();
-  }, [form, router]);
+  }, [form]);
 
 
   async function onSubmit(data: BirthDetailsFormValues) {
@@ -148,7 +154,7 @@ export default function BirthDetailsPage() {
         await setDoc(userDocRef, { birthDetails: detailsToStore }, { merge: true });
       } else {
         // Save to localStorage for guest user
-        localStorage.setItem('margdarshak_birth_details', JSON.stringify(detailsToStore));
+        localStorage.setItem('margdarshak_birth_details_guest', JSON.stringify(detailsToStore));
       }
       router.push('/psychometric-test');
     } catch (error) {

@@ -17,11 +17,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserPlus, Globe } from 'lucide-react';
+import { UserPlus, Globe, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { useState } from 'react';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import Link from 'next/link';
 
 const languages = [
   { value: 'English', label: 'English' },
@@ -50,6 +53,7 @@ type SignupFormValues = z.infer<typeof signupFormSchema>;
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupFormSchema),
@@ -63,7 +67,16 @@ export default function SignupPage() {
     },
   });
 
+  const clearLocalStorageForNewJourney = () => {
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('margdarshak_')) {
+            localStorage.removeItem(key);
+        }
+    });
+  }
+  
   async function onSubmit(data: SignupFormValues) {
+    setIsLoading(true);
     try {
       const { name, email, password, contact, country, language } = data;
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -78,15 +91,16 @@ export default function SignupPage() {
         language,
         createdAt: new Date(),
       });
-
+      
       // Clear any previous anonymous journey data
       clearLocalStorageForNewJourney();
 
       toast({
         title: 'Signup Successful!',
-        description: 'Redirecting to gather birth details...',
+        description: 'Welcome! Redirecting you to the first step...',
       });
       router.push('/birth-details');
+
     } catch (error: any) {
       let errorMessage = 'Could not create your account. Please try again.';
       if (error.code === 'auth/email-already-in-use') {
@@ -98,17 +112,11 @@ export default function SignupPage() {
         variant: 'destructive',
       });
       console.error('Signup error:', error);
+    } finally {
+      setIsLoading(false);
     }
   }
   
-  const clearLocalStorageForNewJourney = () => {
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('margdarshak_')) {
-            localStorage.removeItem(key);
-        }
-    });
-  }
-
   const handleSkipSignup = () => {
     clearLocalStorageForNewJourney();
     toast({
@@ -127,7 +135,7 @@ export default function SignupPage() {
             Join Margdarshak AI
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Create an account to save your progress or continue as a guest.
+            Create an account to save your progress and access reports anytime.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -222,11 +230,18 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full text-lg py-6 mt-2">
-                Sign Up & Continue
+              <Button type="submit" className="w-full text-lg py-6 mt-2" disabled={isLoading}>
+                {isLoading ? <LoadingSpinner /> : 'Sign Up & Continue'}
               </Button>
             </form>
           </Form>
+          <div className="mt-4 text-center text-sm">
+            Already have an account?{' '}
+            <Link href="/login" className="text-primary hover:underline font-medium">
+              <LogIn className="inline-block mr-1 h-4 w-4" />
+              Sign in
+            </Link>
+          </div>
           <div className="mt-4 text-center">
             <Button variant="link" onClick={handleSkipSignup} className="text-primary hover:underline">
               Continue as Guest
