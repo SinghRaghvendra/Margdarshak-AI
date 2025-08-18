@@ -224,7 +224,7 @@ export default function ResumeTailorPage() {
                     <Card>
                         <CardHeader className="pb-2">
                            <CardTitle className="text-lg flex items-center"><TrendingUp className="mr-2"/>ATS Score</CardTitle>
-                        </CardHeader>
+                        </Header>
                         <CardContent>
                             <p className="text-3xl font-bold">
                                 <span className="line-through text-muted-foreground/70">{aiResult.atsScoreBefore}%</span>
