@@ -18,10 +18,10 @@ export default function PromotionalBanner() {
       <div className="container mx-auto flex items-center justify-center gap-2">
         <Info className="h-5 w-5 hidden sm:inline-block" />
         <p>
-          Don’t leave your career to chance! Margdarshak by AI Councel gives you AI-powered guidance.
+          AI Councel presents Margdarshak – Your AI-powered career guide. Don’t leave your career to chance!
           <Link href="/signup" passHref>
             <Button variant="link" className="p-0 h-auto ml-1 text-accent-foreground font-bold hover:underline">
-               Claim your career report now for only ₹99!
+               Claim your personalized report today for just ₹99.
             </Button>
           </Link>
         </p>
