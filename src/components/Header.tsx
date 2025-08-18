@@ -18,7 +18,7 @@ export default function Header() {
   const navItems = [
     { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" />, external: false },
     { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" />, external: false },
-    { label: 'Free Resume Tailor', href: 'https://resume-tailor.web.app/', icon: <FileText className="mr-2 h-5 w-5" />, external: true },
+    { label: 'Free Resume Tailor', href: '/resume-tailor', icon: <FileText className="mr-2 h-5 w-5" />, external: false },
     { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" />, external: false },
   ];
 
