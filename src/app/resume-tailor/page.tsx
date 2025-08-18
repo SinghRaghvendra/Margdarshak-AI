@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { tailorResume } from '@/ai/flows/resume-tailor-flow';
 import { ResumeTailorInputSchema, type ResumeTailorOutput } from '@/ai/schemas/resume-tailor-schema';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { FileText, Briefcase, Wand2, ArrowRight, TrendingUp, CheckCircle } from 'lucide-react';
+import { FileText, Briefcase, Wand2, ArrowRight, TrendingUp, CheckCircle, Upload } from 'lucide-react';
 
 type ResumeTailorFormValues = z.infer<typeof ResumeTailorInputSchema>;
 
@@ -120,7 +120,12 @@ export default function ResumeTailorPage() {
                   name="resumeText"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg flex items-center"><FileText className="mr-2 h-5 w-5" /> Your Resume</FormLabel>
+                      <div className="flex justify-between items-center mb-1">
+                        <FormLabel className="text-lg flex items-center"><FileText className="mr-2 h-5 w-5" /> Your Resume</FormLabel>
+                        <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                          <Upload className="mr-2 h-4 w-4" /> Upload PDF
+                        </Button>
+                      </div>
                        <FormControl>
                         <Textarea
                           placeholder="Paste your full resume text here..."
@@ -128,9 +133,6 @@ export default function ResumeTailorPage() {
                           {...field}
                         />
                       </FormControl>
-                      <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInputRef.current?.click()}>
-                        Upload PDF Instead
-                      </Button>
                       <Input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
                       <FormMessage />
                     </FormItem>
@@ -235,7 +237,7 @@ export default function ResumeTailorPage() {
                      <Card>
                         <CardHeader className="pb-2">
                            <CardTitle className="text-lg flex items-center"><CheckCircle className="mr-2"/>Matched Keywords</CardTitle>
-                        </CardHeader>
+                        </Header>
                         <CardContent>
                             <ul className="list-disc pl-5 space-y-1 text-sm">
                                 {aiResult.matchedKeywords.map((kw, i) => <li key={i}>{kw}</li>)}
