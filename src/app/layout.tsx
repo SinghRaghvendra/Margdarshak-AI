@@ -10,6 +10,11 @@ import PromotionalBanner from '@/components/PromotionalBanner';
 export const metadata: Metadata = {
   title: 'Margdarshak AI',
   description: 'AI-Powered Career Guidance',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -19,6 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+       <head>
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+      </head>
       <body className="antialiased flex flex-col min-h-screen">
         <PromotionalBanner />
         <Header />
