@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Loader2, ListChecks, ArrowRight } from 'lucide-react'; 
+import { CreditCard, ArrowRight, Lightbulb } from 'lucide-react'; 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,7 +16,6 @@ export default function PaymentPage() {
   const { toast } = useToast();
   const [paymentInitiated, setPaymentInitiated] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [selectedCareersList, setSelectedCareersList] = useState<string[]>([]);
   const [userName, setUserName] = useState<string>('Guest');
 
   useEffect(() => {
@@ -29,23 +28,7 @@ export default function PaymentPage() {
         router.replace('/signup');
         return;
       }
-
-      const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
-      if (storedSelections) {
-        const parsedSelections: string[] = JSON.parse(storedSelections);
-        if (parsedSelections.length === 3) {
-          setSelectedCareersList(parsedSelections);
-        } else {
-          toast({ title: 'Invalid career selection', description: 'Please select 3 careers. Redirecting.', variant: 'destructive' });
-          router.replace('/career-suggestions');
-          return;
-        }
-      } else {
-        toast({ title: 'No careers selected', description: 'Redirecting to select careers.', variant: 'destructive' });
-        router.replace('/career-suggestions');
-        return;
-      }
-
+      
       // Verify all prerequisite data for report generation is present before allowing payment
       const prerequisites = [
         'margdarshak_user_traits',
@@ -73,7 +56,7 @@ export default function PaymentPage() {
     } catch (error) {
       console.error("Error loading data for payment page:", error);
       toast({ title: 'Error loading page data', description: 'Please try again from an earlier step.', variant: 'destructive'});
-      router.replace('/career-suggestions');
+      router.replace('/personalized-questions');
     } finally {
       setPageLoading(false);
     }
@@ -87,54 +70,45 @@ export default function PaymentPage() {
   
   const handleProceedAfterPayment = () => {
     localStorage.setItem('margdarshak_payment_successful', 'true');
-    localStorage.removeItem('margdarshak_roadmap_markdown');
-    toast({ title: 'Payment Confirmed!', description: 'Proceeding to view your selected career roadmaps...' });
-    router.push('/roadmap');
+    toast({ title: 'Payment Confirmed!', description: 'Generating your career suggestions...' });
+    router.push('/career-suggestions');
   };
 
   if (pageLoading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   
-  if (selectedCareersList.length !== 3) { 
-     return (
-      <div className="text-center py-10">
-        <h1 className="text-2xl font-semibold mb-4">Career Selection Incomplete</h1>
-        <p className="text-muted-foreground mb-6">Please select 3 careers on the previous page to proceed.</p>
-        <Button onClick={() => router.push('/career-suggestions')}>Select Careers</Button>
-      </div>
-    );
-  }
-
   return (
     <div className="flex justify-center items-center py-8">
       <Card className="w-full max-w-lg shadow-xl">
         <CardHeader className="text-center">
           <CreditCard className="h-12 w-12 text-primary mx-auto mb-4" />
-          <CardTitle className="text-3xl font-bold">Unlock Your Career Reports</CardTitle>
+          <CardTitle className="text-3xl font-bold">One Last Step</CardTitle>
           <CardDescription>
-            Hi {userName}, you've selected 3 careers to explore. Pay the one-time fee to generate detailed reports for each.
+            Hi {userName}, you've completed the assessment! Make the one-time payment to view your Top 10 Career Suggestions and unlock your detailed reports.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <div className="mb-6 p-4 border rounded-md bg-secondary/50">
             <h4 className="text-lg font-semibold mb-2 flex items-center justify-center">
-                <ListChecks className="mr-2 h-5 w-5 text-primary" />
-                Selected Careers for Detailed Reports:
+                <Lightbulb className="mr-2 h-5 w-5 text-primary" />
+                What you'll unlock:
             </h4>
-            <ul className="list-decimal list-inside text-left text-muted-foreground pl-4">
-              {selectedCareersList.map(career => <li key={career}>{career}</li>)}
+            <ul className="list-disc list-inside text-left text-muted-foreground pl-4">
+              <li>Your Top 10 AI-Powered Career Suggestions</li>
+              <li>Ability to select 3 careers for in-depth analysis</li>
+              <li>Comprehensive, multi-page PDF reports for your selected careers</li>
             </ul>
           </div>
-          <p className="text-lg mb-2">Total Report Fee: <span className="font-bold text-2xl">₹99</span></p>
+          <p className="text-lg mb-2">One-Time Fee: <span className="font-bold text-2xl">₹99</span></p>
           <p className="text-sm text-muted-foreground mb-6">
-            This one-time payment allows you to generate and download comprehensive reports for all three selected careers.
+            This payment gives you full access to all generated suggestions and final reports.
           </p>
           
           {!paymentInitiated ? (
              <Button onClick={handlePayment} className="w-full text-lg py-6">
               <CreditCard className="mr-2 h-5 w-5" />
-              Pay ₹99 & Access Reports
+              Pay ₹99 & View Suggestions
             </Button>
           ) : (
             <div className="mt-8 p-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-md text-center">
@@ -143,7 +117,7 @@ export default function PaymentPage() {
                     Please complete your payment in the new tab. Once finished, click the button below to continue.
                 </p>
                  <Button onClick={handleProceedAfterPayment} className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white">
-                    I've Paid, Continue to Roadmaps <ArrowRight className="ml-2 h-5 w-5" />
+                    I've Paid, Show My Suggestions <ArrowRight className="ml-2 h-5 w-5" />
                  </Button>
             </div>
           )}

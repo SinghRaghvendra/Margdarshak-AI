@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { ArrowRight, Briefcase, Lightbulb, Loader2, Percent, Sparkles } from 'lucide-react';
+import { ArrowRight, Briefcase, Lightbulb, Loader2, Percent, Sparkles, Milestone } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput } from '@/ai/flows/career-suggestion';
@@ -37,7 +37,8 @@ export default function CareerSuggestionsPage() {
         const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
 
         if (!storedUserTraits || !storedPersonalizedAnswers) {
-          // Prerequisites check will handle redirection
+          toast({ title: 'Missing assessment data', description: 'Redirecting to previous step.', variant: 'destructive' });
+          router.replace('/personalized-questions');
           return;
         }
         
@@ -52,10 +53,8 @@ export default function CareerSuggestionsPage() {
         
         if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length > 0) {
           setAllSuggestions(suggestionsOutput.careers);
-          // Save all suggestions to localStorage for later use in detailed report
           localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsOutput.careers));
 
-          // Load previously selected careers if any (e.g., if user navigated back)
           const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
           if (storedSelections) {
             setSelectedCareers(JSON.parse(storedSelections));
@@ -76,22 +75,15 @@ export default function CareerSuggestionsPage() {
     };
     
     // Prerequisite data checks
+    if (localStorage.getItem('margdarshak_payment_successful') !== 'true') {
+        toast({ title: 'Payment Required', description: 'Please complete payment to view suggestions.', variant: 'destructive' });
+        router.replace('/payment');
+        setPageLoading(false);
+        return;
+    }
     if (!localStorage.getItem('margdarshak_user_info')) {
         toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive' });
         router.replace('/signup');
-        setPageLoading(false);
-        return;
-    }
-    if (!localStorage.getItem('margdarshak_birth_details')) {
-        toast({ title: 'Birth details missing', description: 'Redirecting.', variant: 'destructive' });
-        router.replace('/birth-details');
-        setPageLoading(false);
-        return;
-    }
-    const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
-    if (!storedUserTraits) {
-        toast({ title: 'Psychometric test data missing', description: 'Redirecting.', variant: 'destructive' });
-        router.replace('/psychometric-test');
         setPageLoading(false);
         return;
     }
@@ -128,21 +120,15 @@ export default function CareerSuggestionsPage() {
     });
   };
 
-  const handleProceedToPayment = () => {
+  const handleProceedToRoadmap = () => {
     if (selectedCareers.length !== MAX_SELECTIONS) {
       toast({ title: `Please select ${MAX_SELECTIONS} careers`, description: `You have selected ${selectedCareers.length}.`, variant: 'destructive'});
       return;
     }
     try {
       localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(selectedCareers));
-      // Remove single selected career key if it exists from old flow
-      localStorage.removeItem('margdarshak_selected_career');
-      // Remove old insight data
-      localStorage.removeItem('margdarshak_career_insights_astro');
-      localStorage.removeItem('margdarshak_career_insights_numero');
-
-      toast({ title: 'Selections Saved', description: 'Proceeding to payment for your detailed reports.' });
-      router.push('/payment');
+      toast({ title: 'Selections Saved', description: 'Proceeding to your detailed reports.' });
+      router.push('/roadmap');
     } catch (error) {
       toast({ title: 'Error saving selection', description: 'Could not save your selections. Please try again.', variant: 'destructive'});
     }
@@ -223,11 +209,11 @@ export default function CareerSuggestionsPage() {
           </div>
           <div className="mt-10 text-center">
             <Button 
-              onClick={handleProceedToPayment} 
+              onClick={handleProceedToRoadmap} 
               className="text-lg py-6 px-10"
               disabled={selectedCareers.length !== MAX_SELECTIONS}
             >
-              Proceed with {selectedCareers.length} of {MAX_SELECTIONS} selections <ArrowRight className="ml-2 h-5 w-5" />
+              Continue to Detailed Roadmaps <Milestone className="ml-2 h-5 w-5" />
             </Button>
             {selectedCareers.length !== MAX_SELECTIONS && (
                  <p className="text-sm text-muted-foreground mt-2">Please select exactly {MAX_SELECTIONS} careers to continue.</p>
@@ -238,4 +224,3 @@ export default function CareerSuggestionsPage() {
     </div>
   );
 }
-

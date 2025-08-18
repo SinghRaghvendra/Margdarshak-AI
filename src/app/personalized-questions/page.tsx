@@ -78,16 +78,12 @@ export default function PersonalizedQuestionsPage() {
 
   const onSubmit = async (data: PersonalizedAnswersSchemaValues) => {
     setIsLoading(true);
-    toast({ title: 'Saving Your Answers', description: 'Getting ready to suggest careers...' });
+    toast({ title: 'Saving Your Answers', description: 'Proceeding to payment...' });
     try {
       localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
       // Clear any old career suggestions data to ensure fresh generation
-      localStorage.removeItem('margdarshak_career_suggestions'); // Old key for AI output
-      localStorage.removeItem('margdarshak_selected_career'); // Old key for single selected career
+      localStorage.removeItem('margdarshak_all_career_suggestions'); 
       localStorage.removeItem('margdarshak_selected_careers_list'); 
-      localStorage.removeItem('margdarshak_all_career_suggestions'); // Clear all suggestions list
-      localStorage.removeItem('margdarshak_career_insights_astro');
-      localStorage.removeItem('margdarshak_career_insights_numero');
       localStorage.removeItem('margdarshak_payment_successful');
       // Clear cached roadmaps
       Object.keys(localStorage).forEach(key => {
@@ -96,7 +92,7 @@ export default function PersonalizedQuestionsPage() {
         }
       });
 
-      router.push('/career-suggestions');
+      router.push('/payment');
     } catch (error) {
       console.error('Error saving personalized answers:', error);
       toast({ title: 'Error Saving Answers', description: 'Could not save your answers. Please try again.', variant: 'destructive' });
@@ -146,7 +142,7 @@ export default function PersonalizedQuestionsPage() {
                   <LoadingSpinner />
                 ) : (
                   <>
-                    Continue to Career Suggestions <ArrowRight className="ml-2 h-5 w-5" />
+                    Continue to Payment <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>
@@ -157,4 +153,3 @@ export default function PersonalizedQuestionsPage() {
     </div>
   );
 }
-
