@@ -4,8 +4,9 @@
 import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import type * as z from 'zod';
 import ReactMarkdown from 'react-markdown';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -38,40 +39,44 @@ export default function ResumeTailorPage() {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
+
     if (file.type !== 'application/pdf') {
-        toast({ title: 'Invalid File Type', description: 'Please upload a PDF file.', variant: 'destructive' });
-        return;
+      toast({ title: 'Invalid File Type', description: 'Please upload a PDF file.', variant: 'destructive' });
+      return;
     }
 
     toast({ title: 'Parsing PDF...', description: 'Please wait while we extract text from your resume.' });
-    
-    // Dynamically import pdf.js to avoid SSR issues
-    const pdfjsLib = await import('pdfjs-dist/build/pdf');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        const typedArray = new Uint8Array(e.target?.result as ArrayBuffer);
+    try {
+      const pdfjsLib = await import('pdfjs-dist/build/pdf');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        if (!e.target?.result) return;
+        const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
         try {
-            const pdf = await pdfjsLib.getDocument(typedArray).promise;
-            let fullText = '';
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => ('str' in item ? item.str : '')).join(' ');
-                fullText += pageText + '\n\n';
-            }
-            form.setValue('resumeText', fullText);
-            toast({ title: 'PDF Parsed Successfully', description: 'Your resume text has been added to the form.' });
-        } catch (error) {
-            console.error('Error parsing PDF:', error);
-            toast({ title: 'PDF Parsing Error', description: 'Could not read text from the PDF. Please paste the text manually.', variant: 'destructive' });
+          const pdf = await pdfjsLib.getDocument(typedArray).promise;
+          let fullText = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => ('str' in item ? item.str : '')).join(' ');
+            fullText += pageText + '\n\n';
+          }
+          form.setValue('resumeText', fullText.trim());
+          toast({ title: 'PDF Parsed Successfully', description: 'Your resume text has been added to the form.' });
+        } catch (pdfError) {
+          console.error('Error parsing PDF:', pdfError);
+          toast({ title: 'PDF Parsing Error', description: 'Could not read text from the PDF. Please paste the text manually.', variant: 'destructive' });
         }
-    };
-    reader.readAsArrayBuffer(file);
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (importError) {
+       console.error('Error importing pdfjs-dist:', importError);
+       toast({ title: 'Error', description: 'Could not load PDF parser. Please paste the text manually.', variant: 'destructive' });
+    }
   };
-
 
   const onSubmit = async (data: ResumeTailorFormValues) => {
     setIsLoading(true);
@@ -127,13 +132,15 @@ export default function ResumeTailorPage() {
                         </Button>
                       </div>
                       <FormControl>
-                        <Textarea
-                          placeholder="Paste your full resume text here..."
-                          className="min-h-[300px] h-full resize-y"
-                          {...field}
-                        />
+                        <>
+                          <Textarea
+                            placeholder="Paste your full resume text here..."
+                            className="min-h-[300px] h-full resize-y"
+                            {...field}
+                          />
+                           <Input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
+                        </>
                       </FormControl>
-                      <Input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -174,9 +181,7 @@ export default function ResumeTailorPage() {
                 )}
               />
               <Button type="submit" className="w-full text-lg py-6" disabled={isLoading}>
-                {isLoading ? (
-                  <LoadingSpinner />
-                ) : (
+                {isLoading ? <LoadingSpinner /> : (
                   <>
                     Tailor My Resume & Generate Cover Letter <ArrowRight className="ml-2 h-5 w-5" />
                   </>
@@ -213,10 +218,10 @@ export default function ResumeTailorPage() {
                 <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
                 <TabsTrigger value="insights">ATS Insights</TabsTrigger>
               </TabsList>
-              <TabsContent value="resume" className="mt-4 prose max-w-none">
+              <TabsContent value="resume" className="mt-4 prose max-w-none prose-sm sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert">
                 <ReactMarkdown>{aiResult.tailoredResume}</ReactMarkdown>
               </TabsContent>
-              <TabsContent value="cover-letter" className="mt-4 prose max-w-none">
+              <TabsContent value="cover-letter" className="mt-4 prose max-w-none prose-sm sm:prose-base lg:prose-lg xl:prose-xl dark:prose-invert">
                 <ReactMarkdown>{aiResult.coverLetter}</ReactMarkdown>
               </TabsContent>
               <TabsContent value="insights" className="mt-4">
@@ -237,7 +242,7 @@ export default function ResumeTailorPage() {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg flex items-center"><CheckCircle className="mr-2"/>Matched Keywords</CardTitle>
-                    </Header>
+                    </CardHeader>
                     <CardContent>
                       <ul className="list-disc pl-5 space-y-1 text-sm">
                         {aiResult.matchedKeywords.map((kw, i) => <li key={i}>{kw}</li>)}
