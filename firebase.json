@@ -1,16 +1,13 @@
 {
   "hosting": {
-    "public": "public",
+    "source": ".", // Crucial: tells Firebase to look at the project root for framework files
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+    "frameworksBackend": {
+      "region": "us-central1" // IMPORTANT: Choose a region close to your users, e.g., "asia-south1" or "us-central1"
+    }
   }
 }
