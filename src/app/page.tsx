@@ -2,8 +2,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, User, Wand2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -21,6 +21,8 @@ export default function HomePage() {
       icon: <MapPinned className="h-10 w-10 text-primary mb-4" />,
       title: 'Comprehensive Career Blueprints',
       description: 'Receive an in-depth 10-year roadmap for your chosen careers, including localized salary insights, educational guidance, skill development strategies, and a 20-year future outlook.',
+      href: "/signup",
+      cta: "Explore Career Blueprints",
     },
   ];
 
@@ -88,13 +90,13 @@ export default function HomePage() {
                 <CardContent className="text-center flex-grow">
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </CardContent>
-                <CardContent>
-                    <Link href={feature.href} passHref>
+                <CardFooter>
+                    <Link href={feature.href} passHref className="w-full">
                         <Button className="w-full">
                            {feature.cta} <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </Link>
-                </CardContent>
+                </CardFooter>
               </Card>
             ))}
           </div>
@@ -128,7 +130,7 @@ export default function HomePage() {
       </section>
 
       {/* Final Call to Action Section */}
-      <section className="py-16 md:py-24 bg-secondary/30">
+      <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">

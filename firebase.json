@@ -1,29 +1,14 @@
-<<<<<<< HEAD
 
 {
   "hosting": {
     "source": ".",
-=======
-{
-  "hosting": {
-    "public": "public",
->>>>>>> a855f3e2c9b64fc6e0a27eb943833208cc8f4ede
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
-<<<<<<< HEAD
     "frameworksBackend": {
       "region": "us-central1"
     }
-=======
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
->>>>>>> a855f3e2c9b64fc6e0a27eb943833208cc8f4ede
   }
 }
