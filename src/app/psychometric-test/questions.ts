@@ -175,5 +175,3 @@ export const optionalRatingQuestions: RatingQuestion[] = [
   { id: 'opt_q19', type: 'rating', text: 'I am good at managing my energy levels to avoid burnout.' },
   { id: 'opt_q20', type: 'rating', text: 'I proactively address potential stressors before they become major issues.' },
 ];
-
-    

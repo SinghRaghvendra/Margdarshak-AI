@@ -169,12 +169,13 @@ export default function RoadmapPage() {
     let inputData: GenerateRoadmapInput;
     try {
       let careerDetails: CareerSuggestionFromStorage | undefined;
+      let allSuggestionsSource;
       if (currentUser && userData?.allCareerSuggestions) {
-          careerDetails = userData.allCareerSuggestions.find(s => s.name === careerName);
+          allSuggestionsSource = userData.allCareerSuggestions;
       } else {
-          const storedSuggestions = JSON.parse(localStorage.getItem('margdarshak_all_career_suggestions') || '[]');
-          careerDetails = storedSuggestions.find((s: CareerSuggestionFromStorage) => s.name === careerName);
+          allSuggestionsSource = JSON.parse(localStorage.getItem('margdarshak_all_career_suggestions') || '[]');
       }
+      careerDetails = allSuggestionsSource.find((s: CareerSuggestionFromStorage) => s.name === careerName);
 
       if (!careerDetails) throw new Error(`Details for career "${careerName}" not found.`);
 
@@ -199,15 +200,17 @@ export default function RoadmapPage() {
       } else { // Guest flow
           const guestBirthDetails = JSON.parse(localStorage.getItem('margdarshak_birth_details_guest') || '{}');
           const guestTraits = localStorage.getItem('margdarshak_user_traits') || '';
-          const guestAnswers = JSON.parse(localStorage.getItem('margdarshak_personalized_answers_guest') || '{}');
+          const guestAnswers = JSON.parse(localStorage.getItem('margdarshak_personalized_answers') || '{}');
+          const guestUserInfo = JSON.parse(localStorage.getItem('margdarshak_user_info_guest') || '{}');
+
 
           const age = differenceInYears(new Date(), parseISO(guestBirthDetails.dateOfBirth));
           const lifePathNum = calculateLifePathNumber(guestBirthDetails.dateOfBirth);
 
           inputData = {
               userTraits: guestTraits,
-              country: 'your country', // Guest data is limited
-              userName: 'Guest User',
+              country: guestUserInfo.country || 'your country',
+              userName: guestUserInfo.name || 'Guest User',
               dateOfBirth: guestBirthDetails.dateOfBirth,
               timeOfBirth: guestBirthDetails.timeOfBirth,
               placeOfBirth: guestBirthDetails.placeOfBirth,
@@ -217,7 +220,7 @@ export default function RoadmapPage() {
               careerSuggestion: careerName,
               matchScore: careerDetails.matchScore,
               personalityProfile: careerDetails.personalityProfile,
-              preferredLanguage: language,
+              preferredLanguage: guestUserInfo.language || 'English',
           };
       }
     } catch (error: any) {
@@ -234,9 +237,10 @@ export default function RoadmapPage() {
       setCurrentRoadmapMarkdown(newMarkdown);
       
       const newCachedReport: StoredRoadmapData = { markdown: newMarkdown, generatedAt: Date.now(), language: language };
-      if (currentUser) {
+      if (currentUser && userData) {
         const userDocRef = doc(db, 'users', currentUser.uid);
-        await setDoc(userDocRef, { roadmaps: { [reportKey]: newCachedReport } }, { merge: true });
+        const roadmaps = {...userData.roadmaps, [reportKey]: newCachedReport};
+        await setDoc(userDocRef, { roadmaps }, { merge: true });
       } else {
         localStorage.setItem(localReportKey, JSON.stringify(newCachedReport));
       }

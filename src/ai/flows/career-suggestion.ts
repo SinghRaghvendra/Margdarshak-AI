@@ -95,4 +95,3 @@ const suggestCareersFlow = ai.defineFlow(
     return output;
   }
 );
-

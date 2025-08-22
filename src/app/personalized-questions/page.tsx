@@ -66,7 +66,8 @@ export default function PersonalizedQuestionsPage() {
       } else {
         setCurrentUser(null);
         setUserName('Guest');
-        const storedAnswers = localStorage.getItem('margdarshak_personalized_answers_guest');
+        // Load guest data if it exists for the current session
+        const storedAnswers = localStorage.getItem('margdarshak_personalized_answers');
         if (storedAnswers) {
           form.reset(JSON.parse(storedAnswers));
         }
@@ -81,30 +82,15 @@ export default function PersonalizedQuestionsPage() {
   const onSubmit = async (data: PersonalizedAnswersSchemaValues) => {
     setIsLoading(true);
     toast({ title: 'Saving Your Answers', description: 'Proceeding to payment...' });
-    
-    // Clear any data from a previous run to ensure a fresh start
-    localStorage.removeItem('margdarshak_all_career_suggestions'); 
-    localStorage.removeItem('margdarshak_selected_careers_list'); 
-    localStorage.removeItem('margdarshak_payment_successful');
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('margdarshak_roadmap_')) {
-        localStorage.removeItem(key);
-      }
-    });
 
     try {
       if (currentUser) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         await setDoc(userDocRef, { personalizedAnswers: data }, { merge: true });
-        // For logged-in users, we still save to local storage for the *current session*
-        // to avoid re-fetching data on the next page.
-        localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
-      } else {
-        // Save to a guest-specific key in local storage
-        localStorage.setItem('margdarshak_personalized_answers_guest', JSON.stringify(data));
-        // Also save to the generic key for the current guest session
-        localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
       }
+      
+      // Save to the generic key for the current guest or user session for immediate use on the next page
+      localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
 
       router.push('/payment');
     } catch (error) {
