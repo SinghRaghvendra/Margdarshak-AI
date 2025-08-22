@@ -209,7 +209,7 @@ export default function RoadmapPage() {
 
           inputData = {
               userTraits: guestTraits,
-              country: guestUserInfo.country || 'your country', // Guest data is limited
+              country: guestUserInfo.country || 'your country',
               userName: guestUserInfo.name || 'Guest User',
               dateOfBirth: guestBirthDetails.dateOfBirth,
               timeOfBirth: guestBirthDetails.timeOfBirth,
@@ -363,5 +363,3 @@ export default function RoadmapPage() {
     </div>
   );
 }
-
-    

@@ -44,6 +44,8 @@ export default function CareerSuggestionsPage() {
         router.replace('/personalized-questions');
         return;
     }
+    
+    setPageLoading(false);
 
     const fetchSuggestions = async () => {
       setIsLoading(true);
@@ -80,7 +82,6 @@ export default function CareerSuggestionsPage() {
       }
     };
 
-    setPageLoading(false);
     fetchSuggestions();
 
   }, [router, toast]);
@@ -209,5 +210,3 @@ export default function CareerSuggestionsPage() {
     </div>
   );
 }
-
-    

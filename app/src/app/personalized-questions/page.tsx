@@ -66,7 +66,8 @@ export default function PersonalizedQuestionsPage() {
       } else {
         setCurrentUser(null);
         setUserName('Guest');
-        const storedAnswers = localStorage.getItem('margdarshak_personalized_answers_guest');
+        // Load guest data if it exists for the current session
+        const storedAnswers = localStorage.getItem('margdarshak_personalized_answers');
         if (storedAnswers) {
           form.reset(JSON.parse(storedAnswers));
         }
@@ -86,12 +87,9 @@ export default function PersonalizedQuestionsPage() {
       if (currentUser) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         await setDoc(userDocRef, { personalizedAnswers: data }, { merge: true });
-      } else {
-        // Save to a guest-specific key in local storage
-        localStorage.setItem('margdarshak_personalized_answers_guest', JSON.stringify(data));
       }
       
-      // Also save to the generic key for the current guest or user session for immediate use on the next page
+      // Save to the generic key for the current guest or user session for immediate use on the next page
       localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
 
       router.push('/payment');
@@ -156,5 +154,3 @@ export default function PersonalizedQuestionsPage() {
     </div>
   );
 }
-
-    

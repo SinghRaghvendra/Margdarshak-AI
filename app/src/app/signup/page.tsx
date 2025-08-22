@@ -119,6 +119,14 @@ export default function SignupPage() {
   
   const handleSkipSignup = () => {
     clearLocalStorageForNewJourney();
+    const guestData = form.getValues();
+    const guestUserInfo = {
+        name: guestData.name || 'Guest',
+        country: guestData.country || 'Not specified',
+        language: guestData.language || 'English',
+    };
+    localStorage.setItem('margdarshak_user_info_guest', JSON.stringify(guestUserInfo));
+
     toast({
         title: 'Proceeding as Guest',
         description: "Your progress won't be saved. Create an account to save your journey.",
