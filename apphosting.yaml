@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://firebase.google.com/static/apphosting/apphosting.v1alpha1.yaml
+
+# Specifies the version of the App Hosting schema.
+schemaVersion: v1alpha1
+
+# Defines the environment variables for the backend.
+env:
+  - variable: GEMINI_API_KEY
+    # Instructs App Hosting to source the value from Secret Manager.
+    # You will need to create a secret with this name in your Google Cloud project.
+    secret: GEMINI_API_KEY
+
+# Defines the settings for the build process.
+build:
+  # The command to run to build your application.
+  # This is usually detected automatically for Next.js and not needed here.
+  # buildCommand: 'npm run build'
+
+# Defines the settings for the runtime environment.
+run:
+  # The command to start your application.
+  # This is also typically detected automatically for Next.js.
+  # command: 'npm run start'
+  # Specifies the region where your backend will run.
+  region: us-central1
