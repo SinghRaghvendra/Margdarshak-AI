@@ -13,6 +13,10 @@ import { Slider } from '@/components/ui/slider';
 import { ClipboardList, Lightbulb, ArrowRight, ArrowLeft, CheckCircle, HelpCircle } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
+import { auth, db } from '@/lib/firebase/config';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+
 
 const TOTAL_SECTIONS = psychometricTestSections.length;
 
@@ -27,37 +31,55 @@ export default function PsychometricTestPage() {
   const [optionalAnswers, setOptionalAnswers] = useState<Record<string, number>>({});
   
   const [isLoading, setIsLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<{ name: string } | null>(null);
+  const [userInfo, setUserInfo] = useState<{ name: string, email: string, country: string, language: string } | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
 
   const [showOptionalIntro, setShowOptionalIntro] = useState(false);
   const [currentOptionalQuestionIndex, setCurrentOptionalQuestionIndex] = useState(0);
   const [takingOptionalTest, setTakingOptionalTest] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
 
   useEffect(() => {
-    try {
-      const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-      if (storedUserInfo) {
-        setUserInfo(JSON.parse(storedUserInfo));
-      } else {
-        toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive' });
-        router.replace('/signup');
-        return;
-      }
-      const birthDetails = localStorage.getItem('margdarshak_birth_details');
-      if (!birthDetails) {
-        toast({ title: 'Birth details not found', description: 'Please provide your birth details first.', variant: 'destructive' });
-        router.replace('/birth-details');
-        return;
-      }
-    } catch (error) {
-      toast({ title: 'Error loading initial data', description: 'Please try again from signup.', variant: 'destructive' });
-      router.replace('/signup');
-    } finally {
-      setPageLoading(false);
-    }
-  }, [router, toast]);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            setCurrentUser(user);
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                setUserInfo({
+                    name: userData.name || 'User',
+                    email: user.email || '',
+                    country: userData.country || '',
+                    language: userData.language || 'English',
+                });
+            } else {
+                 router.replace('/signup');
+                 return;
+            }
+        } else {
+            // Guest flow
+            const guestInfo = JSON.parse(localStorage.getItem('margdarshak_user_info_guest') || '{}');
+            setUserInfo({
+                name: guestInfo.name || 'Guest',
+                email: '',
+                country: guestInfo.country || 'Not specified',
+                language: guestInfo.language || 'English',
+            });
+        }
+         const birthDetailsExist = currentUser ? true : !!localStorage.getItem('margdarshak_birth_details_guest');
+         if (!birthDetailsExist) {
+            toast({ title: 'Birth details not found', description: 'Please provide your birth details first.', variant: 'destructive' });
+            router.replace('/birth-details');
+            return;
+         }
+
+        setPageLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router, toast, currentUser]);
 
   const currentSection: Section | undefined = psychometricTestSections[currentSectionIndex];
   const currentQuestion: Question | undefined = currentSection?.questions[currentQuestionInSectionIndex];
@@ -148,8 +170,6 @@ export default function PsychometricTestPage() {
         if (answer !== undefined) {
           let answerText = `Answer: ${answer}`;
           if (q.type === 'slider') {
-            // Assuming slider value 1-5 maps to poles. For simplicity, just record value and poles.
-            // A more sophisticated mapping could be done here if needed.
             answerText = `Value: ${answer} (Poles: ${q.poles[0].label} to ${q.poles[1].label})`;
           } else if (q.type === 'choice' || q.type === 'scenario') {
             const chosenOption = q.options.find(opt => opt.id === answer);
@@ -178,7 +198,6 @@ export default function PsychometricTestPage() {
             toast({ title: 'Please answer the current optional question, or skip.', variant: 'destructive' });
             return;
          }
-         // if they are on the last question and it's answered, it's fine.
     }
 
 
@@ -186,22 +205,35 @@ export default function PsychometricTestPage() {
     const userTraits = compileTraitsToString();
 
     try {
-      localStorage.setItem('margdarshak_user_traits', userTraits);
-      localStorage.removeItem('margdarshak_personalized_answers');
-      localStorage.removeItem('margdarshak_selected_careers_list');
-      localStorage.removeItem('margdarshak_payment_successful');
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('margdarshak_roadmap_')) {
-          localStorage.removeItem(key);
-        }
-      });
+        const clearAndSave = () => {
+            // Clear subsequent journey data
+            localStorage.removeItem('margdarshak_personalized_answers');
+            localStorage.removeItem('margdarshak_personalized_answers_guest');
+            localStorage.removeItem('margdarshak_all_career_suggestions');
+            localStorage.removeItem('margdarshak_selected_careers_list');
+            localStorage.removeItem('margdarshak_payment_successful');
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('margdarshak_roadmap_')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            // Save current step data
+            localStorage.setItem('margdarshak_user_traits', userTraits);
+        };
+      
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await setDoc(userDocRef, { userTraits }, { merge: true });
+        clearAndSave(); // Also clear local storage for logged-in users to ensure clean slate
+      } else {
+        clearAndSave(); // Clear and save for guest
+      }
 
       toast({ title: 'Test Submitted!', description: 'Proceeding to personalized questions...' });
       router.push('/personalized-questions');
     } catch (error) {
       console.error('Error saving traits:', error);
       toast({ title: 'Error', description: 'Could not save test results. Please try again.', variant: 'destructive' });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -369,5 +401,3 @@ export default function PsychometricTestPage() {
     </div>
   );
 }
-
-    
