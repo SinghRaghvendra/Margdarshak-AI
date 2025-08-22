@@ -16,10 +16,10 @@ import { Menu, Home, Info, DollarSign, Mail, LogIn, FileText } from 'lucide-reac
 
 export default function Header() {
   const navItems = [
-    { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" /> },
-    { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" /> },
-    { label: 'Free Resume Tailor', href: '/resume-tailor', icon: <FileText className="mr-2 h-5 w-5" /> },
-    { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" /> },
+    { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" />, isExternal: false },
+    { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" />, isExternal: false },
+    { label: 'Free Resume Tailor', href: 'https://resumetailor.aicouncel.com', icon: <FileText className="mr-2 h-5 w-5" />, isExternal: true },
+    { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" />, isExternal: false },
   ];
 
   return (
@@ -29,7 +29,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center space-x-1">
           {navItems.map((item) => (
             <Link key={item.label} href={item.href} passHref legacyBehavior>
-              <a>
+              <a target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''}>
                 <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
                   {item.label}
                 </Button>
@@ -66,10 +66,12 @@ export default function Header() {
                 </SheetClose>
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.label}>
-                    <Link href={item.href} passHref>
-                       <Button variant="ghost" className="w-full justify-start text-base py-3">
-                         {item.icon} {item.label}
-                       </Button>
+                    <Link href={item.href} passHref legacyBehavior>
+                       <a target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''} className="w-full">
+                         <Button variant="ghost" className="w-full justify-start text-base py-3">
+                           {item.icon} {item.label}
+                         </Button>
+                       </a>
                     </Link>
                   </SheetClose>
                 ))}

@@ -16,13 +16,15 @@ export default function HomePage() {
       description: 'Uncover your innate strengths and ideal work style through our insightful psychometric assessment, then receive a comprehensive 10-year career roadmap.',
       href: "/signup",
       cta: "Start Your Career Journey",
+      isExternal: false,
     },
     {
       icon: <Wand2 className="h-10 w-10 text-primary mb-4" />,
       title: 'Free AI Resume Tailor',
       description: 'Instantly tailor your resume and generate a professional cover letter for any job. Let AI highlight your strengths to pass through applicant tracking systems.',
-      href: "/resume-tailor",
+      href: "https://resumetailor.aicouncel.com",
       cta: "Tailor Your Resume",
+      isExternal: true,
     },
   ];
 
@@ -63,10 +65,12 @@ export default function HomePage() {
                 <User className="mr-2 h-5 w-5" /> Get Career Guidance
               </Button>
             </Link>
-             <Link href="/resume-tailor" passHref>
-              <Button size="lg" variant="secondary" className="text-lg py-7 px-10 shadow-lg">
-                <Wand2 className="mr-2 h-5 w-5" /> Use Free Resume Tailor
-              </Button>
+             <Link href="https://resumetailor.aicouncel.com" passHref legacyBehavior>
+                <a target="_blank" rel="noopener noreferrer">
+                  <Button size="lg" variant="secondary" className="text-lg py-7 px-10 shadow-lg">
+                    <Wand2 className="mr-2 h-5 w-5" /> Use Free Resume Tailor
+                  </Button>
+                </a>
             </Link>
           </div>
         </div>
@@ -92,10 +96,12 @@ export default function HomePage() {
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </CardContent>
                 <CardContent>
-                    <Link href={feature.href} passHref>
-                        <Button className="w-full">
-                           {feature.cta} <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
+                    <Link href={feature.href} passHref legacyBehavior={feature.isExternal}>
+                        <a target={feature.isExternal ? '_blank' : '_self'} rel={feature.isExternal ? 'noopener noreferrer' : ''}>
+                          <Button className="w-full">
+                            {feature.cta} <ArrowRight className="ml-2 h-5 w-5" />
+                          </Button>
+                        </a>
                     </Link>
                 </CardContent>
               </Card>
