@@ -30,18 +30,24 @@ export default function CareerSuggestionsPage() {
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
+    // Prerequisite data checks
+    if (localStorage.getItem('margdarshak_payment_successful') !== 'true') {
+        toast({ title: 'Payment Required', description: 'Please complete payment to view suggestions.', variant: 'destructive' });
+        router.replace('/payment');
+        return;
+    }
+   
+    const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
+    const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
+    if (!storedUserTraits || !storedPersonalizedAnswers) {
+        toast({ title: 'Missing assessment data', description: 'Redirecting to previous step.', variant: 'destructive' });
+        router.replace('/personalized-questions');
+        return;
+    }
+
     const fetchSuggestions = async () => {
       setIsLoading(true);
       try {
-        const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
-        const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-
-        if (!storedUserTraits || !storedPersonalizedAnswers) {
-          toast({ title: 'Missing assessment data', description: 'Redirecting to previous step.', variant: 'destructive' });
-          router.replace('/personalized-questions');
-          return;
-        }
-        
         const parsedPersonalizedAnswers = JSON.parse(storedPersonalizedAnswers);
         const input: CareerSuggestionInput = {
           traits: storedUserTraits,
@@ -73,20 +79,6 @@ export default function CareerSuggestionsPage() {
         setIsLoading(false);
       }
     };
-    
-    // Prerequisite data checks
-    if (localStorage.getItem('margdarshak_payment_successful') !== 'true') {
-        toast({ title: 'Payment Required', description: 'Please complete payment to view suggestions.', variant: 'destructive' });
-        router.replace('/payment');
-        return;
-    }
-   
-    const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-    if (!storedPersonalizedAnswers) {
-        toast({ title: 'Personalized answers missing', description: 'Redirecting.', variant: 'destructive' });
-        router.replace('/personalized-questions');
-        return;
-    }
 
     setPageLoading(false);
     fetchSuggestions();
@@ -217,3 +209,5 @@ export default function CareerSuggestionsPage() {
     </div>
   );
 }
+
+    
