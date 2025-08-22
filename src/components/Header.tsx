@@ -28,15 +28,13 @@ export default function Header() {
         <Logo />
         <nav className="hidden md:flex items-center space-x-1">
           {navItems.map((item) => (
-            <Link key={item.label} href={item.href} passHref legacyBehavior>
-              <a target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''}>
+            <Link key={item.label} href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''}>
                 <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
                   {item.label}
                 </Button>
-              </a>
             </Link>
           ))}
-          <Link href="/signup" passHref>
+          <Link href="/signup">
             <Button className="text-sm ml-2 px-4 py-2">
               Login / Sign Up
             </Button>
@@ -58,7 +56,7 @@ export default function Header() {
               </SheetHeader>
               <div className="flex flex-col space-y-2 p-4">
                 <SheetClose asChild>
-                   <Link href="/" passHref>
+                   <Link href="/">
                     <Button variant="ghost" className="w-full justify-start text-base py-3">
                       <Home className="mr-2 h-5 w-5" /> Home
                     </Button>
@@ -66,17 +64,15 @@ export default function Header() {
                 </SheetClose>
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.label}>
-                    <Link href={item.href} passHref legacyBehavior>
-                       <a target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''} className="w-full">
+                    <Link href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''} className="w-full">
                          <Button variant="ghost" className="w-full justify-start text-base py-3">
                            {item.icon} {item.label}
                          </Button>
-                       </a>
                     </Link>
                   </SheetClose>
                 ))}
                 <SheetClose asChild>
-                  <Link href="/signup" passHref>
+                  <Link href="/signup">
                     <Button variant="default" className="w-full text-base py-3 mt-4">
                        <LogIn className="mr-2 h-5 w-5" /> Login / Sign Up
                     </Button>

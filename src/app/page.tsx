@@ -60,17 +60,15 @@ export default function HomePage() {
             Get a data-driven career roadmap or instantly tailor your resume for any job application. Your professional journey, guided by AI.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup" passHref>
+            <Link href="/signup">
               <Button size="lg" className="text-lg py-7 px-10 shadow-lg">
                 <User className="mr-2 h-5 w-5" /> Get Career Guidance
               </Button>
             </Link>
-             <Link href="https://resumetailor.aicouncel.com" passHref legacyBehavior>
-                <a target="_blank" rel="noopener noreferrer">
+             <Link href="https://resumetailor.aicouncel.com" target="_blank" rel="noopener noreferrer">
                   <Button size="lg" variant="secondary" className="text-lg py-7 px-10 shadow-lg">
                     <Wand2 className="mr-2 h-5 w-5" /> Use Free Resume Tailor
                   </Button>
-                </a>
             </Link>
           </div>
         </div>
@@ -96,12 +94,10 @@ export default function HomePage() {
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </CardContent>
                 <CardContent>
-                    <Link href={feature.href} passHref legacyBehavior={feature.isExternal}>
-                        <a target={feature.isExternal ? '_blank' : '_self'} rel={feature.isExternal ? 'noopener noreferrer' : ''}>
+                    <Link href={feature.href} target={feature.isExternal ? '_blank' : '_self'} rel={feature.isExternal ? 'noopener noreferrer' : ''}>
                           <Button className="w-full">
                             {feature.cta} <ArrowRight className="ml-2 h-5 w-5" />
                           </Button>
-                        </a>
                     </Link>
                 </CardContent>
               </Card>
@@ -143,7 +139,7 @@ export default function HomePage() {
           <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
             Take the first step towards a career that aligns with your true potential.
           </p>
-          <Link href="/signup" passHref>
+          <Link href="/signup">
             <Button size="lg" className="text-lg py-7 px-10 shadow-lg">
               Get Started Now <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
