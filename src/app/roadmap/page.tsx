@@ -4,11 +4,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-import html2pdf from 'html2pdf.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPinned, Milestone, Download, Loader2 } from 'lucide-react';
+import { MapPinned, Download, Loader2, Milestone } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { generateRoadmap, type GenerateRoadmapInput, type GenerateRoadmapOutput } from '@/ai/flows/detailed-roadmap';
@@ -229,7 +228,7 @@ export default function RoadmapPage() {
     }
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     if (!roadmapContentRef.current || !currentRoadmapMarkdown || !activeCareerTab) {
       toast({ title: 'Error', description: 'Roadmap content not available for download.', variant: 'destructive' });
       return;
@@ -237,6 +236,7 @@ export default function RoadmapPage() {
     setIsGeneratingPdf(true);
     toast({ title: 'Generating PDF', description: `Your ${preferredLanguage} roadmap PDF is being prepared...` });
 
+    const html2pdf = (await import('html2pdf.js')).default;
     const element = roadmapContentRef.current;
     const safeUserName = userName.replace(/\s+/g, '_') || 'User';
     const safeCareerName = activeCareerTab.toLowerCase().replace(/\s+/g, '_');
