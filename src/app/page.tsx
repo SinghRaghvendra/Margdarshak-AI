@@ -2,8 +2,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -18,11 +18,9 @@ export default function HomePage() {
       cta: "Start Your Career Journey",
     },
     {
-      icon: <Wand2 className="h-10 w-10 text-primary mb-4" />,
-      title: 'Free AI Resume Tailor',
-      description: 'Instantly tailor your resume and generate a professional cover letter for any job. Let AI highlight your strengths to pass through applicant tracking systems.',
-      href: "/resume-tailor",
-      cta: "Tailor Your Resume",
+      icon: <MapPinned className="h-10 w-10 text-primary mb-4" />,
+      title: 'Comprehensive Career Blueprints',
+      description: 'Receive an in-depth 10-year roadmap for your chosen careers, including localized salary insights, educational guidance, skill development strategies, and a 20-year future outlook.',
     },
   ];
 
@@ -31,9 +29,8 @@ export default function HomePage() {
       { point: "Anxious about making a wrong choice that will impact your future." },
       { point: "Unsure how your skills and interests translate into a real-world job." },
       { point: "Lacking a concrete plan to achieve your long-term career goals." },
-      { point: "Getting rejected by automated systems before a human sees your resume." },
+      { point: "Feeling stuck or unfulfilled in your current academic or career path." },
   ];
-
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-10rem)]">
@@ -78,7 +75,7 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">A Dual Approach to Career Success</h2>
             <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-              Whether you need long-term direction or immediate application help, we have a tool for you.
+              We provide a holistic, data-driven approach to career guidance, leveraging technology and personalized data.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -111,7 +108,7 @@ export default function HomePage() {
             <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
             <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-              The modern job market is confusing. Do any of these sound familiar?
+              Choosing a career path is one of life's biggest decisions, and it's normal to feel uncertain. Do any of these sound familiar?
             </p>
           </div>
           <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-x-12 gap-y-6">
@@ -124,14 +121,14 @@ export default function HomePage() {
           </div>
            <div className="text-center mt-12">
              <p className="text-lg text-foreground max-w-3xl mx-auto">
-                <span className="font-semibold text-primary">Margdarshak AI</span> replaces confusion with data-driven, personalized action plans, so you can move forward with confidence and purpose.
+                Delaying clarity can lead to years of dissatisfaction and missed opportunities. <span className="font-semibold text-primary">Margdarshak AI</span> replaces confusion with a data-driven, personalized action plan, so you can move forward with confidence and purpose as soon as possible.
              </p>
            </div>
         </div>
       </section>
 
       {/* Final Call to Action Section */}
-      <section className="py-16 md:py-24 bg-background">
+      <section className="py-16 md:py-24 bg-secondary/30">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
