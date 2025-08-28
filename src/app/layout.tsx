@@ -9,8 +9,9 @@ import Link from 'next/link';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Margdarshak AI',
-  description: 'AI-Powered Career Guidance',
+  title: 'Margdarshak AI Career Guide | AI COUNCEL LAB',
+  description: 'AI-Powered Career Guidance. Get a data-driven career roadmap or instantly tailor your resume for any job application. Your professional journey, guided by AI.',
+  keywords: ['career guide', 'resume builder', 'AI career advice', 'career roadmap', 'psychometric test', 'career suggestions', 'AI resume tailor'],
 };
 
 export default function RootLayout({
@@ -28,6 +29,9 @@ export default function RootLayout({
         </main>
         <footer className="py-6 text-center border-t">
             <div className="flex justify-center gap-x-6 gap-y-2 flex-wrap mb-4">
+               <Link href="/about" className="text-xs text-muted-foreground hover:text-primary">
+                About Us
+              </Link>
                <Link href="/privacy-policy" className="text-xs text-muted-foreground hover:text-primary">
                 Privacy Policy
               </Link>
