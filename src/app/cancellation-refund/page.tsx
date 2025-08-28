@@ -12,47 +12,52 @@ export default function CancellationAndRefundPage() {
                 <div>
                     <CardTitle className="text-3xl font-bold">Cancellation & Refund Policy</CardTitle>
                     <CardDescription className="text-lg">
-                        Last Updated: [Date]
+                        Our policy regarding order management and refunds.
                     </CardDescription>
                 </div>
             </div>
         </CardHeader>
         <CardContent className="prose max-w-none">
-          <h2>1. Service Scope</h2>
-          <p>
-            Our service involves the generation of personalized digital reports based on user input. Due to the digital nature of our product and the instantaneous delivery upon payment, our refund policy is designed accordingly.
-          </p>
-          
-          <h2>2. Cancellation</h2>
-          <p>
-            Once a payment has been successfully made and the report generation process has been initiated, the service cannot be canceled. This is because the process involves automated, irreversible costs related to the use of AI models and computational resources.
-          </p>
-          
-          <h2>3. Refund Policy</h2>
-          <p>
-            <strong>We do not offer refunds once a report has been successfully generated and made available to you.</strong>
-          </p>
-          <p>
-            A refund may be considered only in the following exceptional circumstances:
-          </p>
-          <ul>
-            <li>
-              <strong>Technical Failure:</strong> If you made a successful payment but did not receive your report due to a verifiable technical failure on our end, and we are unable to provide the report to you within a reasonable timeframe (e.g., 48 hours).
-            </li>
-            <li>
-              <strong>Duplicate Payment:</strong> If you were charged multiple times for the same service due to a technical error.
-            </li>
-          </ul>
+            <p>
+                AI Councel Lab believes in helping its customers as far as possible and has therefore a liberal policy regarding order management. Under this policy, cancellations will be considered only for specific services and within a set timeframe.
+            </p>
 
-          <h2>4. How to Request a Refund</h2>
-          <p>
-            If you believe you are eligible for a refund based on the criteria above, please contact our support team at [Your Contact Email] within 7 days of the transaction. You must provide your payment receipt and a detailed explanation of the issue.
-          </p>
+            <h2>Cancellations</h2>
+            <ul>
+                <li>
+                    <strong>Report Generation:</strong> Orders for report generation cannot be canceled. This process involves the immediate consumption of computational resources, and as such, all sales are final.
+                </li>
+                <li>
+                    <strong>Other Services:</strong> Cancellations for services other than report generation will be considered only if the request is made within 3-5 days of placing the order. However, cancellation requests may not be entertained if the services have already been initiated or communicated to vendors.
+                </li>
+            </ul>
 
-           <h2>5. Our Discretion</h2>
-          <p>
-            All refund requests will be reviewed on a case-by-case basis. Margdarshak AI reserves the right to deny any refund request that does not meet the eligibility criteria outlined in this policy.
-          </p>
+            <h2>Refunds & Replacements</h2>
+            <p>
+                Due to the nature of our digital services, our refund policy is designed to align with the consumption of global, non-recoverable resources.
+            </p>
+            <ul>
+                <li>
+                    <strong>Report Generation:</strong> The amount paid for report generation is non-refundable. This is due to the immediate and irreversible consumption of chargeable resources once the generation process begins.
+                </li>
+                <li>
+                    <strong>Counseling Services:</strong> For any services related to counseling, a 50% refund may be issued if the cancellation is approved.
+                </li>
+                <li>
+                    <strong>Damaged or Defective Products:</strong> In case of damaged or defective items, please report the issue to our Customer Service team within 3-5 days of receipt. The request will be processed after the merchant has checked and verified the claim.
+                </li>
+                <li>
+                    <strong>Product Discrepancies:</strong> If you feel that the product received is not as shown on the site or is not as per your expectations, you must notify our customer service within 3-5 days of receiving the product. The Customer Service Team will review your complaint and make an appropriate decision.
+                </li>
+                <li>
+                    <strong>Third-Party Warranties:</strong> In the case of products that come with a warranty from manufacturers, please refer the issue directly to them.
+                </li>
+            </ul>
+
+            <h2>General Policy</h2>
+            <p>
+                For any inquiries or concerns, please reach out to us through the email or WhatsApp contact information provided in our "Contact Us" section.
+            </p>
 
         </CardContent>
       </Card>
