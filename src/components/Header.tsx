@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -11,9 +13,32 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Header() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // This check runs only on the client-side
+    const userInfo = localStorage.getItem('margdarshak_user_info');
+    setIsLoggedIn(!!userInfo);
+  }, []);
+
+  const handleLogout = () => {
+    // Clear all app-related local storage to ensure a clean state
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('margdarshak_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    setIsLoggedIn(false);
+    toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+    router.push('/');
+  };
+
   const navItems = [
     { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" />, isExternal: false },
     { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" />, isExternal: false },
@@ -28,26 +53,34 @@ export default function Header() {
         <nav className="hidden md:flex items-center space-x-1">
           {navItems.map((item) => (
             <Link key={item.label} href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''}>
-                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2" suppressHydrationWarning={true}>
+                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
                   {item.label}
                 </Button>
             </Link>
           ))}
-          <Link href="/login">
-            <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2" suppressHydrationWarning={true}>
-              Login
+          {isLoggedIn ? (
+            <Button onClick={handleLogout} variant="outline" className="text-sm ml-2 px-4 py-2">
+              <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
-          </Link>
-          <Link href="/signup">
-            <Button className="text-sm ml-2 px-4 py-2" suppressHydrationWarning={true}>
-              Sign Up
-            </Button>
-          </Link>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button className="text-sm ml-2 px-4 py-2">
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
         </nav>
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" suppressHydrationWarning={true}>
+              <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
@@ -61,7 +94,7 @@ export default function Header() {
               <div className="flex flex-col space-y-2 p-4">
                 <SheetClose asChild>
                    <Link href="/">
-                    <Button variant="ghost" className="w-full justify-start text-base py-3" suppressHydrationWarning={true}>
+                    <Button variant="ghost" className="w-full justify-start text-base py-3">
                       <Home className="mr-2 h-5 w-5" /> Home
                     </Button>
                   </Link>
@@ -69,27 +102,37 @@ export default function Header() {
                 {navItems.map((item) => (
                   <SheetClose asChild key={item.label}>
                     <Link href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''} className="w-full">
-                         <Button variant="ghost" className="w-full justify-start text-base py-3" suppressHydrationWarning={true}>
+                         <Button variant="ghost" className="w-full justify-start text-base py-3">
                            {item.icon} {item.label}
                          </Button>
                     </Link>
                   </SheetClose>
                 ))}
                 <div className="pt-4 border-t">
-                  <SheetClose asChild>
-                    <Link href="/login">
-                      <Button variant="ghost" className="w-full justify-start text-base py-3" suppressHydrationWarning={true}>
-                         <LogIn className="mr-2 h-5 w-5" /> Login
-                      </Button>
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/signup">
-                      <Button variant="default" className="w-full text-base py-3 mt-2" suppressHydrationWarning={true}>
-                         <UserPlus className="mr-2 h-5 w-5" /> Sign Up
-                      </Button>
-                    </Link>
-                  </SheetClose>
+                  {isLoggedIn ? (
+                     <SheetClose asChild>
+                        <Button onClick={handleLogout} variant="default" className="w-full text-base py-3 mt-2">
+                            <LogOut className="mr-2 h-5 w-5" /> Logout
+                        </Button>
+                     </SheetClose>
+                  ) : (
+                    <>
+                      <SheetClose asChild>
+                        <Link href="/login">
+                          <Button variant="ghost" className="w-full justify-start text-base py-3">
+                             <LogIn className="mr-2 h-5 w-5" /> Login
+                          </Button>
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Link href="/signup">
+                          <Button variant="default" className="w-full text-base py-3 mt-2">
+                             <UserPlus className="mr-2 h-5 w-5" /> Sign Up
+                          </Button>
+                        </Link>
+                      </SheetClose>
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>
