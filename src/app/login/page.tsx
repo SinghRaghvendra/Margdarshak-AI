@@ -62,11 +62,13 @@ export default function LoginPage() {
       const userInfo = JSON.parse(storedUserInfo);
       // Check if email and password match the stored info
       if (userInfo.email === data.email && userInfo.password === data.password) {
+        // IMPORTANT: Clear old journey data ONLY AFTER successful login
+        clearLocalStorageForNewJourney(); 
+        
         toast({
           title: 'Login Successful',
           description: 'Redirecting to your journey...',
         });
-        clearLocalStorageForNewJourney(); // Clear old journey data on successful login
         router.push('/birth-details');
       } else {
         toast({
