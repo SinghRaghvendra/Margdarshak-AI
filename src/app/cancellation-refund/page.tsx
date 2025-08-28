@@ -25,10 +25,10 @@ export default function CancellationAndRefundPage() {
             <h2>Cancellations</h2>
             <ul>
                 <li>
-                    <strong>Report Generation:</strong> Orders for report generation cannot be canceled. This process involves the immediate consumption of computational resources, and as such, all sales are final.
+                    <strong>Report Generation:</strong> Orders for report generation <strong>cannot be canceled</strong>. This process involves the immediate consumption of computational resources, and as such, all sales are final.
                 </li>
                 <li>
-                    <strong>Other Services:</strong> Cancellations for services other than report generation will be considered only if the request is made within 3-5 days of placing the order. However, cancellation requests may not be entertained if the services have already been initiated or communicated to vendors.
+                    <strong>Other Services:</strong> Cancellations for services other than report generation will be considered only if the request is made within <strong>3-5 days</strong> of placing the order. However, cancellation requests may not be entertained if the services have already been initiated or communicated to vendors.
                 </li>
             </ul>
 
@@ -38,16 +38,16 @@ export default function CancellationAndRefundPage() {
             </p>
             <ul>
                 <li>
-                    <strong>Report Generation:</strong> The amount paid for report generation is non-refundable. This is due to the immediate and irreversible consumption of chargeable resources once the generation process begins.
+                    <strong>Report Generation:</strong> The amount paid for report generation is <strong>non-refundable</strong>. This is due to the immediate and irreversible consumption of chargeable resources once the generation process begins.
                 </li>
                 <li>
-                    <strong>Counseling Services:</strong> For any services related to counseling, a 50% refund may be issued if the cancellation is approved.
+                    <strong>Counseling Services:</strong> For any services related to counseling, a <strong>50% refund</strong> may be issued if the cancellation is approved.
                 </li>
                 <li>
-                    <strong>Damaged or Defective Products:</strong> In case of damaged or defective items, please report the issue to our Customer Service team within 3-5 days of receipt. The request will be processed after the merchant has checked and verified the claim.
+                    <strong>Damaged or Defective Products:</strong> In case of damaged or defective items, please report the issue to our Customer Service team within <strong>3-5 days</strong> of receipt. The request will be processed after the merchant has checked and verified the claim.
                 </li>
                 <li>
-                    <strong>Product Discrepancies:</strong> If you feel that the product received is not as shown on the site or is not as per your expectations, you must notify our customer service within 3-5 days of receiving the product. The Customer Service Team will review your complaint and make an appropriate decision.
+                    <strong>Product Discrepancies:</strong> If you feel that the product received is not as shown on the site or is not as per your expectations, you must notify our customer service within <strong>3-5 days</strong> of receiving the product. The Customer Service Team will review your complaint and make an appropriate decision.
                 </li>
                 <li>
                     <strong>Third-Party Warranties:</strong> In the case of products that come with a warranty from manufacturers, please refer the issue directly to them.
