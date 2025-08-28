@@ -77,7 +77,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-10rem)]">
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32 flex items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30">
+      <section className="relative pt-10 pb-20 md:pt-16 md:pb-32 flex items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30">
         <div className="absolute inset-0">
           <Image
             src="https://placehold.co/1920x800.png"
