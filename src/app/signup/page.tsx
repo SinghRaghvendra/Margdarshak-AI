@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserPlus, Globe } from 'lucide-react';
+import { UserPlus, Globe, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -39,7 +39,13 @@ const signupFormSchema = z.object({
   contact: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: 'Please enter a valid contact number (e.g., +1234567890).' }),
   country: z.string().min(2, { message: 'Country must be at least 2 characters.' }),
   language: z.string({ required_error: 'Please select a language.' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters.'}),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"], // path of error
 });
+
 
 type SignupFormValues = z.infer<typeof signupFormSchema>;
 
@@ -55,6 +61,8 @@ export default function SignupPage() {
       contact: '',
       country: '',
       language: 'English', // Default to English
+      password: '',
+      confirmPassword: '',
     },
   });
 
@@ -74,7 +82,9 @@ export default function SignupPage() {
 
   function onSubmit(data: SignupFormValues) {
     try {
-      localStorage.setItem('margdarshak_user_info', JSON.stringify(data));
+      // Don't store confirmPassword
+      const { confirmPassword, ...userInfo } = data;
+      localStorage.setItem('margdarshak_user_info', JSON.stringify(userInfo));
       clearLocalStorageForNewJourney();
       toast({
         title: 'Signup Successful!',
@@ -113,7 +123,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Name" {...field} suppressHydrationWarning={true} />
+                      <Input placeholder="Your Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -126,7 +136,33 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} suppressHydrationWarning={true} />
+                      <Input type="email" placeholder="your.email@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center"><KeyRound className="mr-2 h-4 w-4 text-muted-foreground" />Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center"><KeyRound className="mr-2 h-4 w-4 text-muted-foreground" />Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -139,7 +175,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Contact Number</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="+1 234 567 8900" {...field} suppressHydrationWarning={true} />
+                      <Input type="tel" placeholder="+1 234 567 8900" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +188,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Country</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Country" {...field} suppressHydrationWarning={true} />
+                      <Input placeholder="Your Country" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -182,7 +218,7 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full text-lg py-6 mt-2" suppressHydrationWarning={true}>
+              <Button type="submit" className="w-full text-lg py-6 mt-2">
                 Sign Up & Continue
               </Button>
             </form>

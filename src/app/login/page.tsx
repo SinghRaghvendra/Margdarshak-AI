@@ -41,21 +41,29 @@ export default function LoginPage() {
   function onSubmit(data: LoginFormValues) {
     // NOTE: This is a placeholder for actual authentication logic.
     // In a real app, you would call your backend/Firebase Auth here.
-    console.log(data);
-    toast({
-      title: 'Login Successful (Simulated)',
-      description: 'Redirecting to your journey...',
-    });
-    // For now, we'll just assume login is successful and proceed.
-    // We can retrieve user info from localStorage if it exists.
-    const userInfo = localStorage.getItem('margdarshak_user_info');
-    if (userInfo) {
-      router.push('/birth-details');
+    const storedUserInfo = localStorage.getItem('margdarshak_user_info');
+    
+    if (storedUserInfo) {
+      const userInfo = JSON.parse(storedUserInfo);
+      // Check if email and password match the stored info
+      if (userInfo.email === data.email && userInfo.password === data.password) {
+        toast({
+          title: 'Login Successful',
+          description: 'Redirecting to your journey...',
+        });
+        router.push('/birth-details');
+      } else {
+        toast({
+          title: 'Invalid Credentials',
+          description: 'The email or password you entered is incorrect.',
+          variant: 'destructive',
+        });
+      }
     } else {
-      // If no user info, maybe they should sign up first.
+      // If no user info is stored at all
       toast({
         title: 'User not found',
-        description: 'No user data found for this email. Please sign up first.',
+        description: 'No user data found. Please sign up first.',
         variant: 'destructive',
       });
       router.push('/signup');
@@ -84,7 +92,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} suppressHydrationWarning={true} />
+                      <Input type="email" placeholder="your.email@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -97,7 +105,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Your Password" {...field} suppressHydrationWarning={true} />
+                      <Input type="password" placeholder="Your Password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
