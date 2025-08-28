@@ -20,6 +20,8 @@ import { LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const loginFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -34,7 +36,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Redirect if user is already logged in
-    if (localStorage.getItem('margdarshak_user_info')) {
+    if (auth.currentUser) {
       toast({ title: 'You are already logged in.' });
       router.replace('/');
     }
@@ -49,39 +51,32 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(data: LoginFormValues) {
-    const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-    
-    if (storedUserInfo) {
-      const userInfo = JSON.parse(storedUserInfo);
-      if (userInfo.email === data.email && userInfo.password === data.password) {
-        
-        toast({
-          title: 'Login Successful',
-          description: 'Welcome back! Redirecting...',
-        });
-        
-        // Redirect to the new welcome page to let user choose
-        router.push('/welcome-guest');
-
-      } else {
-        toast({
-          title: 'Invalid Credentials',
-          description: 'The email or password you entered is incorrect.',
-          variant: 'destructive',
-        });
-      }
-    } else {
+  async function onSubmit(data: LoginFormValues) {
+    try {
+      await signInWithEmailAndPassword(auth, data.email, data.password);
       toast({
-        title: 'User not found',
-        description: 'No user data found. Please sign up first.',
+        title: 'Login Successful',
+        description: 'Welcome back! Redirecting...',
+      });
+      router.push('/welcome-guest');
+    } catch (error: any) {
+      let errorMessage = 'Invalid Credentials. The email or password you entered is incorrect.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        // Firebase provides more specific errors, but we show a generic one.
+      } else {
+        errorMessage = 'An unexpected error occurred during login. Please try again.'
+      }
+
+      toast({
+        title: 'Login Failed',
+        description: errorMessage,
         variant: 'destructive',
       });
-      router.push('/signup');
+      console.error('Login error:', error);
     }
   }
-
-  if (typeof window !== 'undefined' && localStorage.getItem('margdarshak_user_info')) {
+  
+  if (auth.currentUser) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
@@ -134,8 +129,8 @@ export default function LoginPage() {
                 </Link>
               </div>
               <div className="flex flex-col gap-3 pt-2">
-                <Button type="submit" className="w-full text-lg py-6">
-                  Login & Continue Journey
+                <Button type="submit" className="w-full text-lg py-6" disabled={form.formState.isSubmitting}>
+                   {form.formState.isSubmitting ? <LoadingSpinner /> : 'Login & Continue Journey'}
                 </Button>
               </div>
             </form>

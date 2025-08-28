@@ -21,6 +21,10 @@ import { UserPlus, Globe, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { auth, db } from '@/lib/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+
 
 const languages = [
   { value: 'English', label: 'English' },
@@ -56,7 +60,7 @@ export default function SignupPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (localStorage.getItem('margdarshak_user_info')) {
+    if (auth.currentUser) {
       toast({ title: 'You are already logged in.' });
       router.replace('/');
     }
@@ -75,28 +79,43 @@ export default function SignupPage() {
     },
   });
 
-  function onSubmit(data: SignupFormValues) {
+  async function onSubmit(data: SignupFormValues) {
     try {
-      const { confirmPassword, ...userInfo } = data;
-      
-      localStorage.setItem('margdarshak_user_info', JSON.stringify(userInfo));
+      const { email, password, name, contact, country, language } = data;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Now save the extra user info to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name,
+        email,
+        contact,
+        country,
+        language,
+        createdAt: new Date(),
+      });
 
       toast({
         title: 'Signup Successful!',
         description: 'Redirecting to your journey...',
       });
       router.push('/welcome-guest');
-    } catch (error) {
+    } catch (error: any) {
+      let errorMessage = 'Could not complete signup. Please try again.';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already in use. Please log in or use a different email.';
+      }
       toast({
         title: 'Signup Failed',
-        description: 'Could not save your information. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
       console.error('Signup error:', error);
     }
   }
 
-  if (typeof window !== 'undefined' && localStorage.getItem('margdarshak_user_info')) {
+  if (auth.currentUser) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
@@ -217,8 +236,8 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full text-lg py-6 mt-2">
-                Sign Up & Continue
+              <Button type="submit" className="w-full text-lg py-6 mt-2" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? <LoadingSpinner /> : 'Sign Up & Continue'}
               </Button>
             </form>
           </Form>

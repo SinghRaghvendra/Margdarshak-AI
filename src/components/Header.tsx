@@ -15,25 +15,32 @@ import {
 } from '@/components/ui/sheet';
 import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 
 export default function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
-  const pathname = usePathname(); // Hook to detect route changes
   const { toast } = useToast();
 
   useEffect(() => {
-    const userInfo = localStorage.getItem('margdarshak_user_info');
-    setIsLoggedIn(!!userInfo);
-  }, [pathname]);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
 
-  const handleLogout = () => {
-    // Only remove the user info to log them out, preserving progress data
-    localStorage.removeItem('margdarshak_user_info');
-    
-    setIsLoggedIn(false);
-    toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-    router.push('/');
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+      router.push('/');
+    } catch (error) {
+      toast({ title: 'Logout Failed', description: 'Could not log you out. Please try again.', variant: 'destructive' });
+      console.error('Logout error:', error);
+    }
   };
 
   const navItems = [
@@ -55,7 +62,7 @@ export default function Header() {
                 </Button>
             </Link>
           ))}
-          {isLoggedIn ? (
+          {user ? (
             <Button onClick={handleLogout} variant="outline" className="text-sm ml-2 px-4 py-2">
               <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
@@ -106,7 +113,7 @@ export default function Header() {
                   </SheetClose>
                 ))}
                 <div className="pt-4 border-t">
-                  {isLoggedIn ? (
+                  {user ? (
                      <SheetClose asChild>
                         <Button onClick={handleLogout} variant="default" className="w-full text-base py-3 mt-2">
                             <LogOut className="mr-2 h-5 w-5" /> Logout

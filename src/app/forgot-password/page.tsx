@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,6 +18,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MailQuestion } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { auth } from '@/lib/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email to send a reset link.' }),
@@ -37,16 +40,22 @@ export default function ForgotPasswordPage() {
     },
   });
 
-  function onSubmit(data: ForgotPasswordFormValues) {
-    // In a real app, this would trigger a backend service to send a password reset email.
-    // Here, we just simulate the success message.
-    console.log('Password reset requested for:', data.email);
-    toast({
-      title: 'Check Your Email',
-      description: `If an account exists for ${data.email}, a password reset link has been sent.`,
-    });
-    // Optionally redirect the user back to the login page after a delay or immediately
-    router.push('/login');
+  async function onSubmit(data: ForgotPasswordFormValues) {
+    try {
+      await sendPasswordResetEmail(auth, data.email);
+      toast({
+        title: 'Check Your Email',
+        description: `A password reset link has been sent to ${data.email}.`,
+      });
+      router.push('/login');
+    } catch (error: any) {
+      toast({
+        title: 'Error Sending Email',
+        description: 'Could not send password reset email. Please check the address and try again.',
+        variant: 'destructive',
+      });
+      console.error("Password reset error:", error);
+    }
   }
 
   return (
@@ -77,8 +86,8 @@ export default function ForgotPasswordPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full text-lg py-6 mt-2">
-                Send Reset Link
+              <Button type="submit" className="w-full text-lg py-6 mt-2" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? <LoadingSpinner /> : 'Send Reset Link'}
               </Button>
             </form>
           </Form>
