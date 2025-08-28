@@ -30,17 +30,28 @@ export default function RootLayout({
         </main>
         <footer className="py-8 text-sm border-t bg-secondary/30">
             <div className="container mx-auto px-4 grid md:grid-cols-3 gap-8">
-                {/* Left Column: Policies */}
-                <div className="space-y-2">
-                    <h3 className="font-semibold text-foreground">Policies</h3>
-                    <ul className="space-y-1 text-muted-foreground">
-                        <li><Link href="/privacy-policy" className="hover:text-primary hover:underline">Privacy Policy</Link></li>
-                        <li><Link href="/terms-conditions" className="hover:text-primary hover:underline">Terms & Conditions</Link></li>
-                        <li><Link href="/cancellation-refund" className="hover:text-primary hover:underline">Cancellation & Refund</Link></li>
-                    </ul>
+                {/* Left Column: Policies & Contact */}
+                <div className="space-y-4">
+                    <div>
+                        <h3 className="font-semibold text-foreground">Policies</h3>
+                        <ul className="space-y-1 text-muted-foreground mt-1">
+                            <li><Link href="/privacy-policy" className="hover:text-primary hover:underline">Privacy Policy</Link></li>
+                            <li><Link href="/terms-conditions" className="hover:text-primary hover:underline">Terms & Conditions</Link></li>
+                            <li><Link href="/cancellation-refund" className="hover:text-primary hover:underline">Cancellation & Refund</Link></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground">Contact Us</h3>
+                        <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                            <Mail className="h-4 w-4 flex-shrink-0" />
+                            <a href="mailto:support@aicouncel.com" className="hover:text-primary hover:underline">
+                                support@aicouncel.com
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Middle Column: About Us & Vision */}
+                {/* Middle Column: About Us */}
                 <div className="space-y-4">
                     <div>
                         <h3 className="font-semibold text-foreground">About Us</h3>
@@ -48,22 +59,15 @@ export default function RootLayout({
                             AI Councel Lab is an innovation-driven AI company that builds next-generation artificial intelligence solutions for individuals and businesses. We specialize in practical and impactful tools powered by advanced AI research and design to deliver measurable value.
                         </p>
                     </div>
-                     <div>
+                </div>
+
+                {/* Right Column: Our Vision */}
+                <div className="space-y-4">
+                    <div>
                         <h3 className="font-semibold text-foreground">Our Vision</h3>
                         <p className="text-muted-foreground mt-1">
                             Our vision is to help people discover their true potential and secure the best opportunities to grow and succeed with confidence. We create AI products that make careers smarter and opportunities more accessible.
                         </p>
-                    </div>
-                </div>
-
-                {/* Right Column: Contact */}
-                <div className="space-y-2">
-                    <h3 className="font-semibold text-foreground">Contact Us</h3>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <Mail className="h-4 w-4 flex-shrink-0" />
-                        <a href="mailto:support@aicouncel.com" className="hover:text-primary hover:underline">
-                            support@aicouncel.com
-                        </a>
                     </div>
                 </div>
             </div>
