@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -89,6 +90,14 @@ export default function HomePage() {
            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
+          <Image 
+            src="https://placehold.co/150x150.png"
+            alt="AI Councel Lab Logo"
+            width={150}
+            height={150}
+            className="mx-auto mb-8 rounded-md"
+            data-ai-hint="logo"
+          />
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
             Unlock Your Future with Margdarshak AI
           </h1>
@@ -116,7 +125,7 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">A Dual Approach to Career Success</h2>
             <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-              Whether you need long-term direction or immediate application help, we have a tool for you.
+              Whether you need long-term direction or an immediate application help, we have a tool for you.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
