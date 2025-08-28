@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -21,7 +20,7 @@ export default function WelcomeGuestPage() {
         </CardHeader>
         <CardContent>
           <Link href="/signup" passHref>
-            <Button className="w-full max-w-xs mx-auto text-lg py-6">
+            <Button className="w-full max-w-xs mx-auto text-lg py-6" suppressHydrationWarning={true}>
               Start Your Journey <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

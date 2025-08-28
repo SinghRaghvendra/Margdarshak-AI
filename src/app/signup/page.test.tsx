@@ -44,78 +44,68 @@ describe('SignUpPage', () => {
   test('renders the signup form', () => {
     render(<SignUpPage />);
 
-    expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Sign up/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Start without signing up/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Full Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Contact Number/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Country/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sign Up & Continue/i })).toBeInTheDocument();
   });
 
-  test('allows typing into the email and password fields', () => {
+  test('allows typing into the form fields', () => {
     render(<SignUpPage />);
 
-    const emailInput = screen.getByLabelText(/Email/i);
-    const passwordInput = screen.getByLabelText(/Password/i);
+    fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'John Doe' } });
+    fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'john.doe@example.com' } });
+    fireEvent.change(screen.getByLabelText(/Contact Number/i), { target: { value: '+15551234567' } });
+    fireEvent.change(screen.getByLabelText(/Country/i), { target: { value: 'USA' } });
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-
-    expect(emailInput).toHaveValue('test@example.com');
-    expect(passwordInput).toHaveValue('password123');
+    expect(screen.getByLabelText(/Full Name/i)).toHaveValue('John Doe');
+    expect(screen.getByLabelText(/Email Address/i)).toHaveValue('john.doe@example.com');
+    expect(screen.getByLabelText(/Contact Number/i)).toHaveValue('+15551234567');
+    expect(screen.getByLabelText(/Country/i)).toHaveValue('USA');
   });
 
-  test('shows validation errors for empty fields on sign up attempt', async () => {
+  test('shows validation errors for empty fields on submit attempt', async () => {
     render(<SignUpPage />);
 
-    const signupButton = screen.getByRole('button', { name: /Sign up/i });
+    const signupButton = screen.getByRole('button', { name: /Sign Up & Continue/i });
     fireEvent.click(signupButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Email is required/i)).toBeInTheDocument();
-      expect(screen.getByText(/Password is required/i)).toBeInTheDocument();
+      expect(screen.getByText(/Name must be at least 2 characters./i)).toBeInTheDocument();
+      expect(screen.getByText(/Please enter a valid email./i)).toBeInTheDocument();
+      expect(screen.getByText(/Please enter a valid contact number/i)).toBeInTheDocument();
+      expect(screen.getByText(/Country must be at least 2 characters./i)).toBeInTheDocument();
     });
   });
 
-  test('shows validation error for invalid email format', async () => {
+  test('calls localStorage.setItem and redirects on successful signup', async () => {
     render(<SignUpPage />);
 
-    const emailInput = screen.getByLabelText(/Email/i);
-    const passwordInput = screen.getByLabelText(/Password/i);
-    const signupButton = screen.getByRole('button', { name: /Sign up/i });
+    fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'Jane Doe' } });
+    fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'jane.doe@example.com' } });
+    fireEvent.change(screen.getByLabelText(/Contact Number/i), { target: { value: '+15557654321' } });
+    fireEvent.change(screen.getByLabelText(/Country/i), { target: { value: 'Canada' } });
+    
+    // Simulate selecting a language from the dropdown
+    // This part is tricky without seeing the exact Select implementation
+    // For now, we assume default is 'English' which is valid
 
-    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    const signupButton = screen.getByRole('button', { name: /Sign Up & Continue/i });
     fireEvent.click(signupButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Invalid email format/i)).toBeInTheDocument();
+      const storedData = JSON.parse(localStorageMock.getItem('margdarshak_user_info') || '{}');
+      expect(storedData.name).toBe('Jane Doe');
+      expect(storedData.email).toBe('jane.doe@example.com');
+      expect(mockPush).toHaveBeenCalledWith('/birth-details');
     });
   });
 
-  test('calls localStorage.setItem and redirects on successful signup (simulated)', async () => {
+  test('redirects to login page when "Login" link is clicked', () => {
     render(<SignUpPage />);
-
-    const emailInput = screen.getByLabelText(/Email/i);
-    const passwordInput = screen.getByLabelText(/Password/i);
-    const signupButton = screen.getByRole('button', { name: /Sign up/i });
-
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.click(signupButton);
-
-    // In a real scenario, this would involve mocking an API call.
-    // For this test, we assume successful validation and check for localStorage and redirect.
-    await waitFor(() => {
-      expect(localStorageMock.getItem('userEmail')).toBe('test@example.com');
-      expect(mockPush).toHaveBeenCalledWith('/psychometric-test');
-    });
-  });
-
-  test('redirects to psychometric-test page when "Start without signing up" button is clicked', () => {
-    render(<SignUpPage />);
-
-    const startButton = screen.getByRole('button', { name: /Start without signing up/i });
-    fireEvent.click(startButton);
-
-    expect(mockPush).toHaveBeenCalledWith('/psychometric-test');
+    const loginLink = screen.getByRole('link', { name: /Login/i });
+    fireEvent.click(loginLink);
+    expect(mockPush).toHaveBeenCalledWith('/login');
   });
 });

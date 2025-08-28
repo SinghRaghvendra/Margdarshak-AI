@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -61,12 +60,12 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <Button size="lg" className="text-lg py-7 px-10 shadow-lg">
+              <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
                 <User className="mr-2 h-5 w-5" /> Get Career Guidance
               </Button>
             </Link>
              <Link href="https://resumetailor.aicouncel.com" target="_blank" rel="noopener noreferrer">
-                  <Button size="lg" variant="secondary" className="text-lg py-7 px-10 shadow-lg">
+                  <Button size="lg" variant="secondary" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
                     <Wand2 className="mr-2 h-5 w-5" /> Use Free Resume Tailor
                   </Button>
             </Link>
@@ -95,7 +94,7 @@ export default function HomePage() {
                 </CardContent>
                 <CardContent>
                     <Link href={feature.href} target={feature.isExternal ? '_blank' : '_self'} rel={feature.isExternal ? 'noopener noreferrer' : ''}>
-                          <Button className="w-full">
+                          <Button className="w-full" suppressHydrationWarning={true}>
                             {feature.cta} <ArrowRight className="ml-2 h-5 w-5" />
                           </Button>
                     </Link>
@@ -140,7 +139,7 @@ export default function HomePage() {
             Take the first step towards a career that aligns with your true potential.
           </p>
           <Link href="/signup">
-            <Button size="lg" className="text-lg py-7 px-10 shadow-lg">
+            <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
               Get Started Now <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

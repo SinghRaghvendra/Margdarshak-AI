@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UserPlus, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 const languages = [
   { value: 'English', label: 'English' },
@@ -91,41 +91,16 @@ export default function SignupPage() {
     }
   }
 
-  const handleSkipSignup = () => {
-    try {
-       localStorage.setItem('margdarshak_user_info', JSON.stringify({ 
-         name: 'Guest', 
-         email: '', 
-         contact: '', 
-         country: 'GuestCountry',
-         language: 'English' // Default language for guest
-        }));
-       clearLocalStorageForNewJourney();
-       toast({
-        title: 'Skipping Signup',
-        description: 'Proceeding as Guest to gather birth details.',
-      });
-      router.push('/birth-details');
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Could not proceed. Please try again.',
-        variant: 'destructive',
-      });
-      console.error('Skip signup error:', error);
-    }
-  };
-
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] py-6">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <UserPlus className="h-12 w-12 text-primary mx-auto mb-2" />
           <CardTitle className="text-3xl font-bold">
-            Join Margdarshak AI
+            Create Your Account
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Create an account or start as a guest to begin your career discovery.
+            Start your career discovery journey with Margdarshak AI.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -138,7 +113,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Name" {...field} />
+                      <Input placeholder="Your Name" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -151,7 +126,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} />
+                      <Input type="email" placeholder="your.email@example.com" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -164,7 +139,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Contact Number</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="+1 234 567 8900" {...field} />
+                      <Input type="tel" placeholder="+1 234 567 8900" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -177,7 +152,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Country</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Country" {...field} />
+                      <Input placeholder="Your Country" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -207,15 +182,16 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full text-lg py-6 mt-2">
+              <Button type="submit" className="w-full text-lg py-6 mt-2" suppressHydrationWarning={true}>
                 Sign Up & Continue
               </Button>
             </form>
           </Form>
-          <div className="mt-4 text-center">
-            <Button variant="link" onClick={handleSkipSignup} className="text-primary hover:underline">
-              Continue as Guest
-            </Button>
+          <div className="mt-4 text-center text-sm">
+            Already have an account?{' '}
+            <Link href="/login" className="text-primary hover:underline font-medium">
+              Login
+            </Link>
           </div>
         </CardContent>
       </Card>
