@@ -9,21 +9,32 @@ import { CreditCard, Loader2, ListChecks, ArrowRight } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 
-const RAZORPAY_PAYMENT_LINK = 'https://rzp.io/rzp/rjxEWZu1';
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+const REPORT_AMOUNT_INR = 99; // in INR
 
 export default function PaymentPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [selectedCareersList, setSelectedCareersList] = useState<string[]>([]);
-  const [userName, setUserName] = useState<string>('Guest');
-
+  const [userInfo, setUserInfo] = useState({ name: 'Guest', email: '', contact: '' });
+  
   useEffect(() => {
     try {
       const storedUserInfo = localStorage.getItem('margdarshak_user_info');
       if (storedUserInfo) {
-        setUserName(JSON.parse(storedUserInfo).name || 'Guest');
+        const parsedInfo = JSON.parse(storedUserInfo);
+        setUserInfo({
+          name: parsedInfo.name || 'Guest',
+          email: parsedInfo.email || '',
+          contact: parsedInfo.contact || ''
+        });
       } else {
         toast({ title: 'User info not found', description: 'Redirecting to signup.', variant: 'destructive' });
         router.replace('/signup');
@@ -49,9 +60,9 @@ export default function PaymentPage() {
       // Verify all prerequisite data for report generation is present before allowing payment
       const prerequisites = [
         'margdarshak_user_traits',
-        'margdarshak_birth_details', // Contains DOB, POB, TOB
+        'margdarshak_birth_details',
         'margdarshak_personalized_answers',
-        'margdarshak_user_info' // Contains country, name
+        'margdarshak_user_info'
       ];
       const missingPrerequisites = prerequisites.filter(key => !localStorage.getItem(key));
 
@@ -62,7 +73,6 @@ export default function PaymentPage() {
           variant: 'destructive',
           duration: 7000,
         });
-        // Attempt to redirect to a sensible previous step
         if (missingPrerequisites.includes('margdarshak_personalized_answers')) router.replace('/personalized-questions');
         else if (missingPrerequisites.includes('margdarshak_user_traits')) router.replace('/psychometric-test');
         else if (missingPrerequisites.includes('margdarshak_birth_details')) router.replace('/birth-details');
@@ -79,19 +89,92 @@ export default function PaymentPage() {
     }
   }, [router, toast]);
 
-  const handlePayment = () => {
-    toast({ title: 'Redirecting to Payment', description: 'Opening Razorpay in a new tab...' });
-    window.open(RAZORPAY_PAYMENT_LINK, '_blank');
-    setPaymentInitiated(true);
+
+  const handlePayment = async () => {
+    setIsProcessing(true);
+    toast({ title: 'Initializing Payment', description: 'Please wait...' });
+
+    try {
+      // 1. Create Order on backend
+      const orderResponse = await fetch('/api/razorpay/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: REPORT_AMOUNT_INR * 100 }), // amount in paise
+      });
+      
+      const orderData = await orderResponse.json();
+
+      if (!orderResponse.ok) {
+        throw new Error(orderData.error || 'Failed to create Razorpay order');
+      }
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: orderData.key_id,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'Margdarshak AI',
+        description: 'Career Report Generation',
+        order_id: orderData.id,
+        handler: async function (response: any) {
+          // 3. Verify payment on backend
+          toast({ title: 'Verifying Payment', description: 'This may take a moment, please do not close this page.' });
+          try {
+            const verificationResponse = await fetch('/api/razorpay/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            
+            const verificationData = await verificationResponse.json();
+            
+            if (verificationData.success) {
+                localStorage.setItem('margdarshak_payment_successful', 'true');
+                toast({ title: 'Payment Successful!', description: 'Proceeding to generate your reports...' });
+                router.push('/roadmap');
+            } else {
+                throw new Error(verificationData.error || 'Payment verification failed.');
+            }
+
+          } catch (verifyError: any) {
+             toast({ title: 'Payment Verification Failed', description: verifyError.message || 'An error occurred during verification. Please contact support.', variant: 'destructive', duration: 8000});
+             setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: userInfo.name,
+          email: userInfo.email,
+          contact: userInfo.contact,
+        },
+        theme: {
+          color: '#FDD835' // This is the primary color from your theme
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      
+      rzp.on('payment.failed', function (response: any) {
+        console.error('Razorpay payment failed:', response.error);
+        toast({
+          title: 'Payment Failed',
+          description: `${response.error.description} (Reason: ${response.error.reason})`,
+          variant: 'destructive',
+          duration: 8000,
+        });
+        setIsProcessing(false);
+      });
+
+    } catch (error: any) {
+      toast({ title: 'Payment Error', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+      setIsProcessing(false);
+    }
   };
   
-  const handleProceedAfterPayment = () => {
-    localStorage.setItem('margdarshak_payment_successful', 'true');
-    localStorage.removeItem('margdarshak_roadmap_markdown');
-    toast({ title: 'Payment Confirmed!', description: 'Proceeding to view your selected career roadmaps...' });
-    router.push('/roadmap');
-  };
-
   if (pageLoading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
@@ -113,7 +196,7 @@ export default function PaymentPage() {
           <CreditCard className="h-12 w-12 text-primary mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold">Unlock Your Career Reports</CardTitle>
           <CardDescription>
-            Hi {userName}, you've selected 3 careers to explore. Pay the one-time fee to generate detailed reports for each.
+            Hi {userInfo.name}, you've selected 3 careers to explore. Pay the one-time fee to generate detailed reports for each.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
@@ -126,27 +209,15 @@ export default function PaymentPage() {
               {selectedCareersList.map(career => <li key={career}>{career}</li>)}
             </ul>
           </div>
-          <p className="text-lg mb-2">Total Report Fee: <span className="font-bold text-2xl">₹99</span></p>
+          <p className="text-lg mb-2">Total Report Fee: <span className="font-bold text-2xl">₹{REPORT_AMOUNT_INR}</span></p>
           <p className="text-sm text-muted-foreground mb-6">
             This one-time payment allows you to generate and download comprehensive reports for all three selected careers.
           </p>
           
-          {!paymentInitiated ? (
-             <Button onClick={handlePayment} className="w-full text-lg py-6">
-              <CreditCard className="mr-2 h-5 w-5" />
-              Pay ₹99 & Access Reports
-            </Button>
-          ) : (
-            <div className="mt-8 p-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-md text-center">
-                <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Payment Initiated!</h3>
-                <p className="text-sm text-green-700 dark:text-green-300 mt-1 mb-4">
-                    Please complete your payment in the new tab. Once finished, click the button below to continue.
-                </p>
-                 <Button onClick={handleProceedAfterPayment} className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white">
-                    I've Paid, Continue to Roadmaps <ArrowRight className="ml-2 h-5 w-5" />
-                 </Button>
-            </div>
-          )}
+          <Button onClick={handlePayment} className="w-full text-lg py-6" disabled={isProcessing}>
+            {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
+            Pay ₹{REPORT_AMOUNT_INR} & Access Reports
+          </Button>
 
         </CardContent>
       </Card>

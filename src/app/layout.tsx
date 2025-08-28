@@ -6,6 +6,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Link from 'next/link';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Margdarshak AI',
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="antialiased flex flex-col min-h-screen">
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
           {children}
