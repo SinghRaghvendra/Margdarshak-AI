@@ -20,8 +20,9 @@ import { LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 const loginFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -35,13 +36,10 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Redirect if user is already logged in
     if (auth.currentUser) {
-      toast({ title: 'You are already logged in.' });
       router.replace('/');
     }
-  }, [router, toast]);
-
+  }, [router]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -53,16 +51,40 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+
+      // Fetch user data from Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        // Save fetched data to localStorage for other parts of the app to use
+        localStorage.setItem('margdarshak_user_info', JSON.stringify({
+          uid: user.uid,
+          name: userData.name,
+          email: userData.email,
+          contact: userData.contact,
+          country: userData.country,
+          language: userData.language,
+        }));
+      } else {
+         throw new Error("User data not found in database.");
+      }
+
       toast({
         title: 'Login Successful',
         description: 'Welcome back! Redirecting...',
       });
       router.push('/welcome-guest');
+
     } catch (error: any) {
-      let errorMessage = 'Invalid Credentials. The email or password you entered is incorrect.';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      let errorMessage = 'Invalid credentials. The email or password you entered is incorrect.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         // Firebase provides more specific errors, but we show a generic one.
+      } else if (error.message === "User data not found in database.") {
+        errorMessage = "Could not retrieve your profile. Please contact support.";
       } else {
         errorMessage = 'An unexpected error occurred during login. Please try again.'
       }
@@ -75,7 +97,7 @@ export default function LoginPage() {
       console.error('Login error:', error);
     }
   }
-  
+
   if (auth.currentUser) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
