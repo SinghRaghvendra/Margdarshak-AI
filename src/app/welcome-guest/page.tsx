@@ -1,23 +1,24 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gift, ArrowRight, RotateCw, Play } from 'lucide-react';
+import { Gift, ArrowRight, RotateCw, Play, CreditCard } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
+type ProgressState = 'none' | 'partial_test' | 'test_complete_no_selection' | 'selection_complete_no_payment' | 'paid';
+
 export default function WelcomeGuestPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [pageLoading, setPageLoading] = useState(true);
   const [userName, setUserName] = useState('Guest');
-  const [hasProgress, setHasProgress] = useState(false);
+  const [progressState, setProgressState] = useState<ProgressState>('none');
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -31,10 +32,21 @@ export default function WelcomeGuestPage() {
           if (userDoc.exists()) {
             const userData = userDoc.data();
             setUserName(userData.name || 'Guest');
-            // Check for progress in Firestore
-            if (userData.testProgress && userData.testProgress.answers && Object.keys(userData.testProgress.answers).length > 0) {
-              setHasProgress(true);
+            
+            // Determine progress state
+            if (userData.paymentSuccessful) {
+                setProgressState('paid');
+            } else if (userData.selectedCareersList && userData.selectedCareersList.length === 3) {
+                setProgressState('selection_complete_no_payment');
+                localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(userData.selectedCareersList));
+            } else if (userData.testCompleted) {
+                setProgressState('test_complete_no_selection');
+            } else if (userData.testProgress && userData.testProgress.answers && Object.keys(userData.testProgress.answers).length > 0) {
+              setProgressState('partial_test');
+            } else {
+              setProgressState('none');
             }
+
              // Sync firestore data to localstorage for other components if needed
             localStorage.setItem('margdarshak_user_info', JSON.stringify({
               uid: currentUser.uid,
@@ -44,6 +56,12 @@ export default function WelcomeGuestPage() {
               country: userData.country,
               language: userData.language,
             }));
+            
+            // Sync other essential data if it exists
+             if (userData.birthDetails) localStorage.setItem('margdarshak_birth_details', JSON.stringify(userData.birthDetails));
+             if (userData.userTraits) localStorage.setItem('margdarshak_user_traits', userData.userTraits);
+             if (userData.personalizedAnswers) localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(userData.personalizedAnswers));
+
 
           } else {
              toast({ title: 'User data not found', description: 'Could not retrieve your profile.', variant: 'destructive' });
@@ -68,7 +86,22 @@ export default function WelcomeGuestPage() {
   }, [router, toast]);
   
   const handleContinue = () => {
-    router.push('/birth-details');
+    switch (progressState) {
+        case 'paid':
+            router.push('/my-reports');
+            break;
+        case 'selection_complete_no_payment':
+            router.push('/payment');
+            break;
+        case 'test_complete_no_selection':
+            router.push('/personalized-questions');
+            break;
+        case 'partial_test':
+            router.push('/psychometric-test');
+            break;
+        default:
+            router.push('/birth-details');
+    }
   };
 
   const handleStartFresh = async () => {
@@ -79,19 +112,17 @@ export default function WelcomeGuestPage() {
     
     try {
       const userDocRef = doc(db, 'users', user.uid);
-      // Clear specific fields in Firestore instead of the whole object
       await updateDoc(userDocRef, {
         testProgress: null,
         userTraits: null,
         testCompleted: false,
         personalizedAnswers: null,
-        allCareerSuggestions: null,
         selectedCareersList: null,
         paymentSuccessful: null,
-        // We can create a field for roadmaps if we want to clear them too
+        // Reset other fields as necessary
       });
 
-       // Clear all local storage journey data
+       // Clear all local storage journey data, keeping user info
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
           localStorage.removeItem(key);
@@ -106,6 +137,43 @@ export default function WelcomeGuestPage() {
        console.error("Error clearing progress:", error);
     }
   };
+
+  const renderContent = () => {
+    if (progressState === 'none') {
+        return (
+             <Button onClick={() => router.push('/birth-details')} className="w-full max-w-sm mx-auto text-lg py-6">
+              Start Your Journey <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+        )
+    }
+
+    let description = "It looks like you have progress saved. What would you like to do?";
+    let ctaText = "Continue Where You Left Off";
+    let ctaIcon = <Play className="mr-2 h-5 w-5" />;
+
+    if (progressState === 'selection_complete_no_payment') {
+        description = "You're just one step away! You've completed the assessment and selected your careers. Let's checkout.";
+        ctaText = "Proceed to Checkout";
+        ctaIcon = <CreditCard className="mr-2 h-5 w-5" />
+    } else if (progressState === 'paid') {
+        description = "Welcome back! You can view your previously generated reports or start a new assessment."
+        ctaText = "View My Reports"
+    }
+
+    return (
+        <>
+          <p className="text-muted-foreground">{description}</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button onClick={handleContinue} className="w-full text-lg py-6">
+              {ctaIcon} {ctaText}
+            </Button>
+            <Button onClick={handleStartFresh} variant="outline" className="w-full text-lg py-6">
+              <RotateCw className="mr-2 h-5 w-5" /> Start Fresh Assessment
+            </Button>
+          </div>
+        </>
+    );
+  }
 
   if (pageLoading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
@@ -122,23 +190,7 @@ export default function WelcomeGuestPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {hasProgress ? (
-            <>
-              <p className="text-muted-foreground">It looks like you have progress saved. What would you like to do?</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button onClick={handleContinue} className="w-full text-lg py-6">
-                  <Play className="mr-2 h-5 w-5" /> Continue Where You Left Off
-                </Button>
-                <Button onClick={handleStartFresh} variant="outline" className="w-full text-lg py-6">
-                  <RotateCw className="mr-2 h-5 w-5" /> Start Fresh Assessment
-                </Button>
-              </div>
-            </>
-          ) : (
-            <Button onClick={() => router.push('/birth-details')} className="w-full max-w-sm mx-auto text-lg py-6">
-              Start Your Journey <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          )}
+          {renderContent()}
         </CardContent>
       </Card>
     </div>

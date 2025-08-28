@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,6 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CreditCard, Loader2, ListChecks, ArrowRight } from 'lucide-react'; 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
+import { auth, db } from '@/lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
 
 declare global {
   interface Window {
@@ -24,8 +26,24 @@ export default function PaymentPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [selectedCareersList, setSelectedCareersList] = useState<string[]>([]);
   const [userInfo, setUserInfo] = useState({ name: 'Guest', email: '', contact: '' });
+  const [user, setUser] = useState<User | null>(null);
   
   useEffect(() => {
+     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        initializePage(currentUser);
+      } else {
+        toast({ title: 'Authentication Error', description: 'Redirecting to login.', variant: 'destructive' });
+        router.replace('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const initializePage = (currentUser: User) => {
     try {
       const storedUserInfo = localStorage.getItem('margdarshak_user_info');
       if (storedUserInfo) {
@@ -52,9 +70,8 @@ export default function PaymentPage() {
           return;
         }
       } else {
-        toast({ title: 'No careers selected', description: 'Redirecting to select careers.', variant: 'destructive' });
-        router.replace('/career-suggestions');
-        return;
+        // This case is for when user lands here directly from welcome page
+        // We will fetch from Firestore if it exists in a moment, for now just show loading.
       }
 
       // Verify all prerequisite data for report generation is present before allowing payment
@@ -87,10 +104,14 @@ export default function PaymentPage() {
     } finally {
       setPageLoading(false);
     }
-  }, [router, toast]);
+  }
 
 
   const handlePayment = async () => {
+    if (!user) {
+        toast({ title: 'User not authenticated', description: 'Please log in again.', variant: 'destructive' });
+        return;
+    }
     setIsProcessing(true);
     toast({ title: 'Initializing Payment', description: 'Please wait...' });
 
@@ -133,7 +154,11 @@ export default function PaymentPage() {
             const verificationData = await verificationResponse.json();
             
             if (verificationData.success) {
+                // Save payment success state to both localStorage and Firestore
                 localStorage.setItem('margdarshak_payment_successful', 'true');
+                const userDocRef = doc(db, 'users', user.uid);
+                await setDoc(userDocRef, { paymentSuccessful: true, lastPaymentId: response.razorpay_payment_id }, { merge: true });
+
                 toast({ title: 'Payment Successful!', description: 'Proceeding to generate your reports...' });
                 router.push('/roadmap');
             } else {
@@ -175,7 +200,7 @@ export default function PaymentPage() {
     }
   };
   
-  if (pageLoading) {
+  if (pageLoading || !user) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   

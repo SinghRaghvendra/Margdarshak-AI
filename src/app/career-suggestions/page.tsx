@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,6 +11,10 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput } from '@/ai/flows/career-suggestion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { auth, db } from '@/lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
+
 
 interface CareerSuggestion {
   name: string;
@@ -30,19 +33,48 @@ export default function CareerSuggestionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(true);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+        if (currentUser) {
+            setUser(currentUser);
+            // Prerequisite checks and fetching suggestions
+            // This entire block is now inside the auth state observer
+            const prerequisites = [
+              'margdarshak_user_info',
+              'margdarshak_birth_details',
+              'margdarshak_user_traits',
+              'margdarshak_personalized_answers'
+            ];
+            const missing = prerequisites.find(key => !localStorage.getItem(key));
+            if (missing) {
+              toast({ title: 'Prerequisite data missing', description: `Redirecting, as ${missing.replace('margdarshak_','')} is not found.`, variant: 'destructive' });
+              let redirectPath = '/signup';
+              if (missing.includes('birth_details')) redirectPath = '/birth-details';
+              if (missing.includes('user_traits')) redirectPath = '/psychometric-test';
+              if (missing.includes('personalized_answers')) redirectPath = '/personalized-questions';
+              router.replace(redirectPath);
+              return;
+            }
+            setPageLoading(false);
+            fetchSuggestions();
+        } else {
+            toast({ title: 'Not Authenticated', description: 'Redirecting to login.', variant: 'destructive' });
+            router.replace('/login');
+        }
+    });
+
+    // We define fetchSuggestions inside useEffect or useCallback to include it in dependency array if it depended on props/state
     const fetchSuggestions = async () => {
       setIsLoading(true);
       setGenerationError(null);
       try {
         const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
         const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-
-        if (!storedUserTraits || !storedPersonalizedAnswers) {
-          // Prerequisites check will handle redirection
-          return;
-        }
+        
+        // These should exist due to checks above, but good practice to double check
+        if (!storedUserTraits || !storedPersonalizedAnswers) return;
         
         const parsedPersonalizedAnswers = JSON.parse(storedPersonalizedAnswers);
         const input: CareerSuggestionInput = {
@@ -77,35 +109,8 @@ export default function CareerSuggestionsPage() {
       }
     };
     
-    // Prerequisite data checks
-    if (!localStorage.getItem('margdarshak_user_info')) {
-        toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive' });
-        router.replace('/signup');
-        setPageLoading(false);
-        return;
-    }
-    if (!localStorage.getItem('margdarshak_birth_details')) {
-        toast({ title: 'Birth details missing', description: 'Redirecting.', variant: 'destructive' });
-        router.replace('/birth-details');
-        setPageLoading(false);
-        return;
-    }
-    if (!localStorage.getItem('margdarshak_user_traits')) {
-        toast({ title: 'Psychometric test data missing', description: 'Redirecting.', variant: 'destructive' });
-        router.replace('/psychometric-test');
-        setPageLoading(false);
-        return;
-    }
-    if (!localStorage.getItem('margdarshak_personalized_answers')) {
-        toast({ title: 'Personalized answers missing', description: 'Redirecting.', variant: 'destructive' });
-        router.replace('/personalized-questions');
-        setPageLoading(false);
-        return;
-    }
-
-    setPageLoading(false);
-    fetchSuggestions();
-
+    return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, toast]);
 
   const handleSelectCareer = (careerName: string) => {
@@ -128,25 +133,40 @@ export default function CareerSuggestionsPage() {
     });
   };
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (selectedCareers.length !== MAX_SELECTIONS) {
       toast({ title: `Please select ${MAX_SELECTIONS} careers`, description: `You have selected ${selectedCareers.length}.`, variant: 'destructive'});
       return;
     }
+    if (!user) {
+      toast({ title: 'User not logged in', description: 'Cannot save selections.', variant: 'destructive' });
+      return;
+    }
     try {
+      // Save to both localStorage and Firestore
       localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(selectedCareers));
+
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { 
+          selectedCareersList: selectedCareers,
+          paymentSuccessful: false // Explicitly set payment status to false
+      }, { merge: true });
+
+      // Clear subsequent local data
+      localStorage.removeItem('margdarshak_payment_successful');
       localStorage.removeItem('margdarshak_selected_career');
       localStorage.removeItem('margdarshak_career_insights_astro');
       localStorage.removeItem('margdarshak_career_insights_numero');
-
+      
       toast({ title: 'Selections Saved', description: 'Proceeding to payment for your detailed reports.' });
       router.push('/payment');
     } catch (error) {
       toast({ title: 'Error saving selection', description: 'Could not save your selections. Please try again.', variant: 'destructive'});
+      console.error("Error saving career selections:", error);
     }
   };
 
-  if (pageLoading) {
+  if (pageLoading || !user) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   
