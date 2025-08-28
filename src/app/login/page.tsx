@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -18,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const loginFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -29,6 +31,16 @@ type LoginFormValues = z.infer<typeof loginFormSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Redirect if user is already logged in
+    const storedUserInfo = localStorage.getItem('margdarshak_user_info');
+    if (storedUserInfo) {
+      toast({ title: 'You are already logged in.' });
+      router.replace('/');
+    }
+  }, [router, toast]);
+
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -86,6 +98,11 @@ export default function LoginPage() {
       });
       router.push('/signup');
     }
+  }
+
+  // Render nothing or a loader while the effect runs
+  if (typeof window !== 'undefined' && localStorage.getItem('margdarshak_user_info')) {
+    return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
   return (
