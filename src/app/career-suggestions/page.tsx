@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { ArrowRight, Briefcase, Lightbulb, Loader2, Percent, Sparkles } from 'lucide-react';
+import { ArrowRight, Briefcase, Lightbulb, Loader2, Percent, Sparkles, AlertTriangle } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput } from '@/ai/flows/career-suggestion';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface CareerSuggestion {
   name: string;
@@ -28,10 +29,12 @@ export default function CareerSuggestionsPage() {
   const [selectedCareers, setSelectedCareers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(true);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
       setIsLoading(true);
+      setGenerationError(null);
       try {
         const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
         const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
@@ -47,27 +50,26 @@ export default function CareerSuggestionsPage() {
           personalizedAnswers: parsedPersonalizedAnswers,
         };
         
-        toast({ title: 'Generating Top 10 Career Suggestions', description: 'Please wait, this may take a moment...' });
+        toast({ title: 'Generating Top Career Suggestions', description: 'Please wait, this may take a moment...' });
         const suggestionsOutput: CareerSuggestionOutput = await suggestCareers(input);
         
-        if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length > 0) {
+        if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length >= MAX_SELECTIONS) {
           setAllSuggestions(suggestionsOutput.careers);
-          // Save all suggestions to localStorage for later use in detailed report
           localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsOutput.careers));
 
-          // Load previously selected careers if any (e.g., if user navigated back)
           const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
           if (storedSelections) {
             setSelectedCareers(JSON.parse(storedSelections));
           }
         } else {
-          toast({ title: 'Could not generate suggestions', description: 'Please try the previous steps again.', variant: 'destructive'});
+          setGenerationError(`The AI could not generate enough distinct career suggestions based on your answers. For better results, please go back and provide more detailed responses to the personalized questions.`);
           setAllSuggestions([]);
           localStorage.removeItem('margdarshak_all_career_suggestions');
         }
       } catch (error) {
         console.error('Error fetching career suggestions:', error);
         toast({ title: 'Error Generating Suggestions', description: 'Could not generate career suggestions. Please try again.', variant: 'destructive' });
+        setGenerationError('An unexpected error occurred while generating suggestions. Please try the previous steps again.');
         setAllSuggestions([]);
         localStorage.removeItem('margdarshak_all_career_suggestions');
       } finally {
@@ -88,15 +90,13 @@ export default function CareerSuggestionsPage() {
         setPageLoading(false);
         return;
     }
-    const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
-    if (!storedUserTraits) {
+    if (!localStorage.getItem('margdarshak_user_traits')) {
         toast({ title: 'Psychometric test data missing', description: 'Redirecting.', variant: 'destructive' });
         router.replace('/psychometric-test');
         setPageLoading(false);
         return;
     }
-    const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-    if (!storedPersonalizedAnswers) {
+    if (!localStorage.getItem('margdarshak_personalized_answers')) {
         toast({ title: 'Personalized answers missing', description: 'Redirecting.', variant: 'destructive' });
         router.replace('/personalized-questions');
         setPageLoading(false);
@@ -135,9 +135,7 @@ export default function CareerSuggestionsPage() {
     }
     try {
       localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(selectedCareers));
-      // Remove single selected career key if it exists from old flow
       localStorage.removeItem('margdarshak_selected_career');
-      // Remove old insight data
       localStorage.removeItem('margdarshak_career_insights_astro');
       localStorage.removeItem('margdarshak_career_insights_numero');
 
@@ -164,19 +162,26 @@ export default function CareerSuggestionsPage() {
       {isLoading && (
         <div className="flex flex-col justify-center items-center min-h-[20rem]">
           <LoadingSpinner size={48} />
-          <p className="ml-4 mt-4 text-lg text-muted-foreground">Generating your top 10 suggestions...</p>
+          <p className="ml-4 mt-4 text-lg text-muted-foreground">Generating your top career suggestions...</p>
         </div>
       )}
 
-      {!isLoading && (!allSuggestions || allSuggestions.length === 0) && (
-        <div className="text-center py-10">
-          <h1 className="text-2xl font-semibold mb-4">No Career Suggestions Available</h1>
-          <p className="text-muted-foreground mb-6">We couldn't generate career suggestions. You can try adjusting your answers.</p>
-          <Button onClick={() => router.push('/personalized-questions')}>Review Answers</Button>
+      {!isLoading && generationError && (
+        <div className="max-w-2xl mx-auto">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Suggestion Generation Failed</AlertTitle>
+            <AlertDescription className="mb-4">
+              {generationError}
+            </AlertDescription>
+            <Button onClick={() => router.push('/personalized-questions')} variant="secondary">
+              Review Your Answers
+            </Button>
+          </Alert>
         </div>
       )}
 
-      {!isLoading && allSuggestions && allSuggestions.length > 0 && (
+      {!isLoading && !generationError && allSuggestions && allSuggestions.length > 0 && (
         <>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {allSuggestions.map((career, index) => (
@@ -238,4 +243,3 @@ export default function CareerSuggestionsPage() {
     </div>
   );
 }
-

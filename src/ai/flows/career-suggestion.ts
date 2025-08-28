@@ -39,10 +39,10 @@ const CareerObjectSchema = z.object({
 const CareerSuggestionOutputSchema = z.object({
   careers: z
     .array(CareerObjectSchema)
-    .min(7)
-    .max(10) // Aim for 10 suggestions
+    .min(3) // Relaxed from 7 to 3 for more reliable output
+    .max(10)
     .describe(
-      'An array of seven to ten distinct career options, each with a name, matchScore, personalityProfile, and a rationale, based on the user traits and personalized answers.'
+      'An array of three to ten distinct career options, each with a name, matchScore, personalityProfile, and a rationale, based on the user traits and personalized answers.'
     ),
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
@@ -55,7 +55,7 @@ const prompt = ai.definePrompt({
   name: 'careerSuggestionWithPersonalizationPrompt',
   input: {schema: CareerSuggestionInputSchema},
   output: {schema: CareerSuggestionOutputSchema},
-  prompt: `You are an expert career counselor. Based on the following psychometric test traits and personalized answers, suggest ten distinct and suitable career options.
+  prompt: `You are an expert career counselor. Based on the following psychometric test traits and personalized answers, suggest at least 7 and up to 10 distinct and suitable career options.
 For each career suggestion, provide:
 1.  'name': The name of the career.
 2.  'matchScore': An estimated percentage match score (e.g., "85%", "92%") based on the AI's assessment of how well the career aligns with the user's traits and answers. This score represents a qualitative assessment expressed numerically.
@@ -72,7 +72,7 @@ Personalized Answers:
 4. Industry Interest: {{{personalizedAnswers.q4}}}
 5. Career Motivations: {{{personalizedAnswers.q5}}}
 
-Return the ten career suggestions as an array of objects within the JSON object. Each object in the array must have a "name" field (string), a "matchScore" field (string, e.g., "90%"), a "personalityProfile" field (string), and a "rationale" field (string). The array should be named "careers".
+Return the career suggestions as an array of objects within the JSON object. Each object in the array must have a "name" field (string), a "matchScore" field (string, e.g., "90%"), a "personalityProfile" field (string), and a "rationale" field (string). The array should be named "careers".
 Consider all provided information to make relevant and diverse suggestions with insightful details for each field.
 `,
 });
@@ -88,11 +88,10 @@ const suggestCareersFlow = ai.defineFlow(
     if (!output) {
         throw new Error("The AI model did not return a valid output for career suggestions.");
     }
-    // Ensure we return a maximum of 10, even if the model provides more (though schema should cap it)
+    // Ensure we return a maximum of 10, even if the model provides more
     if (output.careers.length > 10) {
       output.careers = output.careers.slice(0, 10);
     }
     return output;
   }
 );
-
