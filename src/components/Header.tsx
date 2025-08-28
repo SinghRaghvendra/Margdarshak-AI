@@ -30,17 +30,26 @@ export default function Header() {
   }, [pathname]); // Dependency array includes pathname
 
   const handleLogout = () => {
-    // Preserve user info for future logins, but clear session-specific data
-    const userInfo = localStorage.getItem('margdarshak_user_info');
+    const userInfoString = localStorage.getItem('margdarshak_user_info');
     
-    // Clear all localStorage
-    localStorage.clear();
+    // Determine the progress key before clearing everything
+    const progressKey = userInfoString ? `margdarshak_test_progress_${JSON.parse(userInfoString).email}` : null;
 
-    // Restore user info if it existed
-    if (userInfo) {
-      localStorage.setItem('margdarshak_user_info', userInfo);
+    // Clear all localStorage related to the journey
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // Specifically remove the dynamic progress key
+    if (progressKey) {
+        localStorage.removeItem(progressKey);
     }
     
+    // Finally, remove the user info to log them out
+    localStorage.removeItem('margdarshak_user_info');
+
     setIsLoggedIn(false);
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
     router.push('/');

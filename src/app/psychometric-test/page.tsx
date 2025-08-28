@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -65,8 +64,9 @@ export default function PsychometricTestPage() {
       localStorage.setItem(progressKey, JSON.stringify(progress));
     } catch (error) {
       console.error("Failed to save progress", error);
+      toast({ title: "Could not save progress", description: "Your progress may not be saved. Please check your browser settings.", variant: "destructive"});
     }
-  }, [progressKey, currentSectionIndex, currentQuestionInSectionIndex, answers, optionalAnswers, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex]);
+  }, [progressKey, currentSectionIndex, currentQuestionInSectionIndex, answers, optionalAnswers, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, toast]);
 
   useEffect(() => {
     try {
@@ -108,12 +108,13 @@ export default function PsychometricTestPage() {
     }
   }, [router, toast]);
 
+  // This useEffect hook is the core of the automatic progress saving.
+  // It triggers the saveProgress function whenever any state related to the test progress changes.
   useEffect(() => {
-    // Save progress whenever state changes
-    if (!pageLoading) {
+    if (!pageLoading && progressKey) {
       saveProgress();
     }
-  }, [answers, optionalAnswers, currentSectionIndex, currentQuestionInSectionIndex, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, pageLoading, saveProgress]);
+  }, [answers, optionalAnswers, currentSectionIndex, currentQuestionInSectionIndex, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, pageLoading, saveProgress, progressKey]);
 
   const currentSection: Section | undefined = psychometricTestSections[currentSectionIndex];
   const currentQuestion: Question | undefined = currentSection?.questions[currentQuestionInSectionIndex];
@@ -161,13 +162,14 @@ export default function PsychometricTestPage() {
   };
 
   const handlePrevious = () => {
+    setTakingOptionalTest(false);
     setShowOptionalIntro(false);
     if (currentQuestionInSectionIndex > 0) {
       setCurrentQuestionInSectionIndex(currentQuestionInSectionIndex - 1);
     } else if (currentSectionIndex > 0) {
-      const prevSection = psychometricTestSections[currentSectionIndex -1];
+      const prevSection = psychometricTestSections[currentSectionIndex - 1];
       setCurrentSectionIndex(currentSectionIndex - 1);
-      setCurrentQuestionInSectionIndex(prevSection.questions.length -1);
+      setCurrentQuestionInSectionIndex(prevSection.questions.length - 1);
     }
   };
   
@@ -185,7 +187,7 @@ export default function PsychometricTestPage() {
 
   const handlePreviousOptional = () => {
     if (currentOptionalQuestionIndex > 0) {
-        setCurrentOptionalQuestionIndex(prev => prev -1);
+        setCurrentOptionalQuestionIndex(prev => prev - 1);
     } else {
         setTakingOptionalTest(false);
         setShowOptionalIntro(true);
@@ -240,10 +242,12 @@ export default function PsychometricTestPage() {
 
     try {
       localStorage.setItem('margdarshak_user_traits', userTraits);
-      if (progressKey) {
-        localStorage.removeItem(progressKey);
-      }
+      // Do not remove progress key here, as user might want to go back and check.
+      // It will be cleared on next login or explicit "start fresh".
+      
+      // Clear subsequent data to ensure a fresh flow from this point
       localStorage.removeItem('margdarshak_personalized_answers');
+      localStorage.removeItem('margdarshak_all_career_suggestions');
       localStorage.removeItem('margdarshak_selected_careers_list');
       localStorage.removeItem('margdarshak_payment_successful');
       Object.keys(localStorage).forEach(key => {
@@ -328,7 +332,7 @@ export default function PsychometricTestPage() {
                     </RadioGroup>
                 </CardContent>
                 <CardFooter className="flex justify-between space-x-3">
-                     <Button onClick={handlePreviousOptional} variant="outline" disabled={currentOptionalQuestionIndex === 0 && !takingOptionalTest}>
+                     <Button onClick={handlePreviousOptional} variant="outline">
                         <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                     </Button>
                     {isLoading ? <LoadingSpinner /> : (
@@ -408,7 +412,7 @@ export default function PsychometricTestPage() {
           )}
         </CardContent>
         <CardFooter className="flex justify-between space-x-3">
-          <Button onClick={handlePrevious} variant="outline" disabled={currentSectionIndex === 0 && currentQuestionInSectionIndex === 0 && !takingOptionalTest}>
+          <Button onClick={handlePrevious} variant="outline" disabled={currentSectionIndex === 0 && currentQuestionInSectionIndex === 0}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Previous
           </Button>
           {isLoading ? (

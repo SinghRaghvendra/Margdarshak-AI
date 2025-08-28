@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogIn, RefreshCw } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -49,41 +49,21 @@ export default function LoginPage() {
     },
   });
 
-  const clearLocalStorageForNewJourney = () => {
-    // Intentionally keep user info
-    const userInfo = localStorage.getItem('margdarshak_user_info');
-    const userEmail = userInfo ? JSON.parse(userInfo).email : null;
-    const progressKey = userEmail ? `margdarshak_test_progress_${userEmail}` : null;
-    
-    // Clear all other data
+  const clearLocalStorageForNewJourney = (email: string) => {
+    const progressKey = `margdarshak_test_progress_${email}`;
+    localStorage.removeItem(progressKey);
     localStorage.removeItem('margdarshak_birth_details');
     localStorage.removeItem('margdarshak_user_traits');
     localStorage.removeItem('margdarshak_personalized_answers');
     localStorage.removeItem('margdarshak_selected_careers_list');
     localStorage.removeItem('margdarshak_all_career_suggestions');
     localStorage.removeItem('margdarshak_payment_successful');
-    if (progressKey) {
-        localStorage.removeItem(progressKey);
-    }
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('margdarshak_roadmap_')) {
         localStorage.removeItem(key);
       }
-       // Also clear old progress if key format changes or is generic
-      if (key.startsWith('margdarshak_test_progress_') && key !== progressKey) {
-        localStorage.removeItem(key);
-      }
     });
   }
-
-  const handleStartNewJourney = () => {
-    clearLocalStorageForNewJourney();
-    toast({
-        title: 'Starting Fresh!',
-        description: 'All previous progress has been cleared. Redirecting...',
-    });
-    router.push('/birth-details');
-  };
 
   function onSubmit(data: LoginFormValues) {
     const storedUserInfo = localStorage.getItem('margdarshak_user_info');
@@ -92,22 +72,18 @@ export default function LoginPage() {
       const userInfo = JSON.parse(storedUserInfo);
       if (userInfo.email === data.email && userInfo.password === data.password) {
         
+        // This is a new login session, so clear any old journey data
+        // This allows a "fresh start" feeling each time they log in to continue
+        clearLocalStorageForNewJourney(data.email);
+
         toast({
           title: 'Login Successful',
-          description: 'Redirecting to your journey...',
+          description: 'Welcome back! Redirecting to your journey...',
         });
-
-        // Check for progress and redirect accordingly
-        const progressKey = `margdarshak_test_progress_${data.email}`;
-        const progress = localStorage.getItem(progressKey);
         
-        if (progress) {
-          router.push('/psychometric-test');
-        } else if (localStorage.getItem('margdarshak_birth_details')) {
-          router.push('/psychometric-test');
-        } else {
-          router.push('/birth-details');
-        }
+        // Always start the journey at birth details.
+        // Subsequent pages will redirect if data exists (e.g. test page will load progress)
+        router.push('/birth-details');
 
       } else {
         toast({
@@ -139,7 +115,7 @@ export default function LoginPage() {
             Welcome Back
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Log in to continue your journey or start a new one.
+            Log in to continue your journey.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -180,10 +156,7 @@ export default function LoginPage() {
               </div>
               <div className="flex flex-col gap-3 pt-2">
                 <Button type="submit" className="w-full text-lg py-6">
-                  Continue Journey
-                </Button>
-                 <Button type="button" onClick={handleStartNewJourney} variant="secondary" className="w-full">
-                   <RefreshCw className="mr-2 h-4 w-4" /> Start a New Journey
+                  Login & Continue Journey
                 </Button>
               </div>
             </form>
