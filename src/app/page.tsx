@@ -20,15 +20,18 @@ export default function HomePage() {
       const userInfo = JSON.parse(userInfoString);
       const progressKey = `margdarshak_test_progress_${userInfo.email}`;
       const progress = localStorage.getItem(progressKey);
-      
-      const birthDetails = localStorage.getItem('margdarshak_birth_details');
+      const paymentSuccessful = localStorage.getItem('margdarshak_payment_successful');
+      const selectedCareers = localStorage.getItem('margdarshak_selected_careers_list');
+      const allSuggestions = localStorage.getItem('margdarshak_all_career_suggestions');
       const personalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-      const careerSuggestions = localStorage.getItem('margdarshak_all_career_suggestions');
+      const birthDetails = localStorage.getItem('margdarshak_birth_details');
 
-      if (careerSuggestions) {
-        setCareerGuidanceHref('/career-suggestions');
+      if (paymentSuccessful === 'true' && selectedCareers) {
+        setCareerGuidanceHref('/roadmap');
+      } else if (allSuggestions) {
+         setCareerGuidanceHref('/career-suggestions');
       } else if (personalizedAnswers) {
-        setCareerGuidanceHref('/personalized-questions');
+        setCareerGuidanceHref('/career-suggestions'); // Go generate suggestions
       } else if (progress) {
         setCareerGuidanceHref('/psychometric-test');
       } else if (birthDetails) {

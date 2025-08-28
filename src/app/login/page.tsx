@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogIn } from 'lucide-react';
+import { LogIn, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -50,32 +50,40 @@ export default function LoginPage() {
   });
 
   const clearLocalStorageForNewJourney = () => {
-    // Intentionally keep user info and test progress
+    // Intentionally keep user info
     const userInfo = localStorage.getItem('margdarshak_user_info');
     const userEmail = userInfo ? JSON.parse(userInfo).email : null;
     const progressKey = userEmail ? `margdarshak_test_progress_${userEmail}` : null;
-    const progressData = progressKey ? localStorage.getItem(progressKey) : null;
-
+    
+    // Clear all other data
     localStorage.removeItem('margdarshak_birth_details');
     localStorage.removeItem('margdarshak_user_traits');
     localStorage.removeItem('margdarshak_personalized_answers');
     localStorage.removeItem('margdarshak_selected_careers_list');
     localStorage.removeItem('margdarshak_all_career_suggestions');
     localStorage.removeItem('margdarshak_payment_successful');
+    if (progressKey) {
+        localStorage.removeItem(progressKey);
+    }
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('margdarshak_roadmap_')) {
         localStorage.removeItem(key);
       }
-      // Also clear old progress if key format changes or is generic
+       // Also clear old progress if key format changes or is generic
       if (key.startsWith('margdarshak_test_progress_') && key !== progressKey) {
         localStorage.removeItem(key);
       }
     });
-     // Restore progress for the current user
-    if (progressKey && progressData) {
-      localStorage.setItem(progressKey, progressData);
-    }
   }
+
+  const handleStartNewJourney = () => {
+    clearLocalStorageForNewJourney();
+    toast({
+        title: 'Starting Fresh!',
+        description: 'All previous progress has been cleared. Redirecting...',
+    });
+    router.push('/birth-details');
+  };
 
   function onSubmit(data: LoginFormValues) {
     const storedUserInfo = localStorage.getItem('margdarshak_user_info');
@@ -83,8 +91,6 @@ export default function LoginPage() {
     if (storedUserInfo) {
       const userInfo = JSON.parse(storedUserInfo);
       if (userInfo.email === data.email && userInfo.password === data.password) {
-        
-        clearLocalStorageForNewJourney(); 
         
         toast({
           title: 'Login Successful',
@@ -133,7 +139,7 @@ export default function LoginPage() {
             Welcome Back
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Log in to your account to continue your career journey.
+            Log in to continue your journey or start a new one.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -172,12 +178,17 @@ export default function LoginPage() {
                   </span>
                 </Link>
               </div>
-              <Button type="submit" className="w-full text-lg py-6 mt-2">
-                Login
-              </Button>
+              <div className="flex flex-col gap-3 pt-2">
+                <Button type="submit" className="w-full text-lg py-6">
+                  Continue Journey
+                </Button>
+                 <Button type="button" onClick={handleStartNewJourney} variant="secondary" className="w-full">
+                   <RefreshCw className="mr-2 h-4 w-4" /> Start a New Journey
+                </Button>
+              </div>
             </form>
           </Form>
-           <div className="mt-4 text-center text-sm">
+           <div className="mt-6 text-center text-sm">
             Don't have an account?{' '}
             <Link href="/signup" className="text-primary hover:underline font-medium">
               Sign up now
