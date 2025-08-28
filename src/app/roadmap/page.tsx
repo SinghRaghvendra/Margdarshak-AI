@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { generateRoadmap, type GenerateRoadmapInput, type GenerateRoadmapOutput } from '@/ai/flows/detailed-roadmap';
 import { differenceInYears, parseISO } from 'date-fns';
 import { calculateLifePathNumber } from '@/lib/numerology';
+import { Progress } from '@/components/ui/progress';
+
 
 interface UserInfo {
   name: string;
@@ -60,6 +62,7 @@ export default function RoadmapPage() {
   const [currentRoadmapMarkdown, setCurrentRoadmapMarkdown] = useState<string | null>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
   
   const [pageLoading, setPageLoading] = useState(true);
   const [userName, setUserName] = useState<string>('User');
@@ -168,6 +171,22 @@ export default function RoadmapPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCareerTab, baseRoadmapInputData, allCareerSuggestions, preferredLanguage]);
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isGeneratingReport && generationProgress < 99) {
+      timer = setInterval(() => {
+        setGenerationProgress(prev => {
+          if (prev >= 99) {
+            clearInterval(timer);
+            return 99;
+          }
+          return prev + 1;
+        });
+      }, 250); // This will take about 25 seconds to reach 99%
+    }
+    return () => clearInterval(timer);
+  }, [isGeneratingReport, generationProgress]);
+
 
   const fetchAndSetRoadmap = async (careerName: string, language: string) => {
     if (!baseRoadmapInputData) {
@@ -200,6 +219,7 @@ export default function RoadmapPage() {
     }
 
     setIsGeneratingReport(true);
+    setGenerationProgress(0);
     setCurrentRoadmapMarkdown(null); 
     toast({ title: `Generating ${language} Report for ${careerName}`, description: 'This may take a moment...' });
 
@@ -213,6 +233,7 @@ export default function RoadmapPage() {
 
     try {
       const roadmapOutput: GenerateRoadmapOutput = await generateRoadmap(roadmapInput);
+      setGenerationProgress(100);
       setCurrentRoadmapMarkdown(roadmapOutput.roadmapMarkdown);
       
       const newCachedReport: StoredRoadmapData = { markdown: roadmapOutput.roadmapMarkdown, generatedAt: Date.now(), language: language };
@@ -301,9 +322,10 @@ export default function RoadmapPage() {
             {selectedCareers.map(career => (
               <TabsContent key={career} value={career}>
                 {isGeneratingReport && activeCareerTab === career && (
-                  <div className="flex flex-col items-center justify-center min-h-[300px]">
-                    <LoadingSpinner size={48} />
-                    <p className="mt-4 text-muted-foreground">Generating detailed {preferredLanguage} report for {career}...</p>
+                  <div className="flex flex-col items-center justify-center min-h-[300px] space-y-4">
+                    <p className="text-muted-foreground">Generating detailed {preferredLanguage} report for {career}...</p>
+                    <Progress value={generationProgress} className="w-full max-w-md" />
+                    <p className="text-sm text-primary font-semibold">{Math.round(generationProgress)}%</p>
                   </div>
                 )}
                 {!isGeneratingReport && activeCareerTab === career && currentRoadmapMarkdown && (
@@ -351,3 +373,4 @@ export default function RoadmapPage() {
     </div>
   );
 }
+
