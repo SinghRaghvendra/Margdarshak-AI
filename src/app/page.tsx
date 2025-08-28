@@ -5,16 +5,50 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [careerGuidanceHref, setCareerGuidanceHref] = useState("/signup");
+
+  useEffect(() => {
+    const userInfoString = localStorage.getItem('margdarshak_user_info');
+    if (userInfoString) {
+      setIsLoggedIn(true);
+      const userInfo = JSON.parse(userInfoString);
+      const progressKey = `margdarshak_test_progress_${userInfo.email}`;
+      const progress = localStorage.getItem(progressKey);
+      
+      const birthDetails = localStorage.getItem('margdarshak_birth_details');
+      const personalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
+      const careerSuggestions = localStorage.getItem('margdarshak_all_career_suggestions');
+
+      if (careerSuggestions) {
+        setCareerGuidanceHref('/career-suggestions');
+      } else if (personalizedAnswers) {
+        setCareerGuidanceHref('/personalized-questions');
+      } else if (progress) {
+        setCareerGuidanceHref('/psychometric-test');
+      } else if (birthDetails) {
+        setCareerGuidanceHref('/psychometric-test');
+      } else {
+        setCareerGuidanceHref('/birth-details');
+      }
+    } else {
+      setIsLoggedIn(false);
+      setCareerGuidanceHref("/signup");
+    }
+  }, []);
+
   const features = [
     {
       icon: <ClipboardList className="h-10 w-10 text-primary mb-4" />,
       title: 'Personalized Career Guidance',
       description: 'Uncover your innate strengths and ideal work style through our insightful psychometric assessment, then receive a comprehensive 10-year career roadmap.',
-      href: "/signup",
-      cta: "Start Your Career Journey",
+      href: careerGuidanceHref,
+      cta: isLoggedIn ? "Continue Your Journey" : "Start Your Career Journey",
       isExternal: false,
     },
     {
@@ -59,9 +93,9 @@ export default function HomePage() {
             Get a data-driven career roadmap or instantly tailor your resume for any job application. Your professional journey, guided by AI.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup">
+            <Link href={careerGuidanceHref}>
               <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
-                <User className="mr-2 h-5 w-5" /> Get Career Guidance
+                <User className="mr-2 h-5 w-5" /> {isLoggedIn ? "Continue Journey" : "Get Career Guidance"}
               </Button>
             </Link>
              <Link href="https://resumetailor.aicouncel.com" target="_blank" rel="noopener noreferrer">
@@ -138,9 +172,9 @@ export default function HomePage() {
           <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
             Take the first step towards a career that aligns with your true potential.
           </p>
-          <Link href="/signup">
+          <Link href={careerGuidanceHref}>
             <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
-              Get Started Now <ArrowRight className="ml-2 h-5 w-5" />
+              {isLoggedIn ? "Continue Your Journey" : "Get Started Now"} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </div>

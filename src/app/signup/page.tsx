@@ -45,7 +45,7 @@ const signupFormSchema = z.object({
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ["confirmPassword"], // path of error
+    path: ["confirmPassword"],
 });
 
 
@@ -56,9 +56,7 @@ export default function SignupPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Redirect if user is already logged in
-    const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-    if (storedUserInfo) {
+    if (localStorage.getItem('margdarshak_user_info')) {
       toast({ title: 'You are already logged in.' });
       router.replace('/');
     }
@@ -71,13 +69,15 @@ export default function SignupPage() {
       email: '',
       contact: '',
       country: '',
-      language: 'English', // Default to English
+      language: 'English',
       password: '',
       confirmPassword: '',
     },
   });
 
-  const clearLocalStorageForNewJourney = () => {
+  const clearLocalStorageForNewUser = (email: string) => {
+    const progressKey = `margdarshak_test_progress_${email}`;
+    localStorage.removeItem(progressKey);
     localStorage.removeItem('margdarshak_birth_details');
     localStorage.removeItem('margdarshak_user_traits');
     localStorage.removeItem('margdarshak_personalized_answers');
@@ -93,10 +93,14 @@ export default function SignupPage() {
 
   function onSubmit(data: SignupFormValues) {
     try {
-      // Don't store confirmPassword
       const { confirmPassword, ...userInfo } = data;
+      
+      // Clear any previous user's data before setting new user
+      localStorage.clear();
+      
       localStorage.setItem('margdarshak_user_info', JSON.stringify(userInfo));
-      clearLocalStorageForNewJourney();
+      clearLocalStorageForNewUser(data.email);
+
       toast({
         title: 'Signup Successful!',
         description: 'Redirecting to gather birth details...',
@@ -112,7 +116,6 @@ export default function SignupPage() {
     }
   }
 
-  // Render nothing or a loader while the effect runs
   if (typeof window !== 'undefined' && localStorage.getItem('margdarshak_user_info')) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }

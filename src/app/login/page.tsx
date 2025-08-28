@@ -34,8 +34,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Redirect if user is already logged in
-    const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-    if (storedUserInfo) {
+    if (localStorage.getItem('margdarshak_user_info')) {
       toast({ title: 'You are already logged in.' });
       router.replace('/');
     }
@@ -51,7 +50,12 @@ export default function LoginPage() {
   });
 
   const clearLocalStorageForNewJourney = () => {
-    // Keep user info, but clear journey-specific data
+    // Intentionally keep user info and test progress
+    const userInfo = localStorage.getItem('margdarshak_user_info');
+    const userEmail = userInfo ? JSON.parse(userInfo).email : null;
+    const progressKey = userEmail ? `margdarshak_test_progress_${userEmail}` : null;
+    const progressData = progressKey ? localStorage.getItem(progressKey) : null;
+
     localStorage.removeItem('margdarshak_birth_details');
     localStorage.removeItem('margdarshak_user_traits');
     localStorage.removeItem('margdarshak_personalized_answers');
@@ -62,26 +66,43 @@ export default function LoginPage() {
       if (key.startsWith('margdarshak_roadmap_')) {
         localStorage.removeItem(key);
       }
+      // Also clear old progress if key format changes or is generic
+      if (key.startsWith('margdarshak_test_progress_') && key !== progressKey) {
+        localStorage.removeItem(key);
+      }
     });
+     // Restore progress for the current user
+    if (progressKey && progressData) {
+      localStorage.setItem(progressKey, progressData);
+    }
   }
 
   function onSubmit(data: LoginFormValues) {
-    // NOTE: This is a placeholder for actual authentication logic.
-    // In a real app, you would call your backend/Firebase Auth here.
     const storedUserInfo = localStorage.getItem('margdarshak_user_info');
     
     if (storedUserInfo) {
       const userInfo = JSON.parse(storedUserInfo);
-      // Check if email and password match the stored info
       if (userInfo.email === data.email && userInfo.password === data.password) {
-        // IMPORTANT: Clear old journey data ONLY AFTER successful login
+        
         clearLocalStorageForNewJourney(); 
         
         toast({
           title: 'Login Successful',
           description: 'Redirecting to your journey...',
         });
-        router.push('/birth-details');
+
+        // Check for progress and redirect accordingly
+        const progressKey = `margdarshak_test_progress_${data.email}`;
+        const progress = localStorage.getItem(progressKey);
+        
+        if (progress) {
+          router.push('/psychometric-test');
+        } else if (localStorage.getItem('margdarshak_birth_details')) {
+          router.push('/psychometric-test');
+        } else {
+          router.push('/birth-details');
+        }
+
       } else {
         toast({
           title: 'Invalid Credentials',
@@ -90,7 +111,6 @@ export default function LoginPage() {
         });
       }
     } else {
-      // If no user info is stored at all
       toast({
         title: 'User not found',
         description: 'No user data found. Please sign up first.',
@@ -100,7 +120,6 @@ export default function LoginPage() {
     }
   }
 
-  // Render nothing or a loader while the effect runs
   if (typeof window !== 'undefined' && localStorage.getItem('margdarshak_user_info')) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }

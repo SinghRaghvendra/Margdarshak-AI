@@ -1,20 +1,35 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { psychometricTestSections, optionalRatingQuestions, type Section, type Question, type SliderQuestion, type ChoiceQuestion, type ScenarioQuestion, type RatingQuestion } from './questions';
+import { psychometricTestSections, optionalRatingQuestions, type Section, type Question, type RatingQuestion } from './questions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { ClipboardList, Lightbulb, ArrowRight, ArrowLeft, CheckCircle, HelpCircle } from 'lucide-react';
+import { ClipboardList, ArrowRight, ArrowLeft, CheckCircle, HelpCircle } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 
 const TOTAL_SECTIONS = psychometricTestSections.length;
+
+interface UserInfo {
+  name: string;
+  email: string;
+}
+
+interface TestProgress {
+  currentSectionIndex: number;
+  currentQuestionInSectionIndex: number;
+  answers: Record<string, string | number>;
+  optionalAnswers: Record<string, number>;
+  showOptionalIntro: boolean;
+  takingOptionalTest: boolean;
+  currentOptionalQuestionIndex: number;
+}
 
 export default function PsychometricTestPage() {
   const router = useRouter();
@@ -27,19 +42,53 @@ export default function PsychometricTestPage() {
   const [optionalAnswers, setOptionalAnswers] = useState<Record<string, number>>({});
   
   const [isLoading, setIsLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<{ name: string } | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
+  const [progressKey, setProgressKey] = useState<string | null>(null);
 
   const [showOptionalIntro, setShowOptionalIntro] = useState(false);
   const [currentOptionalQuestionIndex, setCurrentOptionalQuestionIndex] = useState(0);
   const [takingOptionalTest, setTakingOptionalTest] = useState(false);
 
+  const saveProgress = useCallback(() => {
+    if (!progressKey) return;
+    const progress: TestProgress = {
+      currentSectionIndex,
+      currentQuestionInSectionIndex,
+      answers,
+      optionalAnswers,
+      showOptionalIntro,
+      takingOptionalTest,
+      currentOptionalQuestionIndex
+    };
+    try {
+      localStorage.setItem(progressKey, JSON.stringify(progress));
+    } catch (error) {
+      console.error("Failed to save progress", error);
+    }
+  }, [progressKey, currentSectionIndex, currentQuestionInSectionIndex, answers, optionalAnswers, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex]);
 
   useEffect(() => {
     try {
       const storedUserInfo = localStorage.getItem('margdarshak_user_info');
       if (storedUserInfo) {
-        setUserInfo(JSON.parse(storedUserInfo));
+        const parsedUserInfo: UserInfo = JSON.parse(storedUserInfo);
+        setUserInfo(parsedUserInfo);
+        const key = `margdarshak_test_progress_${parsedUserInfo.email}`;
+        setProgressKey(key);
+
+        const savedProgressString = localStorage.getItem(key);
+        if (savedProgressString) {
+          const savedProgress: TestProgress = JSON.parse(savedProgressString);
+          setCurrentSectionIndex(savedProgress.currentSectionIndex);
+          setCurrentQuestionInSectionIndex(savedProgress.currentQuestionInSectionIndex);
+          setAnswers(savedProgress.answers || {});
+          setOptionalAnswers(savedProgress.optionalAnswers || {});
+          setShowOptionalIntro(savedProgress.showOptionalIntro || false);
+          setTakingOptionalTest(savedProgress.takingOptionalTest || false);
+          setCurrentOptionalQuestionIndex(savedProgress.currentOptionalQuestionIndex || 0);
+          toast({ title: 'Progress Restored', description: 'Welcome back! We\'ve loaded your saved progress.' });
+        }
       } else {
         toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive' });
         router.replace('/signup');
@@ -58,6 +107,13 @@ export default function PsychometricTestPage() {
       setPageLoading(false);
     }
   }, [router, toast]);
+
+  useEffect(() => {
+    // Save progress whenever state changes
+    if (!pageLoading) {
+      saveProgress();
+    }
+  }, [answers, optionalAnswers, currentSectionIndex, currentQuestionInSectionIndex, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, pageLoading, saveProgress]);
 
   const currentSection: Section | undefined = psychometricTestSections[currentSectionIndex];
   const currentQuestion: Question | undefined = currentSection?.questions[currentQuestionInSectionIndex];
@@ -100,12 +156,12 @@ export default function PsychometricTestPage() {
       setCurrentSectionIndex(currentSectionIndex + 1);
       setCurrentQuestionInSectionIndex(0);
     } else {
-      // Last question of last main section
       setShowOptionalIntro(true);
     }
   };
 
   const handlePrevious = () => {
+    setShowOptionalIntro(false);
     if (currentQuestionInSectionIndex > 0) {
       setCurrentQuestionInSectionIndex(currentQuestionInSectionIndex - 1);
     } else if (currentSectionIndex > 0) {
@@ -123,13 +179,16 @@ export default function PsychometricTestPage() {
     if (currentOptionalQuestionIndex < optionalRatingQuestions.length - 1) {
         setCurrentOptionalQuestionIndex(prev => prev + 1);
     } else {
-        handleSubmitTest(); // All optional questions answered
+        handleSubmitTest(); 
     }
   };
 
   const handlePreviousOptional = () => {
     if (currentOptionalQuestionIndex > 0) {
         setCurrentOptionalQuestionIndex(prev => prev -1);
+    } else {
+        setTakingOptionalTest(false);
+        setShowOptionalIntro(true);
     }
   };
 
@@ -148,14 +207,12 @@ export default function PsychometricTestPage() {
         if (answer !== undefined) {
           let answerText = `Answer: ${answer}`;
           if (q.type === 'slider') {
-            // Assuming slider value 1-5 maps to poles. For simplicity, just record value and poles.
-            // A more sophisticated mapping could be done here if needed.
             answerText = `Value: ${answer} (Poles: ${q.poles[0].label} to ${q.poles[1].label})`;
           } else if (q.type === 'choice' || q.type === 'scenario') {
             const chosenOption = q.options.find(opt => opt.id === answer);
             answerText = `Selected: "${chosenOption?.text || answer}"`;
           }
-          traitSummary += `  [Q: ${q.text || (q as ScenarioQuestion).scenario + ' - ' + (q as ScenarioQuestion).questionText}] ${answerText}\n`;
+          traitSummary += `  [Q: ${q.text || (q as any).scenario + ' - ' + (q as any).questionText}] ${answerText}\n`;
         }
       });
     });
@@ -173,20 +230,19 @@ export default function PsychometricTestPage() {
   };
 
   const handleSubmitTest = async (skipOptional = false) => {
-    if (!skipOptional && takingOptionalTest && Object.keys(optionalAnswers).length !== optionalRatingQuestions.length && currentOptionalQuestionIndex !== optionalRatingQuestions.length -1) {
-         if (!isCurrentOptionalQuestionAnswered()){
-            toast({ title: 'Please answer the current optional question, or skip.', variant: 'destructive' });
-            return;
-         }
-         // if they are on the last question and it's answered, it's fine.
+    if (!skipOptional && takingOptionalTest && !isCurrentOptionalQuestionAnswered()) {
+        toast({ title: 'Please answer the current optional question, or skip.', variant: 'destructive' });
+        return;
     }
-
 
     setIsLoading(true);
     const userTraits = compileTraitsToString();
 
     try {
       localStorage.setItem('margdarshak_user_traits', userTraits);
+      if (progressKey) {
+        localStorage.removeItem(progressKey);
+      }
       localStorage.removeItem('margdarshak_personalized_answers');
       localStorage.removeItem('margdarshak_selected_careers_list');
       localStorage.removeItem('margdarshak_payment_successful');
@@ -272,7 +328,7 @@ export default function PsychometricTestPage() {
                     </RadioGroup>
                 </CardContent>
                 <CardFooter className="flex justify-between space-x-3">
-                     <Button onClick={handlePreviousOptional} variant="outline" disabled={currentOptionalQuestionIndex === 0}>
+                     <Button onClick={handlePreviousOptional} variant="outline" disabled={currentOptionalQuestionIndex === 0 && !takingOptionalTest}>
                         <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                     </Button>
                     {isLoading ? <LoadingSpinner /> : (
@@ -292,7 +348,7 @@ export default function PsychometricTestPage() {
 
 
   if (!currentSection || !currentQuestion) {
-    return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]">Loading questions...</div>;
+    return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   
   const questionKey = `${currentSection.id}-${currentQuestion.id}`;
@@ -321,7 +377,7 @@ export default function PsychometricTestPage() {
                 <span>{currentQuestion.poles[1].emoji} {currentQuestion.poles[1].label}</span>
               </div>
               <Slider
-                key={questionKey} // Add key to force re-render if question changes
+                key={questionKey}
                 defaultValue={[answers[currentQuestion.id] !== undefined ? Number(answers[currentQuestion.id]) : 3]}
                 min={1} max={5} step={1}
                 onValueChange={(value) => handleSliderChange(currentQuestion.id, value)}
@@ -341,7 +397,7 @@ export default function PsychometricTestPage() {
                 onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
                 className="space-y-2"
               >
-                {(currentQuestion as ChoiceQuestion | ScenarioQuestion).options.map((option) => (
+                {(currentQuestion as any).options.map((option: any) => (
                   <div key={option.id} className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent/50 transition-colors">
                     <RadioGroupItem value={option.id} id={`${currentQuestion.id}-${option.id}`} />
                     <Label htmlFor={`${currentQuestion.id}-${option.id}`} className="text-base flex-1 cursor-pointer">{option.text}</Label>
@@ -352,7 +408,7 @@ export default function PsychometricTestPage() {
           )}
         </CardContent>
         <CardFooter className="flex justify-between space-x-3">
-          <Button onClick={handlePrevious} variant="outline" disabled={currentSectionIndex === 0 && currentQuestionInSectionIndex === 0}>
+          <Button onClick={handlePrevious} variant="outline" disabled={currentSectionIndex === 0 && currentQuestionInSectionIndex === 0 && !takingOptionalTest}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Previous
           </Button>
           {isLoading ? (
@@ -369,5 +425,3 @@ export default function PsychometricTestPage() {
     </div>
   );
 }
-
-    
