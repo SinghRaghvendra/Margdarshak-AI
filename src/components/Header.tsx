@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,7 +14,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut, BookUser } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
@@ -35,6 +36,12 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      // Clear local storage on logout
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('margdarshak_')) {
+          localStorage.removeItem(key);
+        }
+      });
       toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
       router.push('/');
     } catch (error) {
@@ -43,12 +50,19 @@ export default function Header() {
     }
   };
 
-  const navItems = [
+  const mainNavItems = [
     { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" />, isExternal: false },
     { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" />, isExternal: false },
     { label: 'Free Resume Tailor', href: 'https://resumetailor.aicouncel.com', icon: <FileText className="mr-2 h-5 w-5" />, isExternal: true },
     { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" />, isExternal: false },
   ];
+  
+  const loggedInNavItems = [
+      ...mainNavItems,
+      { label: 'My Reports', href: '/my-reports', icon: <BookUser className="mr-2 h-5 w-5" />, isExternal: false },
+  ];
+
+  const navItems = user ? loggedInNavItems : mainNavItems;
 
   return (
     <header className="bg-background/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
