@@ -69,6 +69,12 @@ export default function LoginPage() {
           country: userData.country,
           language: userData.language,
         }));
+        
+        // Also cache birth details if they exist in firestore
+        if (userData.birthDetails) {
+            localStorage.setItem('margdarshak_birth_details', JSON.stringify(userData.birthDetails));
+        }
+
       } else {
          throw new Error("User data not found in database.");
       }

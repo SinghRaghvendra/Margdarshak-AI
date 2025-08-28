@@ -8,43 +8,24 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+
 
 export default function HomePage() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [careerGuidanceHref, setCareerGuidanceHref] = useState("/signup");
+  const [user, setUser] = useState<FirebaseUser | null>(null);
 
   useEffect(() => {
-    const userInfoString = localStorage.getItem('margdarshak_user_info');
-    if (userInfoString) {
-      setIsLoggedIn(true);
-      const userInfo = JSON.parse(userInfoString);
-      const progressKey = `margdarshak_test_progress_${userInfo.email}`;
-      const progress = localStorage.getItem(progressKey);
-      const paymentSuccessful = localStorage.getItem('margdarshak_payment_successful');
-      const selectedCareers = localStorage.getItem('margdarshak_selected_careers_list');
-      const allSuggestions = localStorage.getItem('margdarshak_all_career_suggestions');
-      const personalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-      const birthDetails = localStorage.getItem('margdarshak_birth_details');
-
-      if (paymentSuccessful === 'true' && selectedCareers) {
-        setCareerGuidanceHref('/roadmap');
-      } else if (allSuggestions) {
-         setCareerGuidanceHref('/career-suggestions');
-      } else if (personalizedAnswers) {
-        setCareerGuidanceHref('/career-suggestions'); // Go generate suggestions
-      } else if (progress) {
-        setCareerGuidanceHref('/psychometric-test');
-      } else if (birthDetails) {
-        setCareerGuidanceHref('/psychometric-test');
-      } else {
-        setCareerGuidanceHref('/birth-details');
-      }
-    } else {
-      setIsLoggedIn(false);
-      setCareerGuidanceHref("/signup");
-    }
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
   }, []);
+
+  const isLoggedIn = !!user;
+  const careerGuidanceHref = isLoggedIn ? "/welcome-guest" : "/signup";
+
 
   const features = [
     {
@@ -95,7 +76,7 @@ export default function HomePage() {
             alt="AI Councel Lab Logo"
             width={150}
             height={150}
-            className="mx-auto mb-4 rounded-md"
+            className="mx-auto mb-4"
           />
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
             Unlock Your Future with Margdarshak AI
@@ -193,5 +174,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
