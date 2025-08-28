@@ -13,6 +13,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Edit3, ArrowRight } from 'lucide-react';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
 
 const personalizedQuestions = [
   { id: 'q1', label: 'Ideal Workday', text: 'Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?' },
@@ -36,7 +40,7 @@ export default function PersonalizedQuestionsPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [userName, setUserName] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const form = useForm<PersonalizedAnswersSchemaValues>({
     resolver: zodResolver(personalizedAnswersSchema),
@@ -47,47 +51,70 @@ export default function PersonalizedQuestionsPage() {
   });
 
   useEffect(() => {
-    try {
-      const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-      if (storedUserInfo) {
-        const userInfo = JSON.parse(storedUserInfo);
-        setUserName(userInfo.name || 'Guest');
-      } else {
-        toast({ title: 'User info not found', description: 'Redirecting to signup.', variant: 'destructive' });
-        router.replace('/signup');
-        return;
-      }
-      
-      const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
-      if (!storedUserTraits) {
-        toast({ title: 'Psychometric test data not found', description: 'Please complete the psychometric test first.', variant: 'destructive' });
-        router.replace('/psychometric-test');
-        return;
-      }
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
 
-      const storedAnswers = localStorage.getItem('margdarshak_personalized_answers');
-      if (storedAnswers) {
-        form.reset(JSON.parse(storedAnswers));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const userName = userData.name || 'Guest';
+            document.title = `Personalized Questions for ${userName}`;
+
+            // Check for prerequisites
+            if (!userData.testCompleted || !userData.userTraits) {
+              toast({ title: 'Psychometric test not found', description: 'Please complete the psychometric test first.', variant: 'destructive' });
+              router.replace('/psychometric-test');
+              return;
+            }
+
+            // Load saved answers from Firestore if they exist
+            if (userData.personalizedAnswers) {
+              form.reset(userData.personalizedAnswers);
+            } else {
+              // Fallback to localStorage if needed, though Firestore is primary
+               const storedAnswers = localStorage.getItem('margdarshak_personalized_answers');
+               if (storedAnswers) {
+                   form.reset(JSON.parse(storedAnswers));
+               }
+            }
+          } else {
+             toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive' });
+             router.replace('/signup');
+             return;
+          }
+        } catch (error) {
+          toast({ title: 'Error loading page data', description: 'Please try again.', variant: 'destructive' });
+        }
+      } else {
+        toast({ title: 'Not Authenticated', description: 'Redirecting to login.', variant: 'destructive' });
+        router.replace('/login');
+        return;
       }
-    } catch (error) {
-      toast({ title: 'Error loading page data', description: 'Please try again.', variant: 'destructive' });
-    } finally {
       setPageLoading(false);
-    }
+    });
+
+    return () => unsubscribe();
   }, [router, toast, form]);
 
   const onSubmit = async (data: PersonalizedAnswersSchemaValues) => {
+    if (!user) {
+      toast({ title: 'Error', description: 'You must be logged in to save answers.', variant: 'destructive' });
+      return;
+    }
     setIsLoading(true);
     toast({ title: 'Saving Your Answers', description: 'Getting ready to suggest careers...' });
     try {
+      // Save to both Firestore and localStorage
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { personalizedAnswers: data }, { merge: true });
       localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
-      // Clear any old career suggestions data to ensure fresh generation
-      localStorage.removeItem('margdarshak_career_suggestions'); // Old key for AI output
-      localStorage.removeItem('margdarshak_selected_career'); // Old key for single selected career
+      
+      // Clear subsequent data to ensure a fresh flow from this point
+      localStorage.removeItem('margdarshak_all_career_suggestions');
       localStorage.removeItem('margdarshak_selected_careers_list'); 
-      localStorage.removeItem('margdarshak_all_career_suggestions'); // Clear all suggestions list
-      localStorage.removeItem('margdarshak_career_insights_astro');
-      localStorage.removeItem('margdarshak_career_insights_numero');
       localStorage.removeItem('margdarshak_payment_successful');
       // Clear cached roadmaps
       Object.keys(localStorage).forEach(key => {
@@ -95,6 +122,9 @@ export default function PersonalizedQuestionsPage() {
           localStorage.removeItem(key);
         }
       });
+      // Also clear in Firestore if needed (optional)
+      // await setDoc(userDocRef, { allCareerSuggestions: null, selectedCareersList: null, paymentSuccessful: null }, { merge: true });
+
 
       router.push('/career-suggestions');
     } catch (error) {
@@ -115,7 +145,7 @@ export default function PersonalizedQuestionsPage() {
           <Edit3 className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold">A Little More About You</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Hi {userName || 'there'}! Your insights here will help us tailor career suggestions. Please answer thoughtfully.
+            Your insights here will help us tailor career suggestions. Please answer thoughtfully.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -157,4 +187,3 @@ export default function PersonalizedQuestionsPage() {
     </div>
   );
 }
-
