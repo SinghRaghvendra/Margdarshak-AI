@@ -9,7 +9,7 @@ import { Gift, ArrowRight, RotateCw, Play } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function WelcomeGuestPage() {
@@ -32,7 +32,7 @@ export default function WelcomeGuestPage() {
             const userData = userDoc.data();
             setUserName(userData.name || 'Guest');
             // Check for progress in Firestore
-            if (userData.testProgress && Object.keys(userData.testProgress.answers).length > 0) {
+            if (userData.testProgress && userData.testProgress.answers && Object.keys(userData.testProgress.answers).length > 0) {
               setHasProgress(true);
             }
              // Sync firestore data to localstorage for other components if needed
@@ -68,7 +68,7 @@ export default function WelcomeGuestPage() {
   }, [router, toast]);
   
   const handleContinue = () => {
-    router.push('/psychometric-test');
+    router.push('/birth-details');
   };
 
   const handleStartFresh = async () => {
@@ -77,18 +77,19 @@ export default function WelcomeGuestPage() {
       return;
     }
     
-    // Clear progress from Firestore
     try {
       const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, {
+      // Clear specific fields in Firestore instead of the whole object
+      await updateDoc(userDocRef, {
         testProgress: null,
         userTraits: null,
         testCompleted: false,
         personalizedAnswers: null,
-        careerSuggestions: null,
-        selectedCareers: null,
-        paymentStatus: null,
-      }, { merge: true });
+        allCareerSuggestions: null,
+        selectedCareersList: null,
+        paymentSuccessful: null,
+        // We can create a field for roadmaps if we want to clear them too
+      });
 
        // Clear all local storage journey data
       Object.keys(localStorage).forEach(key => {
