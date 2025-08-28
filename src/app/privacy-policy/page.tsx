@@ -12,53 +12,60 @@ export default function PrivacyPolicyPage() {
                 <div>
                     <CardTitle className="text-3xl font-bold">Privacy Policy</CardTitle>
                     <CardDescription className="text-lg">
-                        Last Updated: [Date]
+                        Last Updated: July 2025
                     </CardDescription>
                 </div>
             </div>
         </CardHeader>
         <CardContent className="prose max-w-none">
           <p>
-            This privacy policy sets out how AI Councel Lab uses and protects any information that you give AI Councel Lab when you visit their website and/or agree to purchase from them. AI Councel Lab is committed to ensuring that your privacy is protected. Should we ask you to provide certain information by which you can be identified when using this website, and then you can be assured that it will only be used in accordance with this privacy statement. AI Councel Lab may change this policy from time to time by updating this page. You should check this page from time to time to ensure that you adhere to these changes.
+            AI Councel Lab ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Margdarshak AI application (the "Service"). Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.
           </p>
           
-          <h2>We may collect the following information:</h2>
+          <h2>1. Information We Collect</h2>
+          <p>We may collect information about you in a variety of ways. The information we may collect via the Service includes:</p>
           <ul>
-            <li>Name</li>
-            <li>Contact information including email address</li>
-            <li>Demographic information such as postcode, preferences and interests, if required</li>
-            <li>Other information relevant to customer surveys and/or offers</li>
+            <li><strong>Personal Data:</strong> Personally identifiable information, such as your name, email address, and contact number, that you voluntarily give to us when you register with the Service.</li>
+            <li><strong>Demographic Information:</strong> Information such as your country, preferences, and interests that you voluntarily provide.</li>
+            <li><strong>Derivative Data:</strong> Information our servers automatically collect when you access the Service, such as your psychometric test answers and AI-generated reports, which are stored to provide the service and for internal analysis.</li>
           </ul>
 
-          <h2>What we do with the information we gather</h2>
-          <p>We require this information to understand your needs and provide you with a better service, and in particular for the following reasons:</p>
+          <h2>2. Use of Your Information</h2>
+          <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Service to:</p>
           <ul>
-            <li>Internal record keeping.</li>
-            <li>We may use the information to improve our products and services.</li>
-            <li>We may periodically send promotional emails about new products, special offers or other information which we think you may find interesting using the email address which you have provided.</li>
-            <li>From time to time, we may also use your information to contact you for market research purposes. We may contact you by email, phone, fax or mail.</li>
-            <li>We may use the information to customise the website according to your interests.</li>
+            <li>Create and manage your account.</li>
+            <li>Generate personalized career reports and guidance.</li>
+            <li>Improve our products, services, and operations.</li>
+            <li>Periodically send you promotional emails about new products, special offers, or other information we think you may find interesting.</li>
+            <li>Contact you for market research purposes, with your consent.</li>
+            <li>Customize the application according to your interests.</li>
+            <li>Maintain internal records.</li>
           </ul>
+
+          <h2>3. Security of Your Information</h2>
           <p>
-            We are committed to ensuring that your information is secure. In order to prevent unauthorised access or disclosure we have put in suitable measures.
+            We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.
           </p>
 
-          <h2>How we use cookies</h2>
+          <h2>4. Cookies and Tracking Technologies</h2>
           <p>
-            A cookie is a small file which asks permission to be placed on your computer's hard drive. Once you agree, the file is added and the cookie helps analyze web traffic or lets you know when you visit a particular site. Cookies allow web applications to respond to you as an individual. The web application can tailor its operations to your needs, likes and dislikes by gathering and remembering information about your preferences. We use traffic log cookies to identify which pages are being used. This helps us analyze data about webpage traffic and improve our website in order to tailor it to customer needs. We only use this information for statistical analysis purposes and then the data is removed from the system. Overall, cookies help us provide you with a better website, by enabling us to monitor which pages you find useful and which you do not. A cookie in no way gives us access to your computer or any information about you, other than the data you choose to share with us. You can choose to accept or decline cookies. Most web browsers automatically accept cookies, but you can usually modify your browser setting to decline cookies if you prefer. This may prevent you from taking full advantage of the website.
+            We may use cookies and other tracking technologies on the Service to help customize the Service and improve your experience. When you access the Service, your personal information is not collected through the use of tracking technology. Most browsers are set to accept cookies by default. You can remove or reject cookies, but be aware that such action could affect the availability and functionality of the Service.
           </p>
           
-          <h2>Controlling your personal information</h2>
-          <p>You may choose to restrict the collection or use of your personal information in the following ways:</p>
+          <h2>5. Your Data Protection Rights</h2>
+          <p>You may choose to restrict the collection or use of your personal information. You have the following data protection rights:</p>
           <ul>
-            <li>whenever you are asked to fill in a form on the website, look for the box that you can click to indicate that you do not want the information to be used by anybody for direct marketing purposes</li>
-            <li>if you have previously agreed to us using your personal information for direct marketing purposes, you may change your mind at any time by writing to or emailing us at <a href="mailto:hello@aicouncel.com">hello@aicouncel.com</a></li>
+            <li><strong>The right to access, update or to delete the information we have on you.</strong></li>
+            <li><strong>The right to object to our processing of your personal information for direct marketing purposes.</strong> If you have previously agreed to us using your personal information for direct marketing, you may change your mind at any time by contacting us.</li>
+            <li><strong>The right to data portability.</strong></li>
           </ul>
           <p>
-            We will not sell, distribute or lease your personal information to third parties unless we have your permission or are required by law to do so. We may use your personal information to send you promotional information about third parties which we think you may find interesting if you tell us that you wish this to happen.
+            We will not sell, distribute, or lease your personal information to third parties unless we have your permission or are required by law to do so. We may use your personal information to send you promotional information about third parties which we think you may find interesting if you tell us that you wish this to happen.
           </p>
+
+          <h2>6. Contact Us</h2>
           <p>
-            If you believe that any information we are holding on you is incorrect or incomplete, please write to or contact us at <a href="mailto:hello@aicouncel.com">hello@aicouncel.com</a> as soon as possible. We will promptly correct any information found to be incorrect.
+            If you believe that any information we are holding on you is incorrect or incomplete, or if you have questions or comments about this Privacy Policy, please contact us at: <a href="mailto:hello@aicouncel.com">hello@aicouncel.com</a>. We will promptly correct any information found to be incorrect.
           </p>
         </CardContent>
       </Card>
