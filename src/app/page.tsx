@@ -91,12 +91,11 @@ export default function HomePage() {
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <Image
-            src="https://placehold.co/150x150.png"
+            src="/logo.png"
             alt="AI Councel Lab Logo"
             width={150}
             height={150}
             className="mx-auto mb-4 rounded-md"
-            data-ai-hint="logo"
           />
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
             Unlock Your Future with Margdarshak AI
@@ -194,3 +193,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
