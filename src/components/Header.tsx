@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Logo from '@/components/Logo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -19,13 +19,15 @@ import { useToast } from '@/hooks/use-toast';
 export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
+  const pathname = usePathname(); // Hook to detect route changes
   const { toast } = useToast();
 
   useEffect(() => {
-    // This check runs only on the client-side
+    // This effect now re-runs on every route change (pathname)
+    // ensuring the login state is always fresh.
     const userInfo = localStorage.getItem('margdarshak_user_info');
     setIsLoggedIn(!!userInfo);
-  }, []);
+  }, [pathname]); // Dependency array includes pathname
 
   const handleLogout = () => {
     // Clear all app-related local storage to ensure a clean state

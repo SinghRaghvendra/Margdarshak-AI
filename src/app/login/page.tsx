@@ -38,6 +38,21 @@ export default function LoginPage() {
     },
   });
 
+  const clearLocalStorageForNewJourney = () => {
+    // Keep user info, but clear journey-specific data
+    localStorage.removeItem('margdarshak_birth_details');
+    localStorage.removeItem('margdarshak_user_traits');
+    localStorage.removeItem('margdarshak_personalized_answers');
+    localStorage.removeItem('margdarshak_selected_careers_list');
+    localStorage.removeItem('margdarshak_all_career_suggestions');
+    localStorage.removeItem('margdarshak_payment_successful');
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('margdarshak_roadmap_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  }
+
   function onSubmit(data: LoginFormValues) {
     // NOTE: This is a placeholder for actual authentication logic.
     // In a real app, you would call your backend/Firebase Auth here.
@@ -51,6 +66,7 @@ export default function LoginPage() {
           title: 'Login Successful',
           description: 'Redirecting to your journey...',
         });
+        clearLocalStorageForNewJourney(); // Clear old journey data on successful login
         router.push('/birth-details');
       } else {
         toast({
