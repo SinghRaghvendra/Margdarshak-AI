@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   });
 
   const options = {
-    amount, // amount in the smallest currency unit (paise for INR)
+    amount: Number(amount), // Ensure amount is a number
     currency: 'INR',
     receipt: `receipt_order_${randomBytes(6).toString('hex')}`,
   };
