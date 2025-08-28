@@ -23,33 +23,14 @@ export default function Header() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // This effect now re-runs on every route change (pathname)
-    // ensuring the login state is always fresh.
     const userInfo = localStorage.getItem('margdarshak_user_info');
     setIsLoggedIn(!!userInfo);
-  }, [pathname]); // Dependency array includes pathname
+  }, [pathname]);
 
   const handleLogout = () => {
-    const userInfoString = localStorage.getItem('margdarshak_user_info');
-    
-    // Determine the progress key before clearing everything
-    const progressKey = userInfoString ? `margdarshak_test_progress_${JSON.parse(userInfoString).email}` : null;
-
-    // Clear all localStorage related to the journey
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
-        localStorage.removeItem(key);
-      }
-    });
-
-    // Specifically remove the dynamic progress key
-    if (progressKey) {
-        localStorage.removeItem(progressKey);
-    }
-    
-    // Finally, remove the user info to log them out
+    // Only remove the user info to log them out, preserving progress data
     localStorage.removeItem('margdarshak_user_info');
-
+    
     setIsLoggedIn(false);
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
     router.push('/');

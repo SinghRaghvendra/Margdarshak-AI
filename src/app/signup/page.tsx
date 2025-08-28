@@ -75,37 +75,17 @@ export default function SignupPage() {
     },
   });
 
-  const clearLocalStorageForNewUser = (email: string) => {
-    const progressKey = `margdarshak_test_progress_${email}`;
-    localStorage.removeItem(progressKey);
-    localStorage.removeItem('margdarshak_birth_details');
-    localStorage.removeItem('margdarshak_user_traits');
-    localStorage.removeItem('margdarshak_personalized_answers');
-    localStorage.removeItem('margdarshak_selected_careers_list'); 
-    localStorage.removeItem('margdarshak_all_career_suggestions');
-    localStorage.removeItem('margdarshak_payment_successful');
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('margdarshak_roadmap_')) {
-        localStorage.removeItem(key);
-      }
-    });
-  }
-
   function onSubmit(data: SignupFormValues) {
     try {
       const { confirmPassword, ...userInfo } = data;
       
-      // Clear any previous user's data before setting new user
-      localStorage.clear();
-      
       localStorage.setItem('margdarshak_user_info', JSON.stringify(userInfo));
-      clearLocalStorageForNewUser(data.email);
 
       toast({
         title: 'Signup Successful!',
-        description: 'Redirecting to gather birth details...',
+        description: 'Redirecting to your journey...',
       });
-      router.push('/birth-details');
+      router.push('/welcome-guest');
     } catch (error) {
       toast({
         title: 'Signup Failed',

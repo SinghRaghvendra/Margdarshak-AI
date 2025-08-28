@@ -49,22 +49,6 @@ export default function LoginPage() {
     },
   });
 
-  const clearLocalStorageForNewJourney = (email: string) => {
-    const progressKey = `margdarshak_test_progress_${email}`;
-    localStorage.removeItem(progressKey);
-    localStorage.removeItem('margdarshak_birth_details');
-    localStorage.removeItem('margdarshak_user_traits');
-    localStorage.removeItem('margdarshak_personalized_answers');
-    localStorage.removeItem('margdarshak_selected_careers_list');
-    localStorage.removeItem('margdarshak_all_career_suggestions');
-    localStorage.removeItem('margdarshak_payment_successful');
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('margdarshak_roadmap_')) {
-        localStorage.removeItem(key);
-      }
-    });
-  }
-
   function onSubmit(data: LoginFormValues) {
     const storedUserInfo = localStorage.getItem('margdarshak_user_info');
     
@@ -72,18 +56,13 @@ export default function LoginPage() {
       const userInfo = JSON.parse(storedUserInfo);
       if (userInfo.email === data.email && userInfo.password === data.password) {
         
-        // This is a new login session, so clear any old journey data
-        // This allows a "fresh start" feeling each time they log in to continue
-        clearLocalStorageForNewJourney(data.email);
-
         toast({
           title: 'Login Successful',
-          description: 'Welcome back! Redirecting to your journey...',
+          description: 'Welcome back! Redirecting...',
         });
         
-        // Always start the journey at birth details.
-        // Subsequent pages will redirect if data exists (e.g. test page will load progress)
-        router.push('/birth-details');
+        // Redirect to the new welcome page to let user choose
+        router.push('/welcome-guest');
 
       } else {
         toast({
