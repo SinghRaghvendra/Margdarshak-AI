@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -12,13 +13,10 @@ import { Slider } from '@/components/ui/slider';
 import { ClipboardList, ArrowRight, ArrowLeft, CheckCircle, HelpCircle } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
-const TOTAL_SECTIONS = psychometricTestSections.length;
-
-interface UserInfo {
-  name: string;
-  email: string;
-}
 
 interface TestProgress {
   currentSectionIndex: number;
@@ -41,16 +39,79 @@ export default function PsychometricTestPage() {
   const [optionalAnswers, setOptionalAnswers] = useState<Record<string, number>>({});
   
   const [isLoading, setIsLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
-  const [progressKey, setProgressKey] = useState<string | null>(null);
-
+  
   const [showOptionalIntro, setShowOptionalIntro] = useState(false);
   const [currentOptionalQuestionIndex, setCurrentOptionalQuestionIndex] = useState(0);
   const [takingOptionalTest, setTakingOptionalTest] = useState(false);
+  
+  const [user, setUser] = useState<User | null>(null);
 
-  const saveProgress = useCallback(() => {
-    if (!progressKey) return;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        // User is logged in, now load their data
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists() && userDoc.data().testProgress) {
+            const savedProgress: TestProgress = userDoc.data().testProgress;
+            setCurrentSectionIndex(savedProgress.currentSectionIndex);
+            setCurrentQuestionInSectionIndex(savedProgress.currentQuestionInSectionIndex);
+            setAnswers(savedProgress.answers || {});
+            setOptionalAnswers(savedProgress.optionalAnswers || {});
+            setShowOptionalIntro(savedProgress.showOptionalIntro || false);
+            setTakingOptionalTest(savedProgress.takingOptionalTest || false);
+            setCurrentOptionalQuestionIndex(savedProgress.currentOptionalQuestionIndex || 0);
+            toast({ title: 'Progress Restored', description: 'Welcome back! We\'ve loaded your saved progress from the cloud.' });
+          } else {
+            // No progress in Firestore, check local storage for any pre-firestore progress
+             const localProgressKey = `margdarshak_test_progress_${currentUser.email}`;
+             const savedProgressString = localStorage.getItem(localProgressKey);
+             if (savedProgressString) {
+                const savedProgress: TestProgress = JSON.parse(savedProgressString);
+                setCurrentSectionIndex(savedProgress.currentSectionIndex);
+                setCurrentQuestionInSectionIndex(savedProgress.currentQuestionInSectionIndex);
+                setAnswers(savedProgress.answers || {});
+                setOptionalAnswers(savedProgress.optionalAnswers || {});
+                setShowOptionalIntro(savedProgress.showOptionalIntro || false);
+                setTakingOptionalTest(savedProgress.takingOptionalTest || false);
+                setCurrentOptionalQuestionIndex(savedProgress.currentOptionalQuestionIndex || 0);
+             }
+          }
+          const birthDetails = localStorage.getItem('margdarshak_birth_details');
+          if (!birthDetails) {
+            const userInfo = userDoc.data();
+            if (userInfo && userInfo.birthDetails) {
+              localStorage.setItem('margdarshak_birth_details', JSON.stringify(userInfo.birthDetails));
+            } else {
+              toast({ title: 'Birth details not found', description: 'Please provide your birth details first.', variant: 'destructive' });
+              router.replace('/birth-details');
+              return;
+            }
+          }
+        } catch (error) {
+          console.error("Error loading user progress:", error);
+          toast({ title: 'Error Loading Progress', description: 'Could not load your saved data.', variant: 'destructive' });
+        }
+
+      } else {
+        toast({ title: 'Not Authenticated', description: 'Please log in to take the test.', variant: 'destructive' });
+        router.replace('/login');
+        return;
+      }
+      setPageLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router, toast]);
+
+
+  const saveProgress = useCallback(async () => {
+    if (!user) return;
+
     const progress: TestProgress = {
       currentSectionIndex,
       currentQuestionInSectionIndex,
@@ -60,61 +121,27 @@ export default function PsychometricTestPage() {
       takingOptionalTest,
       currentOptionalQuestionIndex
     };
+
     try {
-      localStorage.setItem(progressKey, JSON.stringify(progress));
+      const userDocRef = doc(db, 'users', user.uid);
+      // Save to Firestore - this is the source of truth
+      await setDoc(userDocRef, { testProgress: progress }, { merge: true });
+      
+      // Save to local storage as a cache
+      const localProgressKey = `margdarshak_test_progress_${user.email}`;
+      localStorage.setItem(localProgressKey, JSON.stringify(progress));
+
     } catch (error) {
-      console.error("Failed to save progress", error);
-      toast({ title: "Could not save progress", description: "Your progress may not be saved. Please check your browser settings.", variant: "destructive"});
+      console.error("Failed to save progress to Firestore", error);
+      toast({ title: "Could not save progress", description: "Your progress may not be saved. Please check your internet connection.", variant: "destructive"});
     }
-  }, [progressKey, currentSectionIndex, currentQuestionInSectionIndex, answers, optionalAnswers, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, toast]);
+  }, [user, currentSectionIndex, currentQuestionInSectionIndex, answers, optionalAnswers, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, toast]);
 
   useEffect(() => {
-    try {
-      const storedUserInfo = localStorage.getItem('margdarshak_user_info');
-      if (storedUserInfo) {
-        const parsedUserInfo: UserInfo = JSON.parse(storedUserInfo);
-        setUserInfo(parsedUserInfo);
-        const key = `margdarshak_test_progress_${parsedUserInfo.email}`;
-        setProgressKey(key);
-
-        const savedProgressString = localStorage.getItem(key);
-        if (savedProgressString) {
-          const savedProgress: TestProgress = JSON.parse(savedProgressString);
-          setCurrentSectionIndex(savedProgress.currentSectionIndex);
-          setCurrentQuestionInSectionIndex(savedProgress.currentQuestionInSectionIndex);
-          setAnswers(savedProgress.answers || {});
-          setOptionalAnswers(savedProgress.optionalAnswers || {});
-          setShowOptionalIntro(savedProgress.showOptionalIntro || false);
-          setTakingOptionalTest(savedProgress.takingOptionalTest || false);
-          setCurrentOptionalQuestionIndex(savedProgress.currentOptionalQuestionIndex || 0);
-          toast({ title: 'Progress Restored', description: 'Welcome back! We\'ve loaded your saved progress.' });
-        }
-      } else {
-        toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive' });
-        router.replace('/signup');
-        return;
-      }
-      const birthDetails = localStorage.getItem('margdarshak_birth_details');
-      if (!birthDetails) {
-        toast({ title: 'Birth details not found', description: 'Please provide your birth details first.', variant: 'destructive' });
-        router.replace('/birth-details');
-        return;
-      }
-    } catch (error) {
-      toast({ title: 'Error loading initial data', description: 'Please try again from signup.', variant: 'destructive' });
-      router.replace('/signup');
-    } finally {
-      setPageLoading(false);
-    }
-  }, [router, toast]);
-
-  // This useEffect hook is the core of the automatic progress saving.
-  // It triggers the saveProgress function whenever any state related to the test progress changes.
-  useEffect(() => {
-    if (!pageLoading && progressKey) {
+    if (!pageLoading && user) {
       saveProgress();
     }
-  }, [answers, optionalAnswers, currentSectionIndex, currentQuestionInSectionIndex, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, pageLoading, saveProgress, progressKey]);
+  }, [answers, optionalAnswers, currentSectionIndex, currentQuestionInSectionIndex, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, pageLoading, saveProgress, user]);
 
   const currentSection: Section | undefined = psychometricTestSections[currentSectionIndex];
   const currentQuestion: Question | undefined = currentSection?.questions[currentQuestionInSectionIndex];
@@ -203,7 +230,7 @@ export default function PsychometricTestPage() {
     let traitSummary = "";
 
     psychometricTestSections.forEach(section => {
-      traitSummary += `[Section: ${section.title}]\n`;
+      traitSummary += `[Section: ${section.title}]\\n`;
       section.questions.forEach(q => {
         const answer = answers[q.id];
         if (answer !== undefined) {
@@ -214,17 +241,17 @@ export default function PsychometricTestPage() {
             const chosenOption = q.options.find(opt => opt.id === answer);
             answerText = `Selected: "${chosenOption?.text || answer}"`;
           }
-          traitSummary += `  [Q: ${q.text || (q as any).scenario + ' - ' + (q as any).questionText}] ${answerText}\n`;
+          traitSummary += `  [Q: ${q.text || (q as any).scenario + ' - ' + (q as any).questionText}] ${answerText}\\n`;
         }
       });
     });
 
     if (Object.keys(optionalAnswers).length > 0) {
-        traitSummary += "\n[Optional Questions Insights]\n";
+        traitSummary += "\\n[Optional Questions Insights]\\n";
         optionalRatingQuestions.forEach(oq => {
             const answer = optionalAnswers[oq.id];
             if (answer !== undefined) {
-                traitSummary += `  [Q: ${oq.text}] Rating: ${answer}/5\n`;
+                traitSummary += `  [Q: ${oq.text}] Rating: ${answer}/5\\n`;
             }
         });
     }
@@ -232,6 +259,10 @@ export default function PsychometricTestPage() {
   };
 
   const handleSubmitTest = async (skipOptional = false) => {
+    if (!user) {
+        toast({ title: 'Error', description: 'You are not logged in.', variant: 'destructive'});
+        return;
+    }
     if (!skipOptional && takingOptionalTest && !isCurrentOptionalQuestionAnswered()) {
         toast({ title: 'Please answer the current optional question, or skip.', variant: 'destructive' });
         return;
@@ -241,9 +272,15 @@ export default function PsychometricTestPage() {
     const userTraits = compileTraitsToString();
 
     try {
+      // Final save of all data to Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { 
+        userTraits: userTraits,
+        testCompleted: true
+      }, { merge: true });
+
+      // Save to localStorage as well
       localStorage.setItem('margdarshak_user_traits', userTraits);
-      // Do not remove progress key here, as user might want to go back and check.
-      // It will be cleared on next login or explicit "start fresh".
       
       // Clear subsequent data to ensure a fresh flow from this point
       localStorage.removeItem('margdarshak_personalized_answers');
@@ -267,7 +304,7 @@ export default function PsychometricTestPage() {
   };
 
 
-  if (pageLoading || !userInfo) {
+  if (pageLoading || !user) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 

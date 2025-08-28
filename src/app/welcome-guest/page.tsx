@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,6 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Gift, ArrowRight, RotateCw, Play } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function WelcomeGuestPage() {
   const router = useRouter();
@@ -14,52 +18,92 @@ export default function WelcomeGuestPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [userName, setUserName] = useState('Guest');
   const [hasProgress, setHasProgress] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const userInfoString = localStorage.getItem('margdarshak_user_info');
-    if (userInfoString) {
-      const userInfo = JSON.parse(userInfoString);
-      setUserName(userInfo.name || 'Guest');
-      setUserEmail(userInfo.email);
-      const progressKey = `margdarshak_test_progress_${userInfo.email}`;
-      if (localStorage.getItem(progressKey)) {
-        setHasProgress(true);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUserName(userData.name || 'Guest');
+            // Check for progress in Firestore
+            if (userData.testProgress && Object.keys(userData.testProgress.answers).length > 0) {
+              setHasProgress(true);
+            }
+             // Sync firestore data to localstorage for other components if needed
+            localStorage.setItem('margdarshak_user_info', JSON.stringify({
+              uid: currentUser.uid,
+              name: userData.name,
+              email: userData.email,
+              contact: userData.contact,
+              country: userData.country,
+              language: userData.language,
+            }));
+
+          } else {
+             toast({ title: 'User data not found', description: 'Could not retrieve your profile.', variant: 'destructive' });
+             router.replace('/login');
+             return;
+          }
+        } catch (error) {
+           toast({ title: 'Error', description: 'Could not fetch user data.', variant: 'destructive' });
+           console.error("Error fetching user doc:", error);
+           router.replace('/login');
+           return;
+        }
+      } else {
+        toast({ title: 'Not logged in', description: 'Redirecting to login.', variant: 'destructive' });
+        router.replace('/login');
+        return;
       }
-    } else {
-      toast({ title: 'Not logged in', description: 'Redirecting to login.', variant: 'destructive'});
-      router.replace('/login');
-      return;
-    }
-    setPageLoading(false);
+      setPageLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [router, toast]);
   
   const handleContinue = () => {
-    // Just go to the test page, it will automatically load the progress.
     router.push('/psychometric-test');
   };
 
-  const handleStartFresh = () => {
-    if (userEmail) {
-      const progressKey = `margdarshak_test_progress_${userEmail}`;
-      localStorage.removeItem(progressKey);
-      
-      // Also clear other journey-related data
-      localStorage.removeItem('margdarshak_birth_details');
-      localStorage.removeItem('margdarshak_user_traits');
-      localStorage.removeItem('margdarshak_personalized_answers');
-      localStorage.removeItem('margdarshak_selected_careers_list'); 
-      localStorage.removeItem('margdarshak_all_career_suggestions');
-      localStorage.removeItem('margdarshak_payment_successful');
+  const handleStartFresh = async () => {
+    if (!user) {
+      toast({ title: 'Error', description: 'No user is logged in.', variant: 'destructive' });
+      return;
+    }
+    
+    // Clear progress from Firestore
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, {
+        testProgress: null,
+        userTraits: null,
+        testCompleted: false,
+        personalizedAnswers: null,
+        careerSuggestions: null,
+        selectedCareers: null,
+        paymentStatus: null,
+      }, { merge: true });
+
+       // Clear all local storage journey data
       Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('margdarshak_roadmap_')) {
+        if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
           localStorage.removeItem(key);
         }
       });
       
       toast({ title: 'Starting Fresh!', description: 'Your previous assessment progress has been cleared.'});
+      router.push('/birth-details');
+
+    } catch (error) {
+       toast({ title: 'Error', description: 'Could not clear your progress. Please try again.', variant: 'destructive' });
+       console.error("Error clearing progress:", error);
     }
-    router.push('/birth-details');
   };
 
   if (pageLoading) {
