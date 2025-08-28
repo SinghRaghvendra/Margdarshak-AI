@@ -111,6 +111,13 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
+               <div className="text-right text-sm">
+                <Link href="/forgot-password" passHref>
+                  <span className="text-primary hover:underline cursor-pointer">
+                    Forgot Password?
+                  </span>
+                </Link>
+              </div>
               <Button type="submit" className="w-full text-lg py-6 mt-2">
                 Login
               </Button>
