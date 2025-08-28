@@ -30,12 +30,22 @@ export default function Header() {
   }, [pathname]); // Dependency array includes pathname
 
   const handleLogout = () => {
-    // Clear all app-related local storage to ensure a clean state
+    // Clear session-specific data, but KEEP user_info for future logins
+    localStorage.removeItem('margdarshak_birth_details');
+    localStorage.removeItem('margdarshak_user_traits');
+    localStorage.removeItem('margdarshak_personalized_answers');
+    localStorage.removeItem('margdarshak_selected_careers_list');
+    localStorage.removeItem('margdarshak_all_career_suggestions');
+    localStorage.removeItem('margdarshak_payment_successful');
     Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('margdarshak_')) {
-        localStorage.removeItem(key);
-      }
+        if (key.startsWith('margdarshak_roadmap_')) {
+            localStorage.removeItem(key);
+        }
     });
+    
+    // Now, remove the user info to log them out
+    localStorage.removeItem('margdarshak_user_info');
+    
     setIsLoggedIn(false);
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
     router.push('/');
