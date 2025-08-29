@@ -91,13 +91,14 @@ export default function HomePage() {
           className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center [transform-style:preserve-3d] transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
           style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
         >
-          {/* Pulsating Waves */}
+          {/* Base Pulsating Waves */}
           <div className="pulsing-waves"></div>
-          
+
+          {/* Explosion waves on hover */}
           {isHovered && (
              <div className="explosion-container">
                 {[...Array(11)].map((_, i) => (
-                    <div key={i} className="explosion-wave" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                    <div key={i} className="explosion-wave" style={{ animationDelay: `${i * 0.05}s` }}></div>
                 ))}
              </div>
           )}
@@ -110,7 +111,7 @@ export default function HomePage() {
 
           {/* Logo */}
           <div
-              className={`absolute transition-transform duration-300 ease-out logo-container ${isHovered ? 'logo-popped' : ''}`}
+              className={`absolute logo-container ${isHovered ? 'logo-popped' : ''}`}
           >
               <Image
                 src="/logo.png"

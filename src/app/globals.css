@@ -142,11 +142,12 @@ body {
   }
 
   .logo-container {
-      transition: transform 0.3s ease-out;
+      /* No transition by default */
   }
 
   .logo-popped {
-      transform: scale(1.2);
+      transform: scale(1.35);
+      transition: transform 0.3s ease-out; /* Apply transition only when popped */
   }
 
   .pulsing-waves::before,
