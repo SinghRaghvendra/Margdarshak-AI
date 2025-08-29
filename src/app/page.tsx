@@ -85,7 +85,7 @@ export default function HomePage() {
           className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
           aria-hidden="true"
         >
-            <span className="text-[20rem] font-black text-foreground/10 opacity-5 select-none">WINNER</span>
+            <div className="text-[20rem] font-black text-foreground/5 select-none">WINNER</div>
         </div>
 
 
@@ -96,6 +96,8 @@ export default function HomePage() {
            >
             {/* Pulsating Waves */}
             <div className="pulsing-waves"></div>
+            <div className="pulsing-waves-2"></div>
+
 
             {/* Atomic Orbits */}
             <div className="orbit orbit-1"></div>
@@ -107,7 +109,7 @@ export default function HomePage() {
                 className="absolute transition-transform duration-300 ease-out"
                 onMouseEnter={() => { setIsHovered(true); setIsLogoHovered(true); }}
                 onMouseLeave={() => { setIsHovered(false); setIsLogoHovered(false); }}
-                style={{ transform: isLogoHovered ? 'scale(1.1)' : 'scale(1)'}}
+                style={{ transform: isLogoHovered ? 'scale(1.2)' : 'scale(1)'}}
             >
                 <Image
                   src="/logo.png"
@@ -214,5 +216,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
