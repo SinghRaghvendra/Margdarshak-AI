@@ -91,12 +91,6 @@ export default function HomePage() {
         onMouseEnter={handleMouseEnter}
       >
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-0"></div>
-        <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
-          aria-hidden="true"
-        >
-            <div className="text-[15rem] font-black text-foreground/3 select-none">WINNER</div>
-        </div>
 
         <div
           className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center [transform-style:preserve-3d] transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
