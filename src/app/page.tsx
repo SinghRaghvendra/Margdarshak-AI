@@ -94,7 +94,7 @@ export default function HomePage() {
 
          {/* Subliminal Text */}
         <div className="absolute inset-0 flex items-center justify-center z-0">
-            <h1 className="text-[20vw] font-black text-foreground/3 opacity-20 select-none pointer-events-none">
+            <h1 className="text-[20vw] font-black text-primary opacity-5 select-none pointer-events-none">
                 WINNER
             </h1>
         </div>
