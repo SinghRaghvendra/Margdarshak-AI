@@ -110,16 +110,6 @@ body {
     }
   }
 
-  @keyframes pulse-electron {
-    0%,
-    100% {
-      box-shadow: 0 0 5px 2px #fff, 0 0 10px 5px #c79e3b, 0 0 15px 8px #c79e3b33;
-    }
-    50% {
-      box-shadow: 0 0 8px 3px #fff, 0 0 15px 8px #c79e3b, 0 0 25px 15px #c79e3b33;
-    }
-  }
-
   @keyframes pulse-waves {
     0% {
       transform: scale(0.5);
@@ -175,18 +165,4 @@ body {
   .orbit-1 { transform: rotateX(75deg) rotateY(20deg); }
   .orbit-2 { transform: rotateX(75deg) rotateY(80deg); }
   .orbit-3 { transform: rotateX(75deg) rotateY(140deg); }
-
-  .atom-electron {
-    width: 150px; /* Length of the tail */
-    height: 8px;
-    background: linear-gradient(to left, transparent 0%, #c79e3b 80%, #fff 100%);
-    border-radius: 4px;
-    box-shadow: 0 0 10px 2px #c79e3b;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform-origin: 4px center; /* Rotate around the "head" */
-    transform: translateY(-50%) rotate(180deg);
-    animation: pulse-electron 2s infinite ease-in-out;
-  }
 }

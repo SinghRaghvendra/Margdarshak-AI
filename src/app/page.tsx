@@ -98,15 +98,9 @@ export default function HomePage() {
             <div className="pulsing-waves"></div>
 
             {/* Atomic Orbits */}
-            <div className="orbit orbit-1">
-              <div className="atom-electron"></div>
-            </div>
-            <div className="orbit orbit-2">
-              <div className="atom-electron"></div>
-            </div>
-            <div className="orbit orbit-3">
-              <div className="atom-electron"></div>
-            </div>
+            <div className="orbit orbit-1"></div>
+            <div className="orbit orbit-2"></div>
+            <div className="orbit orbit-3"></div>
             
             {/* Logo */}
             <div 
