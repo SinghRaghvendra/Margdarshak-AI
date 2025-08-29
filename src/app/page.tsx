@@ -18,7 +18,7 @@ export default function HomePage() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
-  const [isLogoHovered, setIsLogoHovered] = useState(false);
+  const [isLogoPopped, setIsLogoPopped] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -37,7 +37,17 @@ export default function HomePage() {
 
   const handleMouseLeave = () => {
     setRotation({ x: 0, y: 0 });
+    setIsHovered(false);
+    // Note: isLogoPopped is handled by a timer, so we don't reset it here
   };
+
+  const handleMouseEnter = () => {
+      setIsHovered(true);
+      setIsLogoPopped(true);
+      setTimeout(() => {
+        setIsLogoPopped(false);
+      }, 2000); // Reset after 2 seconds
+  }
 
 
   const isLoggedIn = !!user;
@@ -79,47 +89,45 @@ export default function HomePage() {
         className="relative pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30 overflow-hidden"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onMouseEnter={handleMouseEnter}
       >
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-0"></div>
         <div 
           className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
           aria-hidden="true"
         >
-            <div className="text-[20rem] font-black text-foreground/5 select-none">WINNER</div>
+            <div className="text-[15rem] font-black text-foreground/5 select-none">WINNER</div>
         </div>
 
 
-        <div className="container mx-auto px-4 relative z-10 flex flex-col items-center">
-           <div
-            className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center [transform-style:preserve-3d] transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
-            style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
-           >
-            {/* Pulsating Waves */}
-            <div className="pulsing-waves"></div>
-            <div className="pulsing-waves-2"></div>
+        <div
+          className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center [transform-style:preserve-3d] transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
+          style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
+        >
+          {/* Pulsating Waves */}
+          <div className="pulsing-waves"></div>
+          {isHovered && <div className="pulsing-waves-2"></div>}
 
 
-            {/* Atomic Orbits */}
-            <div className="orbit orbit-1"></div>
-            <div className="orbit orbit-2"></div>
-            <div className="orbit orbit-3"></div>
+          {/* Atomic Orbits */}
+          <div className="orbit orbit-1"></div>
+          <div className="orbit orbit-2"></div>
+          <div className="orbit orbit-3"></div>
 
-            {/* Logo */}
-            <div
-                className="absolute transition-transform duration-300 ease-out"
-                onMouseEnter={() => { setIsHovered(true); setIsLogoHovered(true); }}
-                onMouseLeave={() => { setIsHovered(false); setIsLogoHovered(false); }}
-                style={{ transform: isLogoHovered ? 'scale(1.2)' : 'scale(1)'}}
-            >
-                <Image
-                  src="/logo.png"
-                  alt="AI Councel Lab Logo"
-                  width={150}
-                  height={150}
-                  priority
-                />
-            </div>
+          {/* Logo */}
+          <div
+              className="absolute transition-transform duration-300 ease-out"
+              style={{ transform: isLogoPopped ? 'scale(1.2)' : 'scale(1)'}}
+          >
+              <Image
+                src="/logo.png"
+                alt="AI Councel Lab Logo"
+                width={150}
+                height={150}
+                priority
+              />
           </div>
+        </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
             Unlock Your Future with Margdarshak AI
           </h1>
@@ -138,7 +146,6 @@ export default function HomePage() {
                   </Button>
             </Link>
           </div>
-        </div>
       </section>
 
       {/* Features Section */}

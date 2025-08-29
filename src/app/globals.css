@@ -119,7 +119,7 @@ body {
       opacity: 0.2;
     }
     100% {
-      transform: scale(2.5);
+      transform: scale(3.5); /* Increased scale for wider reach */
       opacity: 0;
     }
   }
