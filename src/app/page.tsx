@@ -93,7 +93,14 @@ export default function HomePage() {
         >
           {/* Pulsating Waves */}
           <div className="pulsing-waves"></div>
-          {isHovered && <div className="pulsing-waves-2"></div>}
+          
+          {isHovered && (
+             <div className="explosion-container">
+                {[...Array(11)].map((_, i) => (
+                    <div key={i} className="explosion-wave" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                ))}
+             </div>
+          )}
 
 
           {/* Atomic Orbits */}

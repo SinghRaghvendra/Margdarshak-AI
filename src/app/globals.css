@@ -124,6 +124,23 @@ body {
     }
   }
 
+  @keyframes explosion-wave-anim {
+    0% {
+      transform: scale(0.1);
+      opacity: 0.7;
+      border-width: 4px;
+    }
+    80% {
+      opacity: 0.3;
+      border-width: 2px;
+    }
+    100% {
+      transform: scale(6); /* Greatly increased for screen-wide effect */
+      opacity: 0;
+      border-width: 1px;
+    }
+  }
+
   .logo-container {
       transition: transform 0.3s ease-out;
   }
@@ -132,19 +149,8 @@ body {
       transform: scale(1.2);
   }
 
-  .pulsing-waves, .pulsing-waves-2 {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 150px;
-    height: 150px;
-  }
-
   .pulsing-waves::before,
-  .pulsing-waves::after,
-  .pulsing-waves-2::before,
-  .pulsing-waves-2::after {
+  .pulsing-waves::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -156,15 +162,25 @@ body {
   .pulsing-waves::after {
     animation-delay: 1s; /* Stagger the waves */
   }
-  
-  .pulsing-waves-2::before {
-    animation-delay: 0.5s;
+
+  .pulsing-waves,
+  .explosion-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
   }
 
-  .pulsing-waves-2::after {
-    animation-delay: 1.5s;
+  .explosion-wave {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid hsl(var(--primary));
+    border-radius: 50%;
+    animation: explosion-wave-anim 1.5s ease-out forwards;
   }
-
 
   .orbit {
     position: absolute;
