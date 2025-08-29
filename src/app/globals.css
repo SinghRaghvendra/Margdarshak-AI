@@ -103,10 +103,10 @@ body {
 @layer utilities {
   @keyframes revolve {
     0% {
-      transform: rotateZ(0deg) rotateY(0deg);
+      transform: rotateZ(0deg);
     }
     100% {
-      transform: rotateZ(360deg) rotateY(360deg);
+      transform: rotateZ(360deg);
     }
   }
 
@@ -138,7 +138,7 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    border: 2px solid #c79e3b;
+    border: 2px solid hsl(var(--primary));
     border-radius: 50%;
     animation: pulse-waves 4s ease-out infinite;
   }
@@ -154,7 +154,7 @@ body {
     border-radius: 50%;
     transform-style: preserve-3d;
     animation: revolve 6s linear infinite;
-    border: 1px solid rgba(200, 158, 59, 0.2);
+    border: 1px solid hsla(var(--primary) / 0.3);
     transition: animation-duration 0.5s ease-in-out;
   }
   
@@ -166,3 +166,5 @@ body {
   .orbit-2 { transform: rotateX(75deg) rotateY(80deg); }
   .orbit-3 { transform: rotateX(75deg) rotateY(140deg); }
 }
+
+    
