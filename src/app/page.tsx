@@ -58,7 +58,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-10rem)]">
       {/* Hero Section */}
-      <section className="relative pt-10 pb-20 md:pt-16 md:pb-32 flex items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30">
+      <section className="relative pt-10 pb-20 md:pt-16 md:pb-32 flex items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30 overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="https://placehold.co/1920x800.png"
@@ -71,14 +71,30 @@ export default function HomePage() {
            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="relative w-[150px] h-[150px] mx-auto mb-4">
-            <Image
-              src="/logo.png"
-              alt="AI Councel Lab Logo"
-              width={150}
-              height={150}
-            />
-            <div className="absolute top-1/2 left-1/2 w-4 h-4 rounded-full bg-primary shadow-[0_0_15px_5px] shadow-primary revolving-meteor"></div>
+          <div className="relative w-[250px] h-[250px] mx-auto mb-4 flex items-center justify-center [transform-style:preserve-3d]">
+            {/* Pulsating Waves */}
+            <div className="pulsing-waves"></div>
+
+            {/* Atomic Orbits */}
+            <div className="orbit orbit-1">
+              <div className="atom-electron"></div>
+            </div>
+            <div className="orbit orbit-2">
+              <div className="atom-electron"></div>
+            </div>
+            <div className="orbit orbit-3">
+              <div className="atom-electron"></div>
+            </div>
+            
+            {/* Logo */}
+            <div className="absolute">
+                <Image
+                  src="/logo.png"
+                  alt="AI Councel Lab Logo"
+                  width={150}
+                  height={150}
+                />
+            </div>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
             Unlock Your Future with Margdarshak AI
