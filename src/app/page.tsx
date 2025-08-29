@@ -18,7 +18,6 @@ export default function HomePage() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
-  const [isLogoPopped, setIsLogoPopped] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -42,10 +41,6 @@ export default function HomePage() {
 
   const handleMouseEnter = () => {
       setIsHovered(true);
-      setIsLogoPopped(true);
-      setTimeout(() => {
-        setIsLogoPopped(false);
-      }, 2000); // Reset after 2 seconds
   }
 
 
@@ -94,7 +89,7 @@ export default function HomePage() {
 
          {/* Subliminal Text */}
         <div className="absolute inset-0 flex items-center justify-center z-0">
-            <h1 className="text-[20vw] font-black text-primary opacity-5 select-none pointer-events-none">
+            <h1 className="text-[20vw] font-black text-primary/10 select-none pointer-events-none">
                 WINNER
             </h1>
         </div>
@@ -105,7 +100,7 @@ export default function HomePage() {
         >
           {/* Pulsating Waves */}
           <div className="pulsing-waves"></div>
-          {isLogoPopped && <div className="pulsing-waves-2"></div>}
+          {isHovered && <div className="pulsing-waves-2"></div>}
 
 
           {/* Atomic Orbits */}
@@ -115,8 +110,7 @@ export default function HomePage() {
 
           {/* Logo */}
           <div
-              className="absolute transition-transform duration-300 ease-out"
-              style={{ transform: isLogoPopped ? 'scale(1.2)' : 'scale(1)'}}
+              className={`absolute transition-transform duration-300 ease-out logo-container ${isHovered ? 'logo-popped' : ''}`}
           >
               <Image
                 src="/logo.png"
