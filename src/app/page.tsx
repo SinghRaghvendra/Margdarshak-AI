@@ -85,7 +85,7 @@ export default function HomePage() {
           className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
           aria-hidden="true"
         >
-            <span className="text-[20rem] font-black text-foreground/5 opacity-5 select-none">WINNER</span>
+            <span className="text-[20rem] font-black text-foreground/10 opacity-5 select-none">WINNER</span>
         </div>
 
 
@@ -214,3 +214,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
