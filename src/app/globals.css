@@ -98,3 +98,17 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes revolve {
+    0% {
+      transform: translate(50%, -50%) rotate(0deg) translateX(110px) rotate(0deg);
+    }
+    100% {
+      transform: translate(50%, -50%) rotate(360deg) translateX(110px) rotate(-360deg);
+    }
+  }
+  .revolving-meteor {
+    animation: revolve 6s linear infinite;
+  }
+}

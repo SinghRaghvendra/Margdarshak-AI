@@ -71,13 +71,15 @@ export default function HomePage() {
            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
-          <Image
-            src="/logo.png"
-            alt="AI Councel Lab Logo"
-            width={150}
-            height={150}
-            className="mx-auto mb-4"
-          />
+          <div className="relative w-[150px] h-[150px] mx-auto mb-4">
+            <Image
+              src="/logo.png"
+              alt="AI Councel Lab Logo"
+              width={150}
+              height={150}
+            />
+            <div className="absolute top-1/2 left-1/2 w-4 h-4 rounded-full bg-primary shadow-[0_0_15px_5px] shadow-primary revolving-meteor"></div>
+          </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
             Unlock Your Future with Margdarshak AI
           </h1>
