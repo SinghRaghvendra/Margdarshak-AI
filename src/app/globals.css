@@ -125,15 +125,11 @@ body {
   }
 
   .logo-container {
-      transition: transform 0.3s ease-out, transition-delay 0s;
+      transition: transform 0.3s ease-out;
   }
 
   .logo-popped {
       transform: scale(1.2);
-  }
-
-  .logo-container:not(.logo-popped) {
-      transition-delay: 1s; /* Delay going back to normal */
   }
 
   .pulsing-waves, .pulsing-waves-2 {
