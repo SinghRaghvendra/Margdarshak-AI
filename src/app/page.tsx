@@ -18,6 +18,7 @@ export default function HomePage() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -80,6 +81,13 @@ export default function HomePage() {
         onMouseLeave={handleMouseLeave}
       >
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-0"></div>
+        <div 
+          className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+          aria-hidden="true"
+        >
+            <span className="text-[20rem] font-black text-foreground/5 opacity-5 select-none">WINNER</span>
+        </div>
+
 
         <div className="container mx-auto px-4 relative z-10 flex flex-col items-center">
            <div
@@ -96,9 +104,10 @@ export default function HomePage() {
 
             {/* Logo */}
             <div
-                className="absolute"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                className="absolute transition-transform duration-300 ease-out"
+                onMouseEnter={() => { setIsHovered(true); setIsLogoHovered(true); }}
+                onMouseLeave={() => { setIsHovered(false); setIsLogoHovered(false); }}
+                style={{ transform: isLogoHovered ? 'scale(1.1)' : 'scale(1)'}}
             >
                 <Image
                   src="/logo.png"
@@ -205,5 +214,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
