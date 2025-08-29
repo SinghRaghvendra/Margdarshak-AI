@@ -165,6 +165,11 @@ body {
     transform-style: preserve-3d;
     animation: revolve 6s linear infinite;
     border: 1px solid rgba(200, 158, 59, 0.2);
+    transition: animation-duration 0.5s ease-in-out;
+  }
+  
+  .energized .orbit {
+      animation-duration: 1.5s;
   }
 
   .orbit-1 { transform: rotateX(75deg) rotateY(20deg); }
@@ -182,5 +187,6 @@ body {
     left: 0;
     transform-origin: 4px center; /* Rotate around the "head" */
     transform: translateY(-50%) rotate(180deg);
+    animation: pulse-electron 2s infinite ease-in-out;
   }
 }

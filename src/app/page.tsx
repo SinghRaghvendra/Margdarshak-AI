@@ -15,6 +15,8 @@ import { auth } from '@/lib/firebase';
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -22,6 +24,19 @@ export default function HomePage() {
     });
     return () => unsubscribe();
   }, []);
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLElement>) => {
+    const { clientX, clientY, currentTarget } = event;
+    const { offsetWidth, offsetHeight } = currentTarget;
+    const x = (clientX - offsetWidth / 2) / (offsetWidth / 2);
+    const y = (clientY - offsetHeight / 2) / (offsetHeight / 2);
+    setRotation({ x: -y * 10, y: x * 10 }); // Multiplier adjusts sensitivity
+  };
+  
+  const handleMouseLeave = () => {
+    setRotation({ x: 0, y: 0 });
+  };
+
 
   const isLoggedIn = !!user;
   const careerGuidanceHref = isLoggedIn ? "/welcome-guest" : "/signup";
@@ -58,7 +73,11 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-10rem)]">
       {/* Hero Section */}
-      <section className="relative pt-10 pb-20 md:pt-16 md:pb-32 flex items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30 overflow-hidden">
+      <section 
+        className="relative pt-10 pb-20 md:pt-16 md:pb-32 flex items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30 overflow-hidden"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         <div className="absolute inset-0">
           <Image
             src="https://placehold.co/1920x800.png"
@@ -71,7 +90,10 @@ export default function HomePage() {
            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="relative w-[250px] h-[250px] mx-auto mb-4 flex items-center justify-center [transform-style:preserve-3d]">
+           <div
+            className={`relative w-[250px] h-[250px] mx-auto mb-4 flex items-center justify-center [transform-style:preserve-3d] transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
+            style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
+           >
             {/* Pulsating Waves */}
             <div className="pulsing-waves"></div>
 
@@ -87,7 +109,11 @@ export default function HomePage() {
             </div>
             
             {/* Logo */}
-            <div className="absolute">
+            <div 
+                className="absolute"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
                 <Image
                   src="/logo.png"
                   alt="AI Councel Lab Logo"
