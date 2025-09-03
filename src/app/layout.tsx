@@ -10,7 +10,7 @@ import Script from 'next/script';
 import { Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Margdarshak AI Career Guide | AI COUNCEL LAB',
+  title: 'AI Councel Career Guide | AI COUNCEL LAB',
   description: 'AI-Powered Career Guidance. Get a data-driven career roadmap or instantly tailor your resume for any job application. Your professional journey, guided by AI.',
   keywords: ['career guide', 'resume builder', 'AI career advice', 'career roadmap', 'psychometric test', 'career suggestions', 'AI resume tailor'],
 };
@@ -73,7 +73,7 @@ export default function RootLayout({
             </div>
             <div className="text-center mt-8 pt-6 border-t border-border">
                 <p className="text-xs text-muted-foreground">
-                    Margdarshak AI powered by AI Councel Lab
+                    AI Councel powered by AI Councel Lab
                 </p>
             </div>
         </footer>

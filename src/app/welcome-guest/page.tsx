@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -168,7 +169,7 @@ export default function WelcomeGuestPage() {
               {ctaIcon} {ctaText}
             </Button>
             <Button onClick={handleStartFresh} variant="outline" className="w-full text-lg py-6">
-              <RotateCw className="mr-2 h-5 w-5" /> Start Fresh Assessment
+              <RotateCw className="mr-2 h-5 w-5" /> Start Fresh AI Councel Career Guide
             </Button>
           </div>
         </>

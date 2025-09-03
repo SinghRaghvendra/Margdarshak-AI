@@ -162,7 +162,7 @@ export default function MyReportsPage() {
                 You haven't generated any career reports yet.
               </p>
               <Button onClick={() => router.push('/welcome-guest')} className="mt-6">
-                Start a New Assessment
+                Start AI Councel Career Guide
               </Button>
             </div>
           )}

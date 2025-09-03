@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -134,7 +135,7 @@ export default function PaymentPage() {
         key: orderData.key_id,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'Margdarshak AI',
+        name: 'AI Councel',
         description: 'Career Report Generation',
         order_id: orderData.id,
         handler: async function (response: any) {

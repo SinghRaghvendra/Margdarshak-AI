@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -128,7 +129,7 @@ export default function SignupPage() {
             Create Your Account
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Start your career discovery journey with Margdarshak AI.
+            Start your career discovery journey with AI Councel.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">

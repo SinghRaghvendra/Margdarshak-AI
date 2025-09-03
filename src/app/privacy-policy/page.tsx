@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
         </CardHeader>
         <CardContent className="prose max-w-none">
           <p>
-            AI Councel Lab ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Margdarshak AI application (the "Service"). Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.
+            AI Councel Lab ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI Councel application (the "Service"). Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.
           </p>
           
           <h2>1. Information We Collect</h2>

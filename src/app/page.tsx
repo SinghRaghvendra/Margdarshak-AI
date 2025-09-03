@@ -126,7 +126,7 @@ export default function HomePage() {
         {/* Text and CTA content, raised above the animation */}
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
-            Unlock Your Future with Margdarshak AI
+            Unlock Your Future with AI Councel
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
             Get a data-driven career roadmap or instantly tailor your resume for any job application. Your professional journey, guided by AI.
@@ -198,7 +198,7 @@ export default function HomePage() {
           </div>
            <div className="text-center mt-12">
              <p className="text-lg text-foreground max-w-3xl mx-auto">
-                <span className="font-semibold text-primary">Margdarshak AI</span> replaces confusion with data-driven, personalized action plans, so you can move forward with confidence and purpose.
+                <span className="font-semibold text-primary">AI Councel</span> replaces confusion with data-driven, personalized action plans, so you can move forward with confidence and purpose.
              </p>
            </div>
         </div>
