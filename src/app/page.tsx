@@ -150,9 +150,9 @@ export default function HomePage() {
       <section id="features" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">A Dual Approach to Career Success</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Navigate Your Career with AI-Powered Guidance</h2>
             <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-              Whether you need long-term direction or an immediate application help, we have a tool for you.
+             Our tools are designed to provide clear, data-driven insights into your professional life. Let AI illuminate your path to a fulfilling career.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
