@@ -73,7 +73,7 @@ export default function RootLayout({
             </div>
             <div className="text-center mt-8 pt-6 border-t border-border">
                 <p className="text-xs text-muted-foreground">
-                    AI Councel powered by AI Councel Lab
+                    © 2024 AI Councel Lab. All rights reserved.
                 </p>
             </div>
         </footer>
