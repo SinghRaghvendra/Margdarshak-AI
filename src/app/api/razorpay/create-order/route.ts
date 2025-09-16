@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { randomBytes } from 'crypto';
 
+export const runtime = 'nodejs'; // Ensure Node.js runtime
+
 export async function POST(request: Request) {
   const { amount } = await request.json();
 
