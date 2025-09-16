@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
-import { randomBytes } from 'crypto';
+import crypto, { randomBytes } from 'crypto';
 
 export const runtime = 'nodejs'; // Ensure Node.js runtime
 
