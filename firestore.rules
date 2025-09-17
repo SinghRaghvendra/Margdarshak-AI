@@ -1,20 +1,24 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users can read and write to their own user document, but not others.
-    // Any authenticated user can create their own user document.
+    
+    // Users can only read and write to their own document.
+    // Any authenticated user can create their own user document during signup.
     match /users/{userId} {
       allow read, update, delete: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null;
     }
 
-    // Users can create new reports.
-    // Users can read reports that belong to them (matching userId).
+    // Users can create reports.
+    // They can only read/list reports that belong to them (where their UID matches the userId field).
     match /generatedReports/{reportId} {
       allow create: if request.auth != null;
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow get: if request.auth != null && request.auth.uid == resource.data.userId;
+      // This rule allows the query in `my-reports/page.tsx` to work.
+      // It ensures that a user can only list reports filtered by their own userId.
+      allow list: if request.auth != null && request.query.where.get('userId')[2] == request.auth.uid;
     }
   }
 }
