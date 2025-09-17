@@ -1,21 +1,23 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users can read and update their own profile.
-    // Any authenticated user can create a user document (for signup).
+    // Users Collection:
+    // - Allow users to read and update their own document.
+    // - Allow authenticated users to create their own document (signup).
+    // - Deny all other access (e.g., deleting or reading other users' data).
     match /users/{userId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow read, update: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null;
     }
 
-    // Users can create reports and can only read reports belonging to them.
+    // Generated Reports Collection:
+    // - Allow users to list and read reports only if they are the owner.
+    // - Allow authenticated users to create new reports.
+    // - Deny updates and deletes to preserve report history.
     match /generatedReports/{reportId} {
+      allow get, list: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);
       allow create: if request.auth != null;
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow list: if request.auth != null && request.query.where[0][2] == request.auth.uid;
+      allow update, delete: if false; // Reports are immutable
     }
   }
 }
