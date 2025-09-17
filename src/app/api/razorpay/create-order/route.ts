@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   });
 
   const options = {
-    amount: Number(amount), // Ensure amount is a number
+    amount: Number(amount) * 100, // Ensure amount is in paise
     currency: 'INR',
     receipt: `receipt_order_${randomBytes(6).toString('hex')}`,
   };
