@@ -57,14 +57,6 @@ export default function HomePage() {
       cta: isLoggedIn ? "Continue Your Journey" : "Start Your Career Journey",
       isExternal: false,
     },
-    {
-      icon: <Wand2 className="h-10 w-10 text-primary mb-4" />,
-      title: 'AI Resume Tailor',
-      description: 'Instantly tailor your resume and generate a professional cover letter for any job. Let AI highlight your strengths to pass through applicant tracking systems.',
-      href: "https://resumetailor.aicouncel.com",
-      cta: "Tailor Your Resume",
-      isExternal: true,
-    },
   ];
 
   const painPoints = [
@@ -129,18 +121,13 @@ export default function HomePage() {
             Unlock Your Future with AI Councel
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Get a data-driven career roadmap or instantly tailor your resume for any job application. Your professional journey, guided by AI.
+            Get a data-driven career roadmap to guide your professional journey with AI.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href={careerGuidanceHref}>
               <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
                 <User className="mr-2 h-5 w-5" /> {isLoggedIn ? "Continue Journey" : "Get Career Guidance"}
               </Button>
-            </Link>
-             <Link href="https://resumetailor.aicouncel.com" target="_blank" rel="noopener noreferrer">
-                  <Button size="lg" variant="secondary" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
-                    <Wand2 className="mr-2 h-5 w-5" /> Use Resume Tailor
-                  </Button>
             </Link>
           </div>
         </div>
@@ -155,7 +142,7 @@ export default function HomePage() {
              Our tools are designed to provide clear, data-driven insights into your professional life. Let AI illuminate your path to a fulfilling career.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-1 gap-8 max-w-2xl mx-auto">
             {features.map((feature, index) => (
               <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card flex flex-col">
                 <CardHeader className="items-center text-center">
