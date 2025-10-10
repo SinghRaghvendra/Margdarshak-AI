@@ -59,7 +59,7 @@ export default function HomePage() {
     },
     {
       icon: <Wand2 className="h-10 w-10 text-primary mb-4" />,
-      title: 'Free AI Resume Tailor',
+      title: 'AI Resume Tailor',
       description: 'Instantly tailor your resume and generate a professional cover letter for any job. Let AI highlight your strengths to pass through applicant tracking systems.',
       href: "https://resumetailor.aicouncel.com",
       cta: "Tailor Your Resume",
@@ -139,7 +139,7 @@ export default function HomePage() {
             </Link>
              <Link href="https://resumetailor.aicouncel.com" target="_blank" rel="noopener noreferrer">
                   <Button size="lg" variant="secondary" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
-                    <Wand2 className="mr-2 h-5 w-5" /> Use Free Resume Tailor
+                    <Wand2 className="mr-2 h-5 w-5" /> Use Resume Tailor
                   </Button>
             </Link>
           </div>

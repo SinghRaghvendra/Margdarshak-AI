@@ -53,7 +53,7 @@ export default function Header() {
   const mainNavItems = [
     { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" />, isExternal: false },
     { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" />, isExternal: false },
-    { label: 'Free Resume Tailor', href: 'https://resumetailor.aicouncel.com', icon: <FileText className="mr-2 h-5 w-5" />, isExternal: true },
+    { label: 'Resume Tailor', href: 'https://resumetailor.aicouncel.com', icon: <FileText className="mr-2 h-5 w-5" />, isExternal: true },
     { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" />, isExternal: false },
   ];
   
