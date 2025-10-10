@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Cake, UserCircle, ArrowRight, MapPinIcon, ClockIcon } from 'lucide-react';
+import { Cake, ArrowRight, MapPinIcon } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -32,12 +32,6 @@ const birthDetailsFormSchema = z.object({
     .refine(val => parseInt(val) <= new Date().getFullYear(), { message: "Year cannot be in the future." })
     .refine(val => parseInt(val) >= 1900, { message: "Year must be 1900 or later." }),
   placeOfBirth: z.string().min(2, { message: 'Place of birth must be at least 2 characters.' }),
-  birthHour: z.string()
-    .min(1, "Hour is required")
-    .regex(/^([01]?[0-9]|2[0-3])$/, { message: "Hour (00-23)" }),
-  birthMinute: z.string()
-    .min(1, "Minute is required")
-    .regex(/^[0-5]?[0-9]$/, { message: "Minute (00-59)" }),
 }).refine(data => {
     const day = parseInt(data.birthDay);
     const month = parseInt(data.birthMonth);
@@ -59,10 +53,9 @@ const birthDetailsFormSchema = z.object({
 
 type BirthDetailsFormValues = z.infer<typeof birthDetailsFormSchema>;
 
-interface StoredBirthDetailsForInsights {
+interface StoredBirthDetails {
   dateOfBirth: string; // YYYY-MM-DD
   placeOfBirth: string;
-  timeOfBirth: string; // HH:MM (24-hour)
 }
 
 export default function BirthDetailsPage() {
@@ -79,8 +72,6 @@ export default function BirthDetailsPage() {
       birthMonth: '',
       birthYear: '',
       placeOfBirth: '',
-      birthHour: '',
-      birthMinute: '',
     },
     mode: 'onBlur',
   });
@@ -98,17 +89,14 @@ export default function BirthDetailsPage() {
             setUserName(userData.name || 'Guest');
             // Load saved birth details from Firestore if they exist
             if (userData.birthDetails) {
-              const parsedDetails: StoredBirthDetailsForInsights = userData.birthDetails;
+              const parsedDetails: StoredBirthDetails = userData.birthDetails;
               const [year, month, day] = parsedDetails.dateOfBirth.split('-').map(s => s.padStart(2, '0'));
-              const [hour, minute] = parsedDetails.timeOfBirth.split(':').map(s => s.padStart(2, '0'));
               
               form.reset({
                 birthDay: day,
                 birthMonth: month,
                 birthYear: year,
                 placeOfBirth: parsedDetails.placeOfBirth,
-                birthHour: hour,
-                birthMinute: minute,
               });
             }
           } else {
@@ -138,12 +126,10 @@ export default function BirthDetailsPage() {
     }
     
     const formattedDateOfBirth = `${data.birthYear}-${data.birthMonth.padStart(2, '0')}-${data.birthDay.padStart(2, '0')}`;
-    const formattedTimeOfBirth = `${data.birthHour.padStart(2, '0')}:${data.birthMinute.padStart(2, '0')}`;
 
-    const detailsToStore: StoredBirthDetailsForInsights = {
+    const detailsToStore: StoredBirthDetails = {
       dateOfBirth: formattedDateOfBirth,
       placeOfBirth: data.placeOfBirth,
-      timeOfBirth: formattedTimeOfBirth,
     };
 
     try {
@@ -173,7 +159,7 @@ export default function BirthDetailsPage() {
           <Cake className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold">Your Birth Details</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Hi {userName || 'there'}! Please provide your birth information. This will be used later for personalized astrological and numerological insights.
+            Hi {userName || 'there'}! Please provide your birth information to help us calculate your age for the career roadmap.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
@@ -234,36 +220,6 @@ export default function BirthDetailsPage() {
                   </FormItem>
                 )}
               />
-              
-              <div>
-                <FormLabel>Time of Birth (24-hour format)</FormLabel>
-                <div className="grid grid-cols-2 gap-3 mt-1">
-                  <FormField
-                    control={form.control}
-                    name="birthHour"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input type="text" inputMode="numeric" placeholder="HH (00-23)" {...field} maxLength={2}/>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="birthMinute"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input type="text" inputMode="numeric" placeholder="MM (00-59)" {...field} maxLength={2} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
 
               <Button type="submit" className="w-full text-lg py-6">
                 Continue to Psychometric Test <ArrowRight className="ml-2 h-5 w-5" />

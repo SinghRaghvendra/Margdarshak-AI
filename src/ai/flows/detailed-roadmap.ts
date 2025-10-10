@@ -3,9 +3,8 @@
 
 /**
  * @fileOverview A flow that provides a detailed career report in Markdown format.
- * Includes personal details, astrological/numerological reviews, a 10-year age-specific roadmap (localized salary, courses, activities),
- * education guidance, study goals, skills focus, key interests and a 20-year outlook based on future trends.
- * Also includes the career's match score and aligned personality profile.
+ * Includes personal details, a 10-year age-specific roadmap (localized salary, courses, activities),
+ * education guidance, skills focus, and a 20-year outlook based on future trends.
  *
  * - generateRoadmap - A function that generates a detailed career roadmap.
  * - GenerateRoadmapInput - The input type for the generateRoadmap function.
@@ -30,13 +29,10 @@ const GenerateRoadmapInputSchema = z.object({
   country: z.string().describe('The country of the user, to help localize salary expectations and career prospects.'),
   userName: z.string().describe("The user's full name."),
   dateOfBirth: z.string().describe("User's date of birth in YYYY-MM-DD format."),
-  timeOfBirth: z.string().describe("User's time of birth, including AM/PM if applicable (e.g., \"10:30 AM\" or \"14:45\")."),
-  placeOfBirth: z.string().describe("User's city and country of birth."),
   age: z.number().describe("User's current age."),
   personalizedAnswers: PersonalizedAnswersSchema.describe("User's answers to personalized questions."),
   matchScore: z.string().describe('The percentage match score for this career option (e.g., "85%").'),
   personalityProfile: z.string().describe('The descriptive personality profile associated with this career fit (e.g., "Analytical and Strategic", "Creative and Empathetic").'),
-  lifePathNumber: z.number().describe("The user's calculated Life Path Number based on their date of birth."),
   preferredLanguage: z.string().describe('The user\'s preferred language for the report (e.g., "English", "Hindi", "Spanish"). This should apply to all textual content of the report.'),
 });
 export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
@@ -45,28 +41,20 @@ const GenerateRoadmapOutputSchema = z.object({
   roadmapMarkdown: z.string().describe(`A comprehensive career report in Markdown format. It must follow this structure EXACTLY and be in the {{{preferredLanguage}}}:
 1.  "# Career Option: [Career Name]"
 2.  "## Match Score: [Percentage Match Score, e.g., 85%]"
-3.  "## Career Fit Assessment: [Qualitative assessment of fit]"
+3.  "## Career Fit Assessment: [Qualitative assessment of fit based on user traits]"
 4.  "## Personal Details"
     -   "**Name:** [User Name]"
-    -   "**DOB:** [User DOB]"
     -   "**Age:** [User Age]"
     -   "**Country:** [User Country]"
 5.  "## Personality Profile Alignment: [Descriptive Personality Profile]"
-6.  "## Astrological Insights & Zodiac Chart Overview:"
-    -   Textual overview/description of key zodiac placements based on birth details.
-    -   Detailed Zodiac based prediction (approx. 500 words and 10 key bullet points).
-7.  "## Numerological Insights:"
-    -   "**Life Path Number:** [Calculated Life Path Number]"
-    -   Brief explanation of the general meaning of the Life Path Number.
-    -   Detailed Numerology based prediction (approx. 200 words and 10 key bullet points) based on the Life Path Number and DOB, for the career.
-8.  "## Career Prospect & Why It Is a Good Fit for You?"
-9.  "## 10-Year Career Roadmap (Age-Specific for [Career Name]):" (For each of the 10 years, considering current age: title, description, localized expected salary with currency, suggested courses, key activities).
-10. "## Suggested Education, Courses & Programmes:"
-11. "## Key Interests (Top 5):" (Derived from user traits and personalized answers, presented as a bulleted list).
-12. "## Expected Salary (Localized): Year 1, Year 5, Year 10" (Specific salary expectations for these milestones, localized with currency name/symbol).
-13. "## 20-Year Outlook & Future Trends for [Career Name]"
-14. Concluding Section: This includes the promotional text "Need a professional career guide... Annual subscription of Rs. 2999/-", followed by clear, prominent Markdown links: one to contact a career counsellor (linking to /contact) and one to subscribe for professional guidance (linking to /subscribe-guidance, mentioning the price).
-15. "## Disclaimer:" A disclaimer stating that this report is AI-generated and should be used as a tool for guidance and inspiration, not as a substitute for professional advice or personal judgment. (Translated to {{{preferredLanguage}}}).
+6.  "## Career Prospect & Why It Is a Good Fit for You?"
+7.  "## 10-Year Career Roadmap (Age-Specific for [Career Name]):" (For each of the 10 years, considering current age: title, description, localized expected salary with currency, suggested courses, key activities).
+8.  "## Suggested Education, Courses & Programmes:"
+9.  "## Key Interests (Top 5):" (Derived from user traits and personalized answers, presented as a bulleted list).
+10. "## Expected Salary (Localized): Year 1, Year 5, Year 10" (Specific salary expectations for these milestones, localized with currency name/symbol).
+11. "## 20-Year Outlook & Future Trends for [Career Name]"
+12. "## Important Disclaimer:" A mandatory disclaimer stating that this report is AI-generated and should be used as a tool for guidance and inspiration, not as a substitute for professional advice or personal judgment. This must be included and translated to {{{preferredLanguage}}}.
+13. Concluding Section: This includes the promotional text "Need a professional career guide... Annual subscription of Rs. 2999/-", followed by clear, prominent Markdown links: one to contact a career counsellor (linking to /contact) and one to subscribe for professional guidance (linking to /subscribe-guidance, mentioning the price).
 Use Markdown headings (e.g. #, ##, ###) for all main sections and sub-sections as appropriate. Format lists clearly. All textual output must be in the specified {{{preferredLanguage}}}.`),
 });
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
@@ -81,15 +69,15 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateRoadmapOutputSchema},
   prompt: `You are an expert career counselor preparing a comprehensive, personalized career report.
 The report MUST be in Markdown format and STRICTLY follow the structure and content guidelines below.
-The ENTIRE textual content of the report (headings, descriptions, predictions, advice, etc.) MUST be in the following language: **{{{preferredLanguage}}}**.
+The ENTIRE textual content of the report (headings, descriptions, advice, etc.) MUST be in the following language: **{{{preferredLanguage}}}**.
+
+**CRITICAL INSTRUCTION: DO NOT INCLUDE any astrological, numerological, or other esoteric/spiritual analysis. Base the entire report ONLY on the provided user traits, answers, and general career knowledge.**
 
 Report for: {{{userName}}}
 Chosen Career: {{{careerSuggestion}}}
 User's Current Age: {{{age}}}
 User's Country (for localization): {{{country}}}
 User's Date of Birth: {{{dateOfBirth}}}
-User's Time of Birth: {{{timeOfBirth}}}
-User's Place of Birth: {{{placeOfBirth}}}
 User Traits Summary: {{{userTraits}}}
 User's Personalized Answers:
 Ideal Workday: {{{personalizedAnswers.q1}}}
@@ -97,7 +85,6 @@ Hobbies & Interests: {{{personalizedAnswers.q2}}}
 5-Year Vision: {{{personalizedAnswers.q3}}}
 Industry Interest: {{{personalizedAnswers.q4}}}
 Career Motivations: {{{personalizedAnswers.q5}}}
-User's Life Path Number: {{{lifePathNumber}}}
 
 --- START OF REPORT MARKDOWN (in {{{preferredLanguage}}}) ---
 
@@ -110,27 +97,12 @@ Provide a qualitative assessment (2-3 sentences) of why this career is a strong,
 
 ## Personal Details
 - **Name:** {{{userName}}}
-- **DOB:** {{{dateOfBirth}}}
 - **Age:** {{{age}}}
 - **Country:** {{{country}}}
-(Field names like "Name", "DOB", "Age", "Country" should be translated to {{{preferredLanguage}}} if appropriate for that language's conventions in reports, otherwise keep them in English but ensure the values are presented correctly.)
+(Field names like "Name", "Age", "Country" should be translated to {{{preferredLanguage}}}).
 
 ## Personality Profile Alignment: {{{personalityProfile}}}
 Briefly elaborate (1-2 sentences) on how the user's personality profile ({{{personalityProfile}}}) aligns with the demands and characteristics of the career in {{{careerSuggestion}}}. (Ensure this text is in {{{preferredLanguage}}})
-
-## Astrological Insights & Zodiac Chart Overview
-(This entire section's text must be in {{{preferredLanguage}}})
-Provide a textual overview that describes key zodiac placements or characteristics based on the user's birth details (Date of Birth: {{{dateOfBirth}}}, Time of Birth: {{{timeOfBirth}}}, Place of Birth: {{{placeOfBirth}}}).
-Follow this with a detailed Zodiac-based prediction for the career **{{{careerSuggestion}}}**. This prediction should be approximately 500 words and conclude with **exactly 10 key bullet points summarizing the astrological outlook** for this career.
-Frame this positively and as potential influences.
-
-## Numerological Insights
-(This entire section's text must be in {{{preferredLanguage}}})
-**Life Path Number:** {{{lifePathNumber}}}
-
-Briefly explain the general meaning and characteristics typically associated with Life Path Number {{{lifePathNumber}}}.
-Then, based on this Life Path Number ({{{lifePathNumber}}}) and the user's full Date of Birth ({{{dateOfBirth}}}), provide a detailed Numerology-based prediction for the career **{{{careerSuggestion}}}**. This prediction should be approximately 200 words and conclude with **exactly 10 key bullet points summarizing the numerological outlook** for this career.
-Frame this positively and as potential influences.
 
 ## Career Prospect & Why It Is a Good Fit for You?
 (This entire section's text must be in {{{preferredLanguage}}})
@@ -170,6 +142,12 @@ Provide specific, localized salary expectations for {{{careerSuggestion}}} in {{
 Provide a forward-looking perspective on how the field of **{{{careerSuggestion}}}** might evolve over the next 20 years. Discuss potential technological advancements, shifts in demand, emerging specializations, and key future trends. What skills will likely remain valuable or become even more critical? How can one prepare for long-term success in this career, especially considering future technological integration?
 
 ---
+
+## Important Disclaimer
+(This text must be in {{{preferredLanguage}}})
+This report was generated by an advanced AI and is intended for informational and guidance purposes only. The insights provided are based on the data you provided and should not be taken as definitive professional advice. Your career path is ultimately your own to shape. Use this report as a source of inspiration and a starting point for your own research and decision-making. Always exercise your own judgment and consult with qualified human professionals for critical life and career decisions.
+
+---
 (The following promotional text and links should also be in {{{preferredLanguage}}}. If the AI cannot reliably translate the links or pricing, it should retain them in English but translate the surrounding promotional text.)
 Need a professional career guide? We will offer a professional career guide who will keep you on track to achive your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-
 
@@ -177,18 +155,8 @@ Need a professional career guide? We will offer a professional career guide who 
 
 *   **[➡️ Contact Our Career Counsellor](/contact)** - Get personalized advice from our experts.
 *   **[➡️ Subscribe Now for Professional Guidance (Rs. 2999/-)](/subscribe-guidance)** - Unlock ongoing support and resources.
-
-## Disclaimer
-(This text must be in {{{preferredLanguage}}})
-This report was generated by an advanced AI and is intended for informational and guidance purposes only. The insights provided, including astrological and numerological interpretations, are based on patterns in data and should not be taken as absolute predictions or professional advice. Your career path is ultimately your own to shape. Use this report as a source of inspiration and a starting point for your own research and decision-making. Always exercise your own judgment and consult with qualified human professionals for critical life and career decisions.
 --- END OF REPORT MARKDOWN ---
 `,
-  config: {
-    safetySettings: [
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }, // Astrology/numerology
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-    ],
-  },
 });
 
 const generateRoadmapFlow = ai.defineFlow(

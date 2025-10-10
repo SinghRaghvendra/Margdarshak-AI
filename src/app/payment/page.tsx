@@ -5,9 +5,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Loader2, ListChecks, ArrowRight } from 'lucide-react'; 
+import { CreditCard, Loader2, ListChecks, ArrowRight, AlertTriangle } from 'lucide-react'; 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
@@ -63,16 +64,18 @@ export default function PaymentPage() {
       const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
       if (storedSelections) {
         const parsedSelections: string[] = JSON.parse(storedSelections);
-        if (parsedSelections.length === 3) {
+        if (parsedSelections.length > 0 && parsedSelections.length <= 3) {
           setSelectedCareersList(parsedSelections);
         } else {
-          toast({ title: 'Invalid career selection', description: 'Please select 3 careers. Redirecting.', variant: 'destructive' });
+          toast({ title: 'Invalid career selection', description: 'Please select 1 to 3 careers. Redirecting.', variant: 'destructive' });
           router.replace('/career-suggestions');
           return;
         }
       } else {
-        // This case is for when user lands here directly from welcome page
-        // We will fetch from Firestore if it exists in a moment, for now just show loading.
+        // This case is for when user lands here directly
+        toast({ title: 'No careers selected', description: 'Redirecting.', variant: 'destructive' });
+        router.replace('/career-suggestions');
+        return;
       }
 
       // Verify all prerequisite data for report generation is present before allowing payment
@@ -205,11 +208,11 @@ export default function PaymentPage() {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   
-  if (selectedCareersList.length !== 3) { 
+  if (selectedCareersList.length === 0) { 
      return (
       <div className="text-center py-10">
         <h1 className="text-2xl font-semibold mb-4">Career Selection Incomplete</h1>
-        <p className="text-muted-foreground mb-6">Please select 3 careers on the previous page to proceed.</p>
+        <p className="text-muted-foreground mb-6">Please select your careers on the previous page to proceed.</p>
         <Button onClick={() => router.push('/career-suggestions')}>Select Careers</Button>
       </div>
     );
@@ -222,10 +225,17 @@ export default function PaymentPage() {
           <CreditCard className="h-12 w-12 text-primary mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold">Unlock Your Career Reports</CardTitle>
           <CardDescription>
-            Hi {userInfo.name}, you've selected 3 careers to explore. Pay the one-time fee to generate detailed reports for each.
+            Hi {userInfo.name}, you've selected {selectedCareersList.length} career(s) to explore. Pay the one-time fee to generate your detailed report(s).
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
+          <Alert variant="destructive" className="mb-6 text-left">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Important Notice</AlertTitle>
+            <AlertDescription>
+                AI-generated career guidance is for informational purposes only and not a substitute for professional advice.
+            </AlertDescription>
+          </Alert>
           <div className="mb-6 p-4 border rounded-md bg-secondary/50">
             <h4 className="text-lg font-semibold mb-2 flex items-center justify-center">
                 <ListChecks className="mr-2 h-5 w-5 text-primary" />
@@ -237,7 +247,7 @@ export default function PaymentPage() {
           </div>
           <p className="text-lg mb-2">Total Report Fee: <span className="font-bold text-2xl">₹{REPORT_AMOUNT_INR}</span></p>
           <p className="text-sm text-muted-foreground mb-6">
-            This one-time payment allows you to generate and download comprehensive reports for all three selected careers.
+            This one-time payment allows you to generate and download comprehensive reports for all selected careers.
           </p>
           
           <Button onClick={handlePayment} className="w-full text-lg py-6" disabled={isProcessing}>

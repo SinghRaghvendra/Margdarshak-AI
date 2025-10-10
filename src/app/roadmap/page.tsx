@@ -7,14 +7,14 @@ import ReactMarkdown from 'react-markdown';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPinned, Download, Loader2, Milestone } from 'lucide-react';
+import { MapPinned, Download, Loader2, Milestone, AlertTriangle } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { generateRoadmap, type GenerateRoadmapInput, type GenerateRoadmapOutput } from '@/ai/flows/detailed-roadmap';
 import { saveReport, getLatestReport, type ReportData } from '@/services/report-service';
 import { differenceInYears, parseISO } from 'date-fns';
-import { calculateLifePathNumber } from '@/lib/numerology';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { auth } from '@/lib/firebase';
 import type { User } from 'firebase/auth';
 
@@ -31,7 +31,6 @@ interface UserInfo {
 interface BirthDetails {
   dateOfBirth: string; // YYYY-MM-DD
   placeOfBirth: string;
-  timeOfBirth: string;
 }
 
 interface PersonalizedAnswers {
@@ -117,7 +116,7 @@ export default function RoadmapPage() {
       const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
       if (storedSelections) {
         const parsedSelections: string[] = JSON.parse(storedSelections);
-        if (parsedSelections.length === 3) {
+        if (parsedSelections.length > 0) { // Can be 1, 2 or 3
           setSelectedCareers(parsedSelections);
           setActiveCareerTab(parsedSelections[0]); 
         } else {
@@ -153,13 +152,11 @@ export default function RoadmapPage() {
       const birthDetailsParsed: BirthDetails = JSON.parse(storedBirthDetails);
       const personalizedAnswersParsed: PersonalizedAnswers = JSON.parse(storedPersonalizedAnswers);
       let age: number;
-      let lifePathNum: number;
 
       try {
         age = differenceInYears(new Date(), parseISO(birthDetailsParsed.dateOfBirth));
-        lifePathNum = calculateLifePathNumber(birthDetailsParsed.dateOfBirth);
       } catch(e: any) {
-        console.error("Error calculating age or life path:", e);
+        console.error("Error calculating age:", e);
         toast({ title: 'Error processing birth date', description: e.message || 'Birth date might be invalid. Redirecting.', variant: 'destructive' });
         router.replace('/birth-details');
         return;
@@ -170,11 +167,8 @@ export default function RoadmapPage() {
         country: userInfoParsed.country,
         userName: userInfoParsed.name,
         dateOfBirth: birthDetailsParsed.dateOfBirth,
-        timeOfBirth: birthDetailsParsed.timeOfBirth,
-        placeOfBirth: birthDetailsParsed.placeOfBirth,
         age: age,
         personalizedAnswers: personalizedAnswersParsed,
-        lifePathNumber: lifePathNum,
       });
 
     } catch (error) {
@@ -373,6 +367,13 @@ export default function RoadmapPage() {
                 )}
                 {!isGeneratingReport && activeCareerTab === career && currentRoadmapMarkdown && (
                   <div ref={roadmapContentRef} className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-foreground">
+                    <Alert variant="destructive" className="mb-6">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>For Informational Purposes Only</AlertTitle>
+                        <AlertDescription>
+                            This AI-generated report is a tool to provide perspective and should not be used as a substitute for professional career counseling or personal judgment.
+                        </AlertDescription>
+                    </Alert>
                     <ReactMarkdown
                       components={{
                         h1: ({node, ...props}) => <h1 className="text-3xl font-bold mt-8 mb-4 text-primary border-b pb-2" {...props} />,

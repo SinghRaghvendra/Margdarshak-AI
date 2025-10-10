@@ -1,11 +1,11 @@
 
 'use server';
 /**
- * @fileOverview Provides astrological and numerological insights for a selected career.
+ * @fileOverview Provides AI-powered insights for a selected career based on the user's profile.
  *
- * - generateCareerInsights - A function that takes birth details and a selected career to return insights.
+ * - generateCareerInsights - A function that takes user data and a selected career to return insights.
  * - CareerInsightsInput - The input type for the generateCareerInsights function.
- * - CareerInsightsOutput - The return type, containing astrological and numerological reviews.
+ * - CareerInsightsOutput - The return type, containing a qualitative review.
  */
 
 import {ai} from '@/ai/genkit';
@@ -13,19 +13,21 @@ import {z} from 'genkit';
 
 const CareerInsightsInputSchema = z.object({
   selectedCareer: z.string().describe('The career path chosen by the user.'),
-  dateOfBirth: z.string().describe('User\'s date of birth in YYYY-MM-DD format.'),
-  placeOfBirth: z.string().describe('User\'s city and country of birth.'),
-  timeOfBirth: z.string().describe('User\'s time of birth, including AM/PM if applicable (e.g., "10:30 AM" or "14:45").'),
+  userTraits: z.string().describe('A summary of the user traits, skills, and preferences as determined by the psychometric test.'),
+  personalizedAnswers: z.object({
+    q1: z.string(),
+    q2: z.string(),
+    q3: z.string(),
+    q4: z.string(),
+    q5: z.string(),
+  }).describe("User's answers to personalized questions."),
 });
 export type CareerInsightsInput = z.infer<typeof CareerInsightsInputSchema>;
 
 const CareerInsightsOutputSchema = z.object({
-  astrologicalReview: z
+  careerFitReview: z
     .string()
-    .describe('An astrological review (approx. 150-200 words) discussing potential alignments or considerations for the selected career, based on birth details. Formatted in Markdown.'),
-  numerologicalReview: z
-    .string()
-    .describe('A numerological review (approx. 150-200 words) based on the date of birth, discussing how numerology might relate to success or challenges in the selected career. Formatted in Markdown.'),
+    .describe('A qualitative review (approx. 150-200 words) discussing how the user\'s psychometric traits and personalized answers align with the selected career path. This should be framed as a helpful perspective, not a definitive judgment. Formatted in Markdown.'),
 });
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
@@ -37,36 +39,30 @@ const prompt = ai.definePrompt({
   name: 'careerInsightsPrompt',
   input: {schema: CareerInsightsInputSchema},
   output: {schema: CareerInsightsOutputSchema},
-  prompt: `You are an AI assistant providing astrological and numerological insights for career guidance.
-Based on the user's birth details and selected career, provide:
+  prompt: `You are an AI career counseling assistant. Your goal is to provide a supportive and insightful perspective.
+Based on the user's psychometric traits and personalized answers, provide a qualitative review for their selected career: **{{{selectedCareer}}}**.
 
-1.  **Astrological Review (approx. 150-200 words):** Discuss potential astrological alignments, strengths, challenges, or general considerations for the selected career: **{{{selectedCareer}}}**.
-    User Details:
-    - Date of Birth: {{{dateOfBirth}}}
-    - Time of Birth: {{{timeOfBirth}}}
-    - Place of Birth: {{{placeOfBirth}}}
+**User's Psychometric Traits:**
+{{{userTraits}}}
 
-2.  **Numerological Review (approx. 150-200 words):** Based on the Date of Birth: {{{dateOfBirth}}}, discuss how numerology (e.g., Life Path Number, Destiny Number if calculable from DOB alone) might relate to the user's approach, potential success, or challenges in the selected career: **{{{selectedCareer}}}**.
+**User's Personalized Answers:**
+- Ideal Workday: {{{personalizedAnswers.q1}}}
+- Hobbies: {{{personalizedAnswers.q2}}}
+- 5-Year Vision: {{{personalizedAnswers.q3}}}
+- Industry Interest: {{{personalizedAnswers.q4}}}
+- Motivations: {{{personalizedAnswers.q5}}}
 
-Important Guidelines:
-- Frame these reviews as perspectives for consideration, not as definitive predictions or absolute truths.
-- Use a supportive, encouraging, and positive tone.
-- Avoid making specific, unverifiable claims. Focus on general themes and potentials.
-- Ensure the output is well-formatted in Markdown (e.g., use bolding for subheadings if appropriate, paragraphs).
-- Do not include any disclaimers like "This is for entertainment purposes only" directly in your response. Your tone and framing should suffice.
+**Your Task:**
+Write a 'Career Fit Review' of approximately 150-200 words. Discuss potential alignments, strengths, and areas for consideration. Connect the user's traits and answers directly to the nature of the career.
+
+**Important Guidelines:**
+- Use an encouraging, positive, and supportive tone.
+- Frame your review as a helpful perspective for the user to consider, not as a definitive judgment or prediction of success.
+- Focus on general themes and potentials.
+- Ensure the output is formatted in Markdown.
+- DO NOT mention astrology, numerology, or any other esoteric practices.
+- DO NOT make specific, unverifiable claims.
 `,
-  config: {
-    safetySettings: [
-      {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_NONE', // Astrology/numerology might be seen as less harmful in some contexts.
-      },
-       {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-    ]
-  }
 });
 
 const careerInsightsFlow = ai.defineFlow(

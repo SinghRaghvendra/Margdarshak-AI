@@ -14,9 +14,7 @@ export default function PricingPage() {
           <Ticket className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold">Our Pricing</CardTitle>
           <CardDescription className="text-lg text-muted-foreground mt-2">
-            Simple and transparent. Choose the plan that's right for you.
-            <br />
-            (Detailed plans coming soon!)
+            Simple and transparent pricing for your career discovery journey.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -26,15 +24,14 @@ export default function PricingPage() {
              <ul className="space-y-2 text-muted-foreground text-sm list-disc list-inside text-left ml-4">
                 <li>Personalized Psychometric Analysis</li>
                 <li>AI-Powered Career Suggestions</li>
-                <li>Astrological & Numerological Insights</li>
-                <li>Detailed 5-Year Career Roadmap</li>
+                <li>Detailed 10-Year Career Roadmap</li>
                 <li>Education & Skill Guidance</li>
-                <li>20-Year Future Outlook</li>
+                <li>20-Year Future Outlook for your chosen field</li>
                 <li>Downloadable PDF Report</li>
              </ul>
           </div>
           <p className="text-muted-foreground text-sm">
-            Currently, we offer a comprehensive career guidance package. More plans might be available in the future.
+            This one-time payment gives you access to generate reports for up to 3 selected careers.
           </p>
            <Link href="/signup" passHref>
             <Button size="lg" className="w-full max-w-xs mx-auto text-lg py-6">
