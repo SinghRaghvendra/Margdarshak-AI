@@ -47,7 +47,6 @@
     "html2pdf.js": "^0.10.1",
     "lucide-react": "^0.475.0",
     "next": "15.2.3",
-    "patch-package": "^8.0.0",
     "pdfjs-dist": "^4.4.172",
     "razorpay": "^2.9.6",
     "react": "^18.3.1",
