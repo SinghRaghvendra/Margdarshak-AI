@@ -14,7 +14,6 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-// Define PersonalizedAnswersSchema here to be used in GenerateRoadmapInputSchema
 const PersonalizedAnswersSchema = z.object({
   q1: z.string().describe("Answer to: Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?"),
   q2: z.string().describe("Answer to: What are some of your hobbies or activities you genuinely enjoy outside of work or study? What do you like about them?"),
@@ -38,24 +37,22 @@ const GenerateRoadmapInputSchema = z.object({
 export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
 
 const GenerateRoadmapOutputSchema = z.object({
-  roadmapMarkdown: z.string().describe(`A comprehensive career report in Markdown format. It must follow this structure EXACTLY and be in the {{{preferredLanguage}}}:
+  roadmapMarkdown: z.string().describe(`A comprehensive career report in Markdown format, in the user's preferred language ({{{preferredLanguage}}}).
+The report MUST follow this structure:
 1.  "# Career Option: [Career Name]"
-2.  "## Match Score: [Percentage Match Score, e.g., 85%]"
-3.  "## Career Fit Assessment: [Qualitative assessment of fit based on user traits]"
+2.  "## Match Score: [Percentage Match Score]"
+3.  "## Career Fit Assessment"
 4.  "## Personal Details"
-    -   "**Name:** [User Name]"
-    -   "**Age:** [User Age]"
-    -   "**Country:** [User Country]"
-5.  "## Personality Profile Alignment: [Descriptive Personality Profile]"
+5.  "## Personality Profile Alignment"
 6.  "## Career Prospect & Why It Is a Good Fit for You?"
-7.  "## 10-Year Career Roadmap (Age-Specific for [Career Name]):" (For each of the 10 years, considering current age: title, description, localized expected salary with currency, suggested courses, key activities).
-8.  "## Suggested Education, Courses & Programmes:"
-9.  "## Key Interests (Top 5):" (Derived from user traits and personalized answers, presented as a bulleted list).
-10. "## Expected Salary (Localized): Year 1, Year 5, Year 10" (Specific salary expectations for these milestones, localized with currency name/symbol).
+7.  "## 10-Year Career Roadmap (Age-Specific for [Career Name])"
+8.  "## Suggested Education, Courses & Programmes"
+9.  "## Key Interests (Top 5)"
+10. "## Expected Salary (Localized): Year 1, Year 5, Year 10"
 11. "## 20-Year Outlook & Future Trends for [Career Name]"
-12. "## Important Disclaimer:" A mandatory disclaimer stating that this report is AI-generated and should be used as a tool for guidance and inspiration, not as a substitute for professional advice or personal judgment. This must be included and translated to {{{preferredLanguage}}}.
-13. Concluding Section: This includes the promotional text "Need a professional career guide... Annual subscription of Rs. 2999/-", followed by clear, prominent Markdown links: one to contact a career counsellor (linking to /contact) and one to subscribe for professional guidance (linking to /subscribe-guidance, mentioning the price).
-Use Markdown headings (e.g. #, ##, ###) for all main sections and sub-sections as appropriate. Format lists clearly. All textual output must be in the specified {{{preferredLanguage}}}.`),
+12. "## Important Disclaimer" - Must be included and translated.
+13. "Concluding Section" - Promotional text and links.
+All sections must be in {{{preferredLanguage}}}.`),
 });
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
 
@@ -67,95 +64,39 @@ const prompt = ai.definePrompt({
   name: 'generateFinalComprehensiveReportPrompt',
   input: {schema: GenerateRoadmapInputSchema},
   output: {schema: GenerateRoadmapOutputSchema},
-  prompt: `You are an expert career counselor preparing a comprehensive, personalized career report.
-The report MUST be in Markdown format and STRICTLY follow the structure and content guidelines below.
-The ENTIRE textual content of the report (headings, descriptions, advice, etc.) MUST be in the following language: **{{{preferredLanguage}}}**.
+  prompt: `Generate a comprehensive career report in Markdown in **{{{preferredLanguage}}}**.
+The report is for **{{{userName}}}** (Age: {{{age}}}, Country: {{{country}}}) for the career **{{{careerSuggestion}}}**.
+Base the report on the user's traits and answers. STRICTLY AVOID astrological or numerological content.
 
-**CRITICAL INSTRUCTION: DO NOT INCLUDE any astrological, numerological, or other esoteric/spiritual analysis. Base the entire report ONLY on the provided user traits, answers, and general career knowledge.**
+**User Data:**
+- Traits: {{{userTraits}}}
+- Answers: {{{personalizedAnswers.q1}}}, {{{personalizedAnswers.q2}}}, {{{personalizedAnswers.q3}}}, {{{personalizedAnswers.q4}}}, {{{personalizedAnswers.q5}}}
 
-Report for: {{{userName}}}
-Chosen Career: {{{careerSuggestion}}}
-User's Current Age: {{{age}}}
-User's Country (for localization): {{{country}}}
-User's Date of Birth: {{{dateOfBirth}}}
-User Traits Summary: {{{userTraits}}}
-User's Personalized Answers:
-Ideal Workday: {{{personalizedAnswers.q1}}}
-Hobbies & Interests: {{{personalizedAnswers.q2}}}
-5-Year Vision: {{{personalizedAnswers.q3}}}
-Industry Interest: {{{personalizedAnswers.q4}}}
-Career Motivations: {{{personalizedAnswers.q5}}}
-
---- START OF REPORT MARKDOWN (in {{{preferredLanguage}}}) ---
+**Report Structure (MUST BE IN {{{preferredLanguage}}}):**
 
 # Career Option: {{{careerSuggestion}}}
-
 ## Match Score: {{{matchScore}}}
-
-## Career Fit Assessment
-Provide a qualitative assessment (2-3 sentences) of why this career is a strong, moderate, or developing fit for {{{userName}}}, based on their traits, answers, and personality profile alignment. (Ensure this text is in {{{preferredLanguage}}})
-
-## Personal Details
-- **Name:** {{{userName}}}
-- **Age:** {{{age}}}
-- **Country:** {{{country}}}
-(Field names like "Name", "Age", "Country" should be translated to {{{preferredLanguage}}}).
-
-## Personality Profile Alignment: {{{personalityProfile}}}
-Briefly elaborate (1-2 sentences) on how the user's personality profile ({{{personalityProfile}}}) aligns with the demands and characteristics of the career in {{{careerSuggestion}}}. (Ensure this text is in {{{preferredLanguage}}})
-
-## Career Prospect & Why It Is a Good Fit for You?
-(This entire section's text must be in {{{preferredLanguage}}})
-Elaborate on the prospects of the career **{{{careerSuggestion}}}** generally, and then specifically explain why it is a good fit for {{{userName}}}, drawing connections to their stated traits: ({{{userTraits}}}), personality profile ({{{personalityProfile}}}), and personalized answers.
-
-## 10-Year Career Roadmap (Age-Specific for {{{careerSuggestion}}})
-(This entire section's text must be in {{{preferredLanguage}}})
-Generate a detailed 10-year career roadmap for {{{userName}}}, starting from their current age of {{{age}}}.
-For each of the 10 years:
--   Use a main heading (e.g., "### Year 1 (Age {{{age}}}): Foundation Building"). Increment age for subsequent years. (Translate "Year X (Age Y): Title" into {{{preferredLanguage}}})
--   **Title:** A concise title for the year's focus. (In {{{preferredLanguage}}})
--   **Description:** A paragraph describing objectives and focus. (In {{{preferredLanguage}}})
--   **Expected Salary:** Estimated salary range, **localized for {{{country}}} with currency symbol/name** (e.g., "₹X,XX,XXX - ₹Y,YY,YYY INR" or "$XX,000 - $YY,000 USD"). The salary figures and currency should remain, but descriptive text around it should be in {{{preferredLanguage}}}.
--   **Suggested Courses:** Bulleted list of relevant courses. (In {{{preferredLanguage}}})
--   **Key Activities:** Bulleted list of activities (networking, projects). (In {{{preferredLanguage}}})
-
-## Suggested Education, Courses & Programmes
-(This entire section's text must be in {{{preferredLanguage}}})
-Provide specific guidance on relevant degrees (Bachelor's, Master's, PhD), important certifications, online courses, and other academic/vocational programmes beneficial for pursuing a career in **{{{careerSuggestion}}}**.
-
-## Key Interests (Top 5)
-(This entire section's text must be in {{{preferredLanguage}}})
-Based on the user's traits ({{{userTraits}}}) and personalized answers (Hobbies: {{{personalizedAnswers.q2}}}, Motivations: {{{personalizedAnswers.q5}}}, Ideal Workday: {{{personalizedAnswers.q1}}}), identify and list their Top 5 Key Interests relevant to career exploration. Present as a bulleted list.
-- Interest 1 (in {{{preferredLanguage}}})
-- Interest 2 (in {{{preferredLanguage}}})
-- ...
-
-## Expected Salary (Localized for {{{country}}})
-(Descriptive text in {{{preferredLanguage}}}, salary figures/currency remain as is)
-Provide specific, localized salary expectations for {{{careerSuggestion}}} in {{{country}}} at these milestones:
--   **Year 1 (Starting):** [Salary Range with Currency] (Translate "Year 1 (Starting)" to {{{preferredLanguage}}})
--   **Year 5:** [Salary Range with Currency] (Translate "Year 5" to {{{preferredLanguage}}})
--   **Year 10:** [Salary Range with Currency] (Translate "Year 10" to {{{preferredLanguage}}})
-
-## 20-Year Outlook & Future Trends for {{{careerSuggestion}}}
-(This entire section's text must be in {{{preferredLanguage}}})
-Provide a forward-looking perspective on how the field of **{{{careerSuggestion}}}** might evolve over the next 20 years. Discuss potential technological advancements, shifts in demand, emerging specializations, and key future trends. What skills will likely remain valuable or become even more critical? How can one prepare for long-term success in this career, especially considering future technological integration?
+## Career Fit Assessment: A brief qualitative assessment of fit.
+## Personal Details: Name, Age, Country.
+## Personality Profile Alignment: {{{personalityProfile}}}: Briefly explain alignment with the career.
+## Career Prospect & Why It Is a Good Fit for You?: Elaborate on career prospects and user fit.
+## 10-Year Career Roadmap (Age-Specific for {{{careerSuggestion}}}): For each of the 10 years, provide: Title, Description, Localized Expected Salary (with currency), Suggested Courses, and Key Activities.
+## Suggested Education, Courses & Programmes: Specific degrees, certifications, and courses.
+## Key Interests (Top 5): List top 5 interests based on user data.
+## Expected Salary (Localized for {{{country}}}): Salary ranges for Year 1, 5, and 10.
+## 20-Year Outlook & Future Trends for {{{careerSuggestion}}}: Discuss future trends and skills.
 
 ---
-
 ## Important Disclaimer
-(This text must be in {{{preferredLanguage}}})
-This report was generated by an advanced AI and is intended for informational and guidance purposes only. The insights provided are based on the data you provided and should not be taken as definitive professional advice. Your career path is ultimately your own to shape. Use this report as a source of inspiration and a starting point for your own research and decision-making. Always exercise your own judgment and consult with qualified human professionals for critical life and career decisions.
+(Translate to {{{preferredLanguage}}}) This AI-generated report is for informational and guidance purposes only. It is not a substitute for professional advice or personal judgment. Your career path is your own; use this as a source of inspiration.
 
 ---
-(The following promotional text and links should also be in {{{preferredLanguage}}}. If the AI cannot reliably translate the links or pricing, it should retain them in English but translate the surrounding promotional text.)
-Need a professional career guide? We will offer a professional career guide who will keep you on track to achive your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-
+(Translate to {{{preferredLanguage}}}) Need a professional career guide? We offer guidance to help you succeed. Annual subscription of Rs. 2999/-
 
 **For further assistance:**
-
-*   **[➡️ Contact Our Career Counsellor](/contact)** - Get personalized advice from our experts.
-*   **[➡️ Subscribe Now for Professional Guidance (Rs. 2999/-)](/subscribe-guidance)** - Unlock ongoing support and resources.
---- END OF REPORT MARKDOWN ---
+*   [➡️ Contact Our Career Counsellor](/contact)
+*   [➡️ Subscribe Now for Professional Guidance (Rs. 2999/-)](/subscribe-guidance)
+--- END OF REPORT ---
 `,
 });
 

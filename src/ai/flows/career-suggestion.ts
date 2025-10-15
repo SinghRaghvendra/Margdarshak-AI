@@ -39,10 +39,10 @@ const CareerObjectSchema = z.object({
 const CareerSuggestionOutputSchema = z.object({
   careers: z
     .array(CareerObjectSchema)
-    .min(3) // Relaxed from 7 to 3 for more reliable output
-    .max(10)
+    .min(3)
+    .max(7)
     .describe(
-      'An array of three to ten distinct career options, each with a name, matchScore, personalityProfile, and a rationale, based on the user traits and personalized answers.'
+      'An array of three to seven distinct career options, each with a name, matchScore, personalityProfile, and a rationale.'
     ),
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
@@ -55,12 +55,8 @@ const prompt = ai.definePrompt({
   name: 'careerSuggestionWithPersonalizationPrompt',
   input: {schema: CareerSuggestionInputSchema},
   output: {schema: CareerSuggestionOutputSchema},
-  prompt: `You are an expert career counselor. Based on the following psychometric test traits and personalized answers, suggest at least 7 and up to 10 distinct and suitable career options.
-For each career suggestion, provide:
-1.  'name': The name of the career.
-2.  'matchScore': An estimated percentage match score (e.g., "85%", "92%") based on the AI's assessment of how well the career aligns with the user's traits and answers. This score represents a qualitative assessment expressed numerically.
-3.  'personalityProfile': A brief descriptive personality profile (e.g., "Creative and Empathetic", "Analytical and Independent", "Strategic Thinker") derived from the user's traits that aligns with the suggested career. Avoid formal psychological classifications like MBTI unless explicitly derivable and highly relevant; focus on descriptive terms.
-4.  'rationale': A brief (1-2 sentences) explanation of why this career is a good fit, clearly linking it to the user's traits and personalized answers provided below.
+  prompt: `You are an expert career counselor. Based on the psychometric test traits and personalized answers below, suggest 3 to 7 distinct career options.
+For each career, provide: 'name', 'matchScore' (qualitative estimate like "85%"), 'personalityProfile' (e.g., "Creative Thinker"), and a 'rationale' (1-2 sentences).
 
 Psychometric Traits Summary:
 {{{traits}}}
@@ -72,8 +68,7 @@ Personalized Answers:
 4. Industry Interest: {{{personalizedAnswers.q4}}}
 5. Career Motivations: {{{personalizedAnswers.q5}}}
 
-Return the career suggestions as an array of objects within the JSON object. Each object in the array must have a "name" field (string), a "matchScore" field (string, e.g., "90%"), a "personalityProfile" field (string), and a "rationale" field (string). The array should be named "careers".
-Consider all provided information to make relevant and diverse suggestions with insightful details for each field.
+Return the career suggestions as a JSON object with a "careers" array. Each object in the array must contain "name", "matchScore", "personalityProfile", and "rationale".
 `,
 });
 
@@ -88,9 +83,9 @@ const suggestCareersFlow = ai.defineFlow(
     if (!output) {
         throw new Error("The AI model did not return a valid output for career suggestions.");
     }
-    // Ensure we return a maximum of 10, even if the model provides more
-    if (output.careers.length > 10) {
-      output.careers = output.careers.slice(0, 10);
+    // Ensure we return a maximum of 7, even if the model provides more
+    if (output.careers.length > 7) {
+      output.careers = output.careers.slice(0, 7);
     }
     return output;
   }

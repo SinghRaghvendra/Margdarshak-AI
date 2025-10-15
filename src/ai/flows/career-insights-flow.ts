@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const CareerInsightsInputSchema = z.object({
   selectedCareer: z.string().describe('The career path chosen by the user.'),
@@ -27,7 +27,7 @@ export type CareerInsightsInput = z.infer<typeof CareerInsightsInputSchema>;
 const CareerInsightsOutputSchema = z.object({
   careerFitReview: z
     .string()
-    .describe('A qualitative review (approx. 150-200 words) discussing how the user\'s psychometric traits and personalized answers align with the selected career path. This should be framed as a helpful perspective, not a definitive judgment. Formatted in Markdown.'),
+    .describe('A qualitative review (approx. 150 words) discussing how the user\'s psychometric traits and answers align with the selected career. This should be a helpful perspective, not a definitive judgment. Formatted in Markdown.'),
 });
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
@@ -53,15 +53,10 @@ Based on the user's psychometric traits and personalized answers, provide a qual
 - Motivations: {{{personalizedAnswers.q5}}}
 
 **Your Task:**
-Write a 'Career Fit Review' of approximately 150-200 words. Discuss potential alignments, strengths, and areas for consideration. Connect the user's traits and answers directly to the nature of the career.
-
-**Important Guidelines:**
-- Use an encouraging, positive, and supportive tone.
-- Frame your review as a helpful perspective for the user to consider, not as a definitive judgment or prediction of success.
-- Focus on general themes and potentials.
-- Ensure the output is formatted in Markdown.
-- DO NOT mention astrology, numerology, or any other esoteric practices.
-- DO NOT make specific, unverifiable claims.
+Write a 'Career Fit Review' of approximately 150 words. Discuss potential alignments and strengths.
+Use an encouraging and supportive tone. Frame the review as a helpful perspective, not a definitive judgment.
+Ensure the output is formatted in Markdown.
+DO NOT make specific, unverifiable claims or use esoteric practices.
 `,
 });
 
