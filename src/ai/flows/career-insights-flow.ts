@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Provides AI-powered insights for a selected career based on the user's profile.
