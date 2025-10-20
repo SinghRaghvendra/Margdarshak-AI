@@ -1,7 +1,0 @@
-steps:
-  - name: fetch
-  - name: build
-    args: ['npm', 'install']
-  - name: build
-    args: ['npm', 'run', 'build']
-  - name: deploy
