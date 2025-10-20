@@ -7,12 +7,6 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "apphosting": {
-      "environment": {
-        "build": {
-          "FIREBASE_SERVICE_ACCOUNT_MARGDARSHAK_AI": "{\"type\":\"service_account\",\"project_id\":\"margdarshak-ai\",\"private_key_id\":\"628496ac5a7853ce6ccc2df3015a2cec91903f14\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCvAPZGpiXuaZQv\\nZBh8zdInPdjG81NbjTkqRF9cACs+I5QTqKaXq5QQepWNZBgMehT8ZmMCat/mdtcn\\ncZDAm1RbOsGgL46PPuxLqw+TSaLVBYFRMmWAFgdozZ83ZM7Pv/w0VlIeaFPuwdRo\\nVov+6eEBBwxWq+xC97ATq+yzgwa3XVr/49oDJl2ORdqjOrVkPA4cFJTPfXvDk1iX\\nls7gmNQHoTzm5zPz+Y7PSIf3cCYMnKJpnK1QL/pxDVqVdpmuRi8gy/YkvJMu5j6r\\nwHf/kcve2mylqMj8Mn9afO+eIwlOjIoyRgEdjEdwFy6uLdrJM53/WtVPd2z3J7UP\\nHrmh6byVAgMBAAECggEAEUywi7pX7JH+RpMIAqpb+GoaOEyMdHPo7z80CAWyQKHG\\nvQzCbyLUb66WgxQednlJAsxiRDZpbMBZs3n7+7Y/KAeOZXXeC1YGiNJfp0kzsggp\\nyOuI8hj7YYZWE2VBNnM9jLTtyDi691Ks2yWXEDtxdScLtrOnFtWiT8eCjhpJOy3y\\niiliF6I2UQgNmhI4XnT46ImjuGqWjK9Oy04f9SZhh0/1OCXYrahiMfPZCp7IjiLU\\nEwuGy3TdV0Wvvud3SGkhOEX0YZGJ3mPlr0PqEx82mdctNI4CTYByqXqmbOGm5Ihk\\nEUqwOxDzNvKQyDfJA5BIjrb8wOOGidZkEslsiZGGsQKBgQD07luJBibdvw0oeeWO\\nIA1LE/TqgDRRYFOphufkR3tyX1+YTpfhUJpYFZSuAvx5T9aOu699luXLEoGMu+fb\\nzPn1llDHnUreGsQbO9KN0I+TlyPiYjyrfX5noAFGQSO3+k7dw/ZXwFzslnO5zNsz\\nj59okDCljVY/kKyBQ3trpgQz6QKBgQC26Zr1Il4UxchPIZMsz62SYnK6h05sJnC5\\nIxnBZHybOTL7RIPYdOZDYHSbe4Cb7UN9fJZv1otpv2/Ea/41AP4T/EdFtDLNKoIe\\nQRmLx7RJbXqN1JLJXcwNYNmX4GH6Az45Cfi/KpklY9UPGOYENd9csVnnDhY29+uR\\nUjopS1bzzQKBgQCLFVs3OR4S521yYZ3gEgVab8+w5fJPj3KSnr/JmmnYLZ5cH60R\\nTjMG9+JA2gNCY/rDfIKPv4NnyG92WjG0V/ZM5fmjEIe2Dd70VAkhbKBLQBUpdX1c\\nKFwCPhLbMRw2WdY1ChU2CU77LggzJsgGxHTR7KcjK1ohqGa81HQeUdyrGQKBgFej\\nBYN9u+Xn/VkslP9bYaZJwFFukrxujoOltalbI/ibJzoMUb9cAxc1F6mHOs96lmOB\\nVfKvsIwyFLLfqyRqHVImBV/4Pn7eZwln132JaW/k7FsYBlxEfIfMZ3TFJSxMcXuS\\ns4OkPUwU0PgyzcImraYTsydpMGuVzWALLaKrXjXhAoGBAIZAeSxhDps/DsBNs3hX\\n/Avxuo5SXwcNe88+z4Ruo9uArUxpC+2ltrj7CofgJCGKmha48VBOTljcN4h2Kj+H\\nGEOKilxHuxZj8BRNRB2J2ur48HkzUSJ5M30Edc4RondSssmU3jAb+MB9sjgtpcvY\\nM6yQFZ0edbM/zlr4W++SGXCt\\n-----END PRIVATE KEY-----\\n"
-        }
-      }
-    }
+    "apphosting": {}
   }
 }
