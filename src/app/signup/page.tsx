@@ -85,6 +85,14 @@ export default function SignupPage() {
       const { email, password, name, contact, country, language } = data;
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      
+      const idToken = await user.getIdToken();
+
+      // Create session cookie
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        body: idToken,
+      });
 
       // Now save the extra user info to Firestore
       const userData = {
@@ -98,15 +106,22 @@ export default function SignupPage() {
       };
       await setDoc(doc(db, "users", user.uid), userData);
 
-      // Also save to localStorage
+      // Also save to localStorage to ensure next pages have immediate access
       localStorage.setItem('margdarshak_user_info', JSON.stringify(userData));
-
+      
+      // Clear any previous journey data
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
+          localStorage.removeItem(key);
+        }
+      });
 
       toast({
         title: 'Signup Successful!',
         description: 'Redirecting to your journey...',
       });
-      router.push('/birth-details'); // Redirect to birth details after signup
+      router.push('/birth-details');
+      
     } catch (error: any) {
       let errorMessage = 'Could not complete signup. Please try again.';
       if (error.code === 'auth/email-already-in-use') {
