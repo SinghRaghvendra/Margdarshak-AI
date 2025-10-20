@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Lazily initializes and gets the auth service
-    const adminAuth = auth();
+    const adminAuth = await auth();
     await adminAuth.verifySessionCookie(sessionCookie, true /** checkRevoked */);
     return NextResponse.json({ status: 'success' }, { status: 200 });
   } catch (error) {

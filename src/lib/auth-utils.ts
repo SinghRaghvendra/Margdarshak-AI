@@ -18,7 +18,7 @@ export async function getAuthenticatedUser() {
 
   try {
     // Lazily initializes Admin SDK and gets auth service
-    const adminAuth = auth();
+    const adminAuth = await auth();
     const decodedIdToken = await adminAuth.verifySessionCookie(sessionCookie, true /** checkRevoked */);
     return decodedIdToken;
   } catch (error) {

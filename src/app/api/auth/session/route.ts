@@ -5,7 +5,7 @@ import { auth } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   // The Admin SDK is initialized lazily by the auth() getter.
-  const adminAuth = auth();
+  const adminAuth = await auth();
 
   const idToken = await request.text();
 
