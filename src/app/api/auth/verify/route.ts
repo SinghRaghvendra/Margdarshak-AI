@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await auth.verifySessionCookie(sessionCookie, true /** checkRevoked */);
+    // Lazily initializes and gets the auth service
+    const adminAuth = auth();
+    await adminAuth.verifySessionCookie(sessionCookie, true /** checkRevoked */);
     return NextResponse.json({ status: 'success' }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ status: 'error', message: 'Invalid session cookie' }, { status: 401 });

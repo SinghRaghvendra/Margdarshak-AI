@@ -4,11 +4,8 @@ import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
-  // The Admin SDK is initialized in firebase-admin.ts, but only at runtime.
-  // By the time this API route is hit, it should be initialized.
-  if (!auth.app) {
-    return NextResponse.json({ status: 'error', message: 'Firebase Admin SDK not initialized on the server.' }, { status: 500 });
-  }
+  // The Admin SDK is initialized lazily by the auth() getter.
+  const adminAuth = auth();
 
   const idToken = await request.text();
 
@@ -16,7 +13,7 @@ export async function POST(request: NextRequest) {
   const expiresIn = 60 * 60 * 24 * 5 * 1000;
 
   try {
-    const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
+    const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
     const options = {
       name: 'session',
       value: sessionCookie,
