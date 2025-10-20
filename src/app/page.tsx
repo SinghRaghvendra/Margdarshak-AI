@@ -54,7 +54,7 @@ export default function HomePage() {
       title: 'Personalized Career Guidance',
       description: 'Uncover your innate strengths and ideal work style through our insightful psychometric assessment, then receive a comprehensive 10-year career roadmap.',
       href: careerGuidanceHref,
-      cta: isLoggedIn ? "Continue Your Journey" : "Start Your Career Journey",
+      cta: isLoggedIn ? "Continue Your Journey" : "Begin Assessment",
       isExternal: false,
     },
   ];
@@ -126,7 +126,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href={careerGuidanceHref}>
               <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
-                <User className="mr-2 h-5 w-5" /> {isLoggedIn ? "Continue Journey" : "Get Career Guidance"}
+                <User className="mr-2 h-5 w-5" /> {isLoggedIn ? "Continue Journey" : "Begin Assessment"}
               </Button>
             </Link>
           </div>
@@ -200,7 +200,7 @@ export default function HomePage() {
           </p>
           <Link href={careerGuidanceHref}>
             <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
-              {isLoggedIn ? "Continue Your Journey" : "Get Started Now"} <ArrowRight className="ml-2 h-5 w-5" />
+              {isLoggedIn ? "Continue Your Journey" : "Begin Assessment"} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </div>
