@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gift, ArrowRight, RotateCw, Play, CreditCard } from 'lucide-react';
+import { Gift, ArrowRight, RotateCw, Play, CreditCard, BookUser } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 type ProgressState = 'none' | 'partial_test' | 'test_complete_no_selection' | 'selection_complete_no_payment' | 'paid';
@@ -34,12 +34,11 @@ export default function WelcomeGuestPage() {
             const userData = userDoc.data();
             setUserName(userData.name || 'Guest');
             
-            // Determine progress state
+            // Determine progress state from Firestore
             if (userData.paymentSuccessful) {
                 setProgressState('paid');
-            } else if (userData.selectedCareersList && userData.selectedCareersList.length > 0) {
+            } else if (userData.selectedCareersList && Array.isArray(userData.selectedCareersList) && userData.selectedCareersList.length > 0) {
                 setProgressState('selection_complete_no_payment');
-                localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(userData.selectedCareersList));
             } else if (userData.testCompleted) {
                 setProgressState('test_complete_no_selection');
             } else if (userData.testProgress && userData.testProgress.answers && Object.keys(userData.testProgress.answers).length > 0) {
@@ -62,7 +61,8 @@ export default function WelcomeGuestPage() {
              if (userData.birthDetails) localStorage.setItem('margdarshak_birth_details', JSON.stringify(userData.birthDetails));
              if (userData.userTraits) localStorage.setItem('margdarshak_user_traits', userData.userTraits);
              if (userData.personalizedAnswers) localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(userData.personalizedAnswers));
-
+             if (userData.selectedCareersList) localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(userData.selectedCareersList));
+             if (userData.paymentSuccessful) localStorage.setItem('margdarshak_payment_successful', 'true');
 
           } else {
              toast({ title: 'User data not found', description: 'Could not retrieve your profile.', variant: 'destructive' });
@@ -110,6 +110,8 @@ export default function WelcomeGuestPage() {
       toast({ title: 'Error', description: 'No user is logged in.', variant: 'destructive' });
       return;
     }
+    setPageLoading(true);
+    toast({ title: 'Clearing Progress...', description: 'Please wait.' });
     
     try {
       const userDocRef = doc(db, 'users', user.uid);
@@ -118,6 +120,7 @@ export default function WelcomeGuestPage() {
         userTraits: null,
         testCompleted: false,
         personalizedAnswers: null,
+        allCareerSuggestions: null,
         selectedCareersList: null,
         paymentSuccessful: null,
         // Reset other fields as necessary
@@ -136,6 +139,7 @@ export default function WelcomeGuestPage() {
     } catch (error) {
        toast({ title: 'Error', description: 'Could not clear your progress. Please try again.', variant: 'destructive' });
        console.error("Error clearing progress:", error);
+       setPageLoading(false);
     }
   };
 
@@ -152,13 +156,17 @@ export default function WelcomeGuestPage() {
     let ctaText = "Continue Where You Left Off";
     let ctaIcon = <Play className="mr-2 h-5 w-5" />;
 
-    if (progressState === 'selection_complete_no_payment') {
+    if (progressState === 'test_complete_no_selection') {
+        description = "You've completed the test! Let's get your personalized career suggestions.";
+        ctaText = "Continue to Suggestions";
+    } else if (progressState === 'selection_complete_no_payment') {
         description = "You're just one step away! You've completed the assessment and selected your careers. Let's checkout.";
         ctaText = "Proceed to Checkout";
         ctaIcon = <CreditCard className="mr-2 h-5 w-5" />
     } else if (progressState === 'paid') {
         description = "Welcome back! You can view your previously generated reports or start a new assessment."
         ctaText = "View My Reports"
+        ctaIcon = <BookUser className="mr-2 h-5 w-5" />;
     }
 
     return (
@@ -169,7 +177,7 @@ export default function WelcomeGuestPage() {
               {ctaIcon} {ctaText}
             </Button>
             <Button onClick={handleStartFresh} variant="outline" className="w-full text-lg py-6">
-              <RotateCw className="mr-2 h-5 w-5" /> Start Fresh AI Councel Career Guide
+              <RotateCw className="mr-2 h-5 w-5" /> Start Fresh
             </Button>
           </div>
         </>

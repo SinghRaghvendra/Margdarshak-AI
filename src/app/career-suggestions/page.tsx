@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput } from '@/ai/flows/career-suggestion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 
 
@@ -37,7 +37,7 @@ export default function CareerSuggestionsPage() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
         if (currentUser) {
             setUser(currentUser);
             const prerequisites = [
@@ -56,8 +56,24 @@ export default function CareerSuggestionsPage() {
               router.replace(redirectPath);
               return;
             }
-            setPageLoading(false);
-            fetchSuggestions();
+            
+            // Check for existing suggestions in Firestore first
+            const userDocRef = doc(db, 'users', currentUser.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists() && userDoc.data().allCareerSuggestions) {
+                const suggestionsFromDb = userDoc.data().allCareerSuggestions;
+                setAllSuggestions(suggestionsFromDb);
+                if (userDoc.data().selectedCareersList) {
+                  setSelectedCareers(userDoc.data().selectedCareersList);
+                }
+                localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsFromDb));
+                setIsLoading(false);
+                setPageLoading(false);
+            } else {
+              // If not in DB, generate them
+              fetchSuggestions();
+            }
+
         } else {
             toast({ title: 'Not Authenticated', description: 'Redirecting to login.', variant: 'destructive' });
             router.replace('/login');
@@ -66,12 +82,13 @@ export default function CareerSuggestionsPage() {
 
     const fetchSuggestions = async () => {
       setIsLoading(true);
+      setPageLoading(false);
       setGenerationError(null);
       try {
         const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
         const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
         
-        if (!storedUserTraits || !storedPersonalizedAnswers) return;
+        if (!storedUserTraits || !storedPersonalizedAnswers || !auth.currentUser) return;
         
         const parsedPersonalizedAnswers = JSON.parse(storedPersonalizedAnswers);
         const input: CareerSuggestionInput = {
@@ -84,23 +101,19 @@ export default function CareerSuggestionsPage() {
         
         if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length > 0) {
           setAllSuggestions(suggestionsOutput.careers);
+          // Save to Firestore and localStorage
+          const userDocRef = doc(db, 'users', auth.currentUser.uid);
+          await setDoc(userDocRef, { allCareerSuggestions: suggestionsOutput.careers }, { merge: true });
           localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsOutput.careers));
-
-          const storedSelections = localStorage.getItem('margdarshak_selected_careers_list');
-          if (storedSelections) {
-            setSelectedCareers(JSON.parse(storedSelections));
-          }
         } else {
           setGenerationError(`The AI could not generate enough distinct career suggestions based on your answers. For better results, please go back and provide more detailed responses to the personalized questions.`);
           setAllSuggestions([]);
-          localStorage.removeItem('margdarshak_all_career_suggestions');
         }
       } catch (error) {
         console.error('Error fetching career suggestions:', error);
         toast({ title: 'Error Generating Suggestions', description: 'Could not generate career suggestions. Please try again.', variant: 'destructive' });
         setGenerationError('An unexpected error occurred while generating suggestions. Please try the previous steps again.');
         setAllSuggestions([]);
-        localStorage.removeItem('margdarshak_all_career_suggestions');
       } finally {
         setIsLoading(false);
       }
@@ -151,7 +164,6 @@ export default function CareerSuggestionsPage() {
 
       // Clear subsequent local data
       localStorage.removeItem('margdarshak_payment_successful');
-      localStorage.removeItem('margdarshak_selected_career');
       
       toast({ title: 'Selections Saved', description: 'Proceeding to payment for your detailed reports.' });
       router.push('/payment');

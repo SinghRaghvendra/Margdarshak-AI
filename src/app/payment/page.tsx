@@ -144,6 +144,7 @@ export default function PaymentPage() {
         handler: async function (response: any) {
           // 3. Verify payment on backend
           toast({ title: 'Verifying Payment', description: 'This may take a moment, please do not close this page.' });
+          setIsProcessing(true); // Keep UI in processing state
           try {
             const verificationResponse = await fetch('/api/razorpay/verify-payment', {
               method: 'POST',
@@ -179,6 +180,11 @@ export default function PaymentPage() {
           email: userInfo.email,
           contact: userInfo.contact,
         },
+        modal: {
+            ondismiss: function() {
+                setIsProcessing(false); // Re-enable button if user closes Razorpay modal
+            }
+        },
         theme: {
           color: '#FDD835' // This is the primary color from your theme
         }
@@ -186,6 +192,8 @@ export default function PaymentPage() {
 
       const rzp = new window.Razorpay(options);
       rzp.open();
+      
+      // Note: We've moved the setIsProcessing(false) to the ondismiss and failure handlers
       
       rzp.on('payment.failed', function (response: any) {
         console.error('Razorpay payment failed:', response.error);
