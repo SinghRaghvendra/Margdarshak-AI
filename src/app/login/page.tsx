@@ -38,7 +38,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (clientAuth.currentUser) {
-      router.replace('/');
+      router.replace('/welcome-guest');
     }
   }, [router]);
 
@@ -63,32 +63,6 @@ export default function LoginPage() {
           method: 'POST',
           body: idToken,
       });
-
-
-      // Fetch user data from Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        // Save fetched data to localStorage for other parts of the app to use
-        localStorage.setItem('margdarshak_user_info', JSON.stringify({
-          uid: user.uid,
-          name: userData.name,
-          email: userData.email,
-          contact: userData.contact,
-          country: userData.country,
-          language: userData.language,
-        }));
-        
-        // Also cache birth details if they exist in firestore
-        if (userData.birthDetails) {
-            localStorage.setItem('margdarshak_birth_details', JSON.stringify(userData.birthDetails));
-        }
-
-      } else {
-         throw new Error("User data not found in database.");
-      }
 
       toast({
         title: 'Login Successful',
@@ -185,3 +159,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

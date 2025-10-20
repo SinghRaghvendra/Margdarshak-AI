@@ -57,33 +57,37 @@ export default function PsychometricTestPage() {
           const userDocRef = doc(db, 'users', currentUser.uid);
           const userDoc = await getDoc(userDocRef);
 
-          if (userDoc.exists() && userDoc.data().testProgress) {
-            const savedProgress: TestProgress = userDoc.data().testProgress;
-            // Add checks to ensure savedProgress is not null/malformed
-            if (savedProgress) {
-                setCurrentSectionIndex(savedProgress.currentSectionIndex || 0);
-                setCurrentQuestionInSectionIndex(savedProgress.currentQuestionInSectionIndex || 0);
-                setAnswers(savedProgress.answers || {});
-                setOptionalAnswers(savedProgress.optionalAnswers || {});
-                setShowOptionalIntro(savedProgress.showOptionalIntro || false);
-                setTakingOptionalTest(savedProgress.takingOptionalTest || false);
-                setCurrentOptionalQuestionIndex(savedProgress.currentOptionalQuestionIndex || 0);
-                if (savedProgress.answers && Object.keys(savedProgress.answers).length > 0) {
-                    toast({ title: 'Progress Restored', description: 'Welcome back! We\'ve loaded your saved progress.' });
+          if (userDoc.exists()) {
+             const userData = userDoc.data();
+             if (userData.birthDetails) {
+                 localStorage.setItem('margdarshak_birth_details', JSON.stringify(userData.birthDetails));
+             } else {
+                 toast({ title: 'Birth details not found', description: 'Please provide your birth details first.', variant: 'destructive' });
+                 router.replace('/birth-details');
+                 return;
+             }
+
+             if (userData.testProgress) {
+                const savedProgress: TestProgress = userData.testProgress;
+                if (savedProgress) {
+                    setCurrentSectionIndex(savedProgress.currentSectionIndex || 0);
+                    setCurrentQuestionInSectionIndex(savedProgress.currentQuestionInSectionIndex || 0);
+                    setAnswers(savedProgress.answers || {});
+                    setOptionalAnswers(savedProgress.optionalAnswers || {});
+                    setShowOptionalIntro(savedProgress.showOptionalIntro || false);
+                    setTakingOptionalTest(savedProgress.takingOptionalTest || false);
+                    setCurrentOptionalQuestionIndex(savedProgress.currentOptionalQuestionIndex || 0);
+                    if (savedProgress.answers && Object.keys(savedProgress.answers).length > 0) {
+                        toast({ title: 'Progress Restored', description: 'Welcome back! We\'ve loaded your saved progress.' });
+                    }
                 }
-            }
-          }
-        
-          const birthDetailsStored = localStorage.getItem('margdarshak_birth_details');
-          if (!birthDetailsStored) {
-              const userInfo = userDoc.exists() ? userDoc.data() : null;
-              if (userInfo && userInfo.birthDetails) {
-                  localStorage.setItem('margdarshak_birth_details', JSON.stringify(userInfo.birthDetails));
-              } else {
-                  toast({ title: 'Birth details not found', description: 'Please provide your birth details first.', variant: 'destructive' });
-                  router.replace('/birth-details');
-                  return;
-              }
+             }
+
+          } else {
+            // This case should ideally not happen if user comes from a valid flow
+            toast({ title: 'User data not found', description: 'Redirecting to start.', variant: 'destructive'});
+            router.replace('/signup');
+            return;
           }
 
         } catch (error) {
@@ -118,21 +122,12 @@ export default function PsychometricTestPage() {
 
     try {
       const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, { testProgress: progress });
+      // Use set with merge to create or update, which is more robust
+      await setDoc(userDocRef, { testProgress: progress }, { merge: true });
       
     } catch (error) {
-      // This can fail if the document doesn't exist, so we use setDoc with merge as a fallback
-      if ((error as any).code === 'not-found') {
-          try {
-              const userDocRef = doc(db, 'users', user.uid);
-              await setDoc(userDocRef, { testProgress: progress }, { merge: true });
-          } catch (setError) {
-              console.error("Failed to save progress with setDoc after update failed", setError);
-          }
-      } else {
         console.error("Failed to save progress to Firestore", error);
         toast({ title: "Could not save progress", description: "Your progress may not be saved. Please check your internet connection.", variant: "destructive"});
-      }
     }
   }, [user, pageLoading, currentSectionIndex, currentQuestionInSectionIndex, answers, optionalAnswers, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, toast]);
 
@@ -274,10 +269,14 @@ export default function PsychometricTestPage() {
 
     try {
       const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, { 
+      await setDoc(userDocRef, { 
         userTraits: userTraits,
         testCompleted: true,
-      });
+        personalizedAnswers: null, // Clear subsequent data
+        allCareerSuggestions: null,
+        selectedCareersList: null,
+        paymentSuccessful: false,
+      }, { merge: true });
 
       localStorage.setItem('margdarshak_user_traits', userTraits);
       
@@ -465,3 +464,5 @@ export default function PsychometricTestPage() {
     </div>
   );
 }
+
+    

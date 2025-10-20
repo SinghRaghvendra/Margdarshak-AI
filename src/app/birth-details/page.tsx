@@ -140,6 +140,13 @@ export default function BirthDetailsPage() {
       // Save to localStorage as well for quick access by other components
       localStorage.setItem('margdarshak_birth_details', JSON.stringify(detailsToStore));
       
+      // Clear subsequent progress data
+      localStorage.removeItem('margdarshak_user_traits');
+      localStorage.removeItem('margdarshak_personalized_answers');
+      localStorage.removeItem('margdarshak_all_career_suggestions');
+      localStorage.removeItem('margdarshak_selected_careers_list');
+      localStorage.removeItem('margdarshak_payment_successful');
+      
       toast({ title: 'Birth Details Saved', description: 'Proceeding to the next step...' });
       router.push('/psychometric-test');
     } catch (error) {
@@ -231,3 +238,5 @@ export default function BirthDetailsPage() {
     </div>
   );
 }
+
+    

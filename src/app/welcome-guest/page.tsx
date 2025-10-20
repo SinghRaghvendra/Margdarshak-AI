@@ -12,7 +12,7 @@ import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
-type ProgressState = 'none' | 'partial_test' | 'test_complete_no_selection' | 'selection_complete_no_payment' | 'paid';
+type ProgressState = 'none' | 'birth_details_pending' | 'test_pending' | 'test_partial' | 'personalized_questions_pending' | 'selection_pending' | 'payment_pending' | 'paid';
 
 export default function WelcomeGuestPage() {
   const router = useRouter();
@@ -38,16 +38,22 @@ export default function WelcomeGuestPage() {
             if (userData.paymentSuccessful) {
                 setProgressState('paid');
             } else if (userData.selectedCareersList && Array.isArray(userData.selectedCareersList) && userData.selectedCareersList.length > 0) {
-                setProgressState('selection_complete_no_payment');
+                setProgressState('payment_pending');
+            } else if (userData.allCareerSuggestions) {
+                 setProgressState('selection_pending');
+            } else if (userData.personalizedAnswers) {
+                setProgressState('personalized_questions_pending'); // This seems to be the logical state before suggestions
             } else if (userData.testCompleted) {
-                setProgressState('test_complete_no_selection');
+                setProgressState('personalized_questions_pending'); // If test is done, next step is personalized Qs
             } else if (userData.testProgress && userData.testProgress.answers && Object.keys(userData.testProgress.answers).length > 0) {
-              setProgressState('partial_test');
+              setProgressState('test_partial');
+            } else if (userData.birthDetails) {
+              setProgressState('test_pending');
             } else {
-              setProgressState('none');
+              setProgressState('birth_details_pending');
             }
 
-             // Sync firestore data to localstorage for other components if needed
+             // Sync firestore data to localstorage for other components
             localStorage.setItem('margdarshak_user_info', JSON.stringify({
               uid: currentUser.uid,
               name: userData.name,
@@ -66,8 +72,8 @@ export default function WelcomeGuestPage() {
              if (userData.paymentSuccessful) localStorage.setItem('margdarshak_payment_successful', 'true');
 
           } else {
-             toast({ title: 'User data not found', description: 'Could not retrieve your profile.', variant: 'destructive' });
-             router.replace('/login');
+             toast({ title: 'User data not found', description: 'Could not retrieve your profile. Please sign up again.', variant: 'destructive' });
+             router.replace('/signup');
              return;
           }
         } catch (error) {
@@ -92,15 +98,18 @@ export default function WelcomeGuestPage() {
         case 'paid':
             router.push('/my-reports');
             break;
-        case 'selection_complete_no_payment':
+        case 'payment_pending':
             router.push('/payment');
             break;
-        case 'test_complete_no_selection':
-            router.push('/personalized-questions');
+        case 'selection_pending':
+        case 'personalized_questions_pending':
+             router.push('/career-suggestions');
             break;
-        case 'partial_test':
+        case 'test_partial':
+        case 'test_pending':
             router.push('/psychometric-test');
             break;
+        case 'birth_details_pending':
         default:
             router.push('/birth-details');
     }
@@ -116,15 +125,16 @@ export default function WelcomeGuestPage() {
     
     try {
       const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
+      await setDoc(userDocRef, {
         testProgress: null,
         userTraits: null,
         testCompleted: false,
         personalizedAnswers: null,
         allCareerSuggestions: null,
         selectedCareersList: null,
-        paymentSuccessful: false, // Explicitly set to false
-      });
+        paymentSuccessful: false,
+        birthDetails: null, // Also clear birth details to start completely fresh
+      }, { merge: true });
 
        // Clear all local storage journey data, keeping user info
       Object.keys(localStorage).forEach(key => {
@@ -144,40 +154,56 @@ export default function WelcomeGuestPage() {
   };
 
   const renderContent = () => {
-    if (progressState === 'none') {
-        return (
-             <Button onClick={() => router.push('/birth-details')} className="w-full max-w-sm mx-auto text-lg py-6">
-              Start Your Journey <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-        )
-    }
+    let description, ctaText, ctaIcon;
 
-    let description = "It looks like you have progress saved. What would you like to do?";
-    let ctaText = "Begin where you left";
-    let ctaIcon = <Play className="mr-2 h-5 w-5" />;
-
-    if (progressState === 'test_complete_no_selection') {
-        description = "You've completed the test! Let's get your personalized career suggestions.";
-        ctaText = "Continue to Suggestions";
-    } else if (progressState === 'selection_complete_no_payment') {
+    switch (progressState) {
+      case 'paid':
+        description = "Welcome back! You can view your previously generated reports or start a new assessment.";
+        ctaText = "View My Reports";
+        ctaIcon = <BookUser className="mr-2 h-5 w-5" />;
+        break;
+      case 'payment_pending':
         description = "You're just one step away! You've completed the assessment and selected your careers. Let's checkout.";
         ctaText = "Proceed to Checkout";
-        ctaIcon = <CreditCard className="mr-2 h-5 w-5" />
-    } else if (progressState === 'paid') {
-        description = "Welcome back! You can view your previously generated reports or start a new assessment."
-        ctaText = "View My Reports"
-        ctaIcon = <BookUser className="mr-2 h-5 w-5" />;
+        ctaIcon = <CreditCard className="mr-2 h-5 w-5" />;
+        break;
+      case 'selection_pending':
+        description = "You have your AI-generated career suggestions! Let's review them and pick your top choices.";
+        ctaText = "View Career Suggestions";
+        ctaIcon = <Play className="mr-2 h-5 w-5" />;
+        break;
+      case 'personalized_questions_pending':
+        description = "You've finished the test! Let's continue by answering a few personalized questions to refine your results.";
+        ctaText = "Answer Personalized Questions";
+        ctaIcon = <Play className="mr-2 h-5 w-5" />;
+        break;
+      case 'test_partial':
+        description = "You're partway through the psychometric test. Let's pick up where you left off.";
+        ctaText = "Continue Test";
+        ctaIcon = <Play className="mr-2 h-5 w-5" />;
+        break;
+      case 'test_pending':
+        description = "You've provided your birth details. The next step is the psychometric test.";
+        ctaText = "Start Psychometric Test";
+        ctaIcon = <Play className="mr-2 h-5 w-5" />;
+        break;
+      case 'birth_details_pending':
+      default:
+        description = "Let's start your journey by gathering some basic information to personalize your experience.";
+        ctaText = "Start Your Journey";
+        ctaIcon = <ArrowRight className="mr-2 h-5 w-5" />;
+        break;
     }
 
     return (
         <>
           <p className="text-muted-foreground">{description}</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Button onClick={handleContinue} className="w-full text-lg py-6">
               {ctaIcon} {ctaText}
             </Button>
             <Button onClick={handleStartFresh} variant="outline" className="w-full text-lg py-6">
-              <RotateCw className="mr-2 h-5 w-5" /> Start fresh assessment
+              <RotateCw className="mr-2 h-5 w-5" /> Start Fresh Assessment
             </Button>
           </div>
         </>
@@ -205,3 +231,5 @@ export default function WelcomeGuestPage() {
     </div>
   );
 }
+
+    
