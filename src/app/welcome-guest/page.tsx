@@ -193,7 +193,7 @@ export default function WelcomeGuestPage() {
       case 'birth_details_pending':
       default:
         description = "Let's start your journey by gathering some basic information to personalize your experience.";
-        ctaText = "Start Your Journey";
+        ctaText = "Begin Assessment";
         ctaIcon = <ArrowRight className="mr-2 h-5 w-5" />;
         break;
     }

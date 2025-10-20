@@ -106,15 +106,15 @@ export default function SignupPage() {
       };
       await setDoc(doc(db, "users", user.uid), userData);
 
-      // Also save to localStorage to ensure next pages have immediate access
-      localStorage.setItem('margdarshak_user_info', JSON.stringify(userData));
-      
-      // Clear any previous journey data
+      // Clear all previous journey data from localStorage to ensure a clean start
       Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
+        if (key.startsWith('margdarshak_')) {
           localStorage.removeItem(key);
         }
       });
+      // Now, save only the essential user info
+      localStorage.setItem('margdarshak_user_info', JSON.stringify(userData));
+      
 
       toast({
         title: 'Signup Successful!',
@@ -162,7 +162,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Name" {...field} />
+                      <Input placeholder="Your Name" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -175,7 +175,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} />
+                      <Input type="email" placeholder="your.email@example.com" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -188,7 +188,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel className="flex items-center"><KeyRound className="mr-2 h-4 w-4 text-muted-foreground" />Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -201,7 +201,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel className="flex items-center"><KeyRound className="mr-2 h-4 w-4 text-muted-foreground" />Confirm Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -214,7 +214,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Contact Number</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="+1 234 567 8900" {...field} />
+                      <Input type="tel" placeholder="+1 234 567 8900" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -227,7 +227,7 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Country</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Country" {...field} />
+                      <Input placeholder="Your Country" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

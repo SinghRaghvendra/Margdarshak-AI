@@ -115,7 +115,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} />
+                      <Input type="email" placeholder="your.email@example.com" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -128,7 +128,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Your Password" {...field} />
+                      <Input type="password" placeholder="Your Password" {...field} suppressHydrationWarning={true} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -143,7 +143,7 @@ export default function LoginPage() {
               </div>
               <div className="flex flex-col gap-3 pt-2">
                 <Button type="submit" className="w-full text-lg py-6" disabled={form.formState.isSubmitting}>
-                   {form.formState.isSubmitting ? <LoadingSpinner /> : 'Login & Continue Journey'}
+                   {form.formState.isSubmitting ? <LoadingSpinner /> : 'Login & Continue'}
                 </Button>
               </div>
             </form>
