@@ -16,6 +16,12 @@ export async function getAuthenticatedUser() {
     throw new Error('Authentication Error: No session cookie provided. User is not logged in.');
   }
 
+  // The Admin SDK is initialized lazily. By the time this function is called at runtime, it should be ready.
+  if (!auth.app) {
+    // This case should ideally not be hit if the env var is set correctly, but it's a good safeguard.
+    throw new Error('Authentication Error: Firebase Admin SDK not initialized on the server.');
+  }
+
   try {
     const decodedIdToken = await auth.verifySessionCookie(sessionCookie, true /** checkRevoked */);
     return decodedIdToken;
