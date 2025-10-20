@@ -7,3 +7,4 @@ config();
 import '@/ai/flows/career-suggestion.ts';
 import '@/ai/flows/detailed-roadmap.ts';
 import '@/ai/flows/career-insights-flow.ts';
+import '@/ai/flows/gemini-test-flow.ts';
