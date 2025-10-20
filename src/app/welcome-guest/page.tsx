@@ -9,7 +9,7 @@ import { Gift, ArrowRight, RotateCw, Play, CreditCard, BookUser } from 'lucide-r
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 type ProgressState = 'none' | 'birth_details_pending' | 'test_pending' | 'test_partial' | 'personalized_questions_pending' | 'selection_pending' | 'payment_pending' | 'paid';
@@ -42,7 +42,8 @@ export default function WelcomeGuestPage() {
             } else if (userData.allCareerSuggestions) {
                  setProgressState('selection_pending');
             } else if (userData.personalizedAnswers) {
-                setProgressState('personalized_questions_pending'); // This seems to be the logical state before suggestions
+                // This state indicates suggestions need to be generated next
+                setProgressState('selection_pending');
             } else if (userData.testCompleted) {
                 setProgressState('personalized_questions_pending'); // If test is done, next step is personalized Qs
             } else if (userData.testProgress && userData.testProgress.answers && Object.keys(userData.testProgress.answers).length > 0) {
@@ -53,7 +54,7 @@ export default function WelcomeGuestPage() {
               setProgressState('birth_details_pending');
             }
 
-             // Sync firestore data to localstorage for other components
+             // Sync firestore data to localstorage for other components that might need it
             localStorage.setItem('margdarshak_user_info', JSON.stringify({
               uid: currentUser.uid,
               name: userData.name,
@@ -102,8 +103,10 @@ export default function WelcomeGuestPage() {
             router.push('/payment');
             break;
         case 'selection_pending':
-        case 'personalized_questions_pending':
              router.push('/career-suggestions');
+            break;
+        case 'personalized_questions_pending':
+            router.push('/personalized-questions');
             break;
         case 'test_partial':
         case 'test_pending':
@@ -168,7 +171,7 @@ export default function WelcomeGuestPage() {
         ctaIcon = <CreditCard className="mr-2 h-5 w-5" />;
         break;
       case 'selection_pending':
-        description = "You have your AI-generated career suggestions! Let's review them and pick your top choices.";
+        description = "You've finished your answers! Let's review your AI-generated career suggestions and pick your top choices.";
         ctaText = "View Career Suggestions";
         ctaIcon = <Play className="mr-2 h-5 w-5" />;
         break;
@@ -200,7 +203,7 @@ export default function WelcomeGuestPage() {
           <p className="text-muted-foreground">{description}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Button onClick={handleContinue} className="w-full text-lg py-6">
-              {ctaIcon} {ctaText}
+              {ctaIcon} {progressState === 'birth_details_pending' ? ctaText : 'Continue Where You Left Off'}
             </Button>
             <Button onClick={handleStartFresh} variant="outline" className="w-full text-lg py-6">
               <RotateCw className="mr-2 h-5 w-5" /> Start Fresh Assessment
@@ -231,5 +234,3 @@ export default function WelcomeGuestPage() {
     </div>
   );
 }
-
-    
