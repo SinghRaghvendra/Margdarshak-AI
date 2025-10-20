@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -120,8 +121,18 @@ export default function PsychometricTestPage() {
       await updateDoc(userDocRef, { testProgress: progress });
       
     } catch (error) {
-      console.error("Failed to save progress to Firestore", error);
-      toast({ title: "Could not save progress", description: "Your progress may not be saved. Please check your internet connection.", variant: "destructive"});
+      // This can fail if the document doesn't exist, so we use setDoc with merge as a fallback
+      if ((error as any).code === 'not-found') {
+          try {
+              const userDocRef = doc(db, 'users', user.uid);
+              await setDoc(userDocRef, { testProgress: progress }, { merge: true });
+          } catch (setError) {
+              console.error("Failed to save progress with setDoc after update failed", setError);
+          }
+      } else {
+        console.error("Failed to save progress to Firestore", error);
+        toast({ title: "Could not save progress", description: "Your progress may not be saved. Please check your internet connection.", variant: "destructive"});
+      }
     }
   }, [user, pageLoading, currentSectionIndex, currentQuestionInSectionIndex, answers, optionalAnswers, showOptionalIntro, takingOptionalTest, currentOptionalQuestionIndex, toast]);
 

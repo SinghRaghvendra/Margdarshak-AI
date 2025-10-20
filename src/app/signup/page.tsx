@@ -63,7 +63,7 @@ export default function SignupPage() {
   useEffect(() => {
     if (auth.currentUser) {
       toast({ title: 'You are already logged in.' });
-      router.replace('/');
+      router.replace('/welcome-guest');
     }
   }, [router, toast]);
 
@@ -87,7 +87,7 @@ export default function SignupPage() {
       const user = userCredential.user;
 
       // Now save the extra user info to Firestore
-      await setDoc(doc(db, "users", user.uid), {
+      const userData = {
         uid: user.uid,
         name,
         email,
@@ -95,13 +95,18 @@ export default function SignupPage() {
         country,
         language,
         createdAt: new Date(),
-      });
+      };
+      await setDoc(doc(db, "users", user.uid), userData);
+
+      // Also save to localStorage
+      localStorage.setItem('margdarshak_user_info', JSON.stringify(userData));
+
 
       toast({
         title: 'Signup Successful!',
         description: 'Redirecting to your journey...',
       });
-      router.push('/welcome-guest');
+      router.push('/birth-details'); // Redirect to birth details after signup
     } catch (error: any) {
       let errorMessage = 'Could not complete signup. Please try again.';
       if (error.code === 'auth/email-already-in-use') {
