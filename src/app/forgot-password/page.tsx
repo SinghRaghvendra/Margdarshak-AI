@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,16 +43,28 @@ export default function ForgotPasswordPage() {
 
   async function onSubmit(data: ForgotPasswordFormValues) {
     try {
-      await sendPasswordResetEmail(auth, data.email);
+      const actionCodeSettings = {
+        // URL you want to redirect back to. The domain of this URL must be in the authorized domains list in the Firebase Console.
+        url: `${window.location.origin}/login`,
+        // This must be true.
+        handleCodeInApp: true,
+      };
+      
+      await sendPasswordResetEmail(auth, data.email, actionCodeSettings);
+
       toast({
         title: 'Check Your Email',
-        description: `A password reset link has been sent to ${data.email}.`,
+        description: `A password reset link has been sent to ${data.email}. Please check your spam folder as well.`,
       });
-      router.push('/login');
+      
     } catch (error: any) {
+      let errorMessage = 'Could not send password reset email. Please check the address and try again.';
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No user found with this email address.';
+      }
       toast({
         title: 'Error Sending Email',
-        description: 'Could not send password reset email. Please check the address and try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
       console.error("Password reset error:", error);
