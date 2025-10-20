@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Loader2, HardDriveDownload, BookUser } from 'lucide-react';
+import { FileText, HardDriveDownload, BookUser } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { db, auth } from '@/lib/firebase';
@@ -86,7 +86,11 @@ export default function MyReportsPage() {
         personalityProfile: 'From Saved Report',
         rationale: 'This report was loaded from your saved history.'
     };
-    localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify([mockSuggestion]));
+    // Ensure all suggestions are available, with the current one at the start.
+    const existingSuggestions = JSON.parse(localStorage.getItem('margdarshak_all_career_suggestions') || '[]');
+    const otherSuggestions = existingSuggestions.filter((s: any) => s.name !== report.careerName);
+    localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify([mockSuggestion, ...otherSuggestions]));
+
 
     // 3. Set the payment status
     localStorage.setItem('margdarshak_payment_successful', 'true');

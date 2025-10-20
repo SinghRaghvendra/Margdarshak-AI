@@ -61,6 +61,7 @@ export default function WelcomeGuestPage() {
              if (userData.birthDetails) localStorage.setItem('margdarshak_birth_details', JSON.stringify(userData.birthDetails));
              if (userData.userTraits) localStorage.setItem('margdarshak_user_traits', userData.userTraits);
              if (userData.personalizedAnswers) localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(userData.personalizedAnswers));
+             if (userData.allCareerSuggestions) localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(userData.allCareerSuggestions));
              if (userData.selectedCareersList) localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(userData.selectedCareersList));
              if (userData.paymentSuccessful) localStorage.setItem('margdarshak_payment_successful', 'true');
 
@@ -122,8 +123,7 @@ export default function WelcomeGuestPage() {
         personalizedAnswers: null,
         allCareerSuggestions: null,
         selectedCareersList: null,
-        paymentSuccessful: null,
-        // Reset other fields as necessary
+        paymentSuccessful: false, // Explicitly set to false
       });
 
        // Clear all local storage journey data, keeping user info

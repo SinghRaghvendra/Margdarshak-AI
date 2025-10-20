@@ -31,7 +31,7 @@ export default function CareerSuggestionsPage() {
   const { toast } = useToast();
   const [allSuggestions, setAllSuggestions] = useState<CareerSuggestion[] | null>(null);
   const [selectedCareers, setSelectedCareers] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(true);
   const [pageLoading, setPageLoading] = useState(true);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -67,12 +67,12 @@ export default function CareerSuggestionsPage() {
                   setSelectedCareers(userDoc.data().selectedCareersList);
                 }
                 localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsFromDb));
-                setIsLoading(false);
-                setPageLoading(false);
+                setIsGenerating(false);
             } else {
               // If not in DB, generate them
-              fetchSuggestions();
+              fetchSuggestions(currentUser.uid);
             }
+            setPageLoading(false);
 
         } else {
             toast({ title: 'Not Authenticated', description: 'Redirecting to login.', variant: 'destructive' });
@@ -80,15 +80,18 @@ export default function CareerSuggestionsPage() {
         }
     });
 
-    const fetchSuggestions = async () => {
-      setIsLoading(true);
-      setPageLoading(false);
+    return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, toast]);
+
+  const fetchSuggestions = async (uid: string) => {
+      setIsGenerating(true);
       setGenerationError(null);
       try {
         const storedUserTraits = localStorage.getItem('margdarshak_user_traits');
         const storedPersonalizedAnswers = localStorage.getItem('margdarshak_personalized_answers');
         
-        if (!storedUserTraits || !storedPersonalizedAnswers || !auth.currentUser) return;
+        if (!storedUserTraits || !storedPersonalizedAnswers) return;
         
         const parsedPersonalizedAnswers = JSON.parse(storedPersonalizedAnswers);
         const input: CareerSuggestionInput = {
@@ -102,7 +105,7 @@ export default function CareerSuggestionsPage() {
         if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length > 0) {
           setAllSuggestions(suggestionsOutput.careers);
           // Save to Firestore and localStorage
-          const userDocRef = doc(db, 'users', auth.currentUser.uid);
+          const userDocRef = doc(db, 'users', uid);
           await setDoc(userDocRef, { allCareerSuggestions: suggestionsOutput.careers }, { merge: true });
           localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsOutput.careers));
         } else {
@@ -115,13 +118,9 @@ export default function CareerSuggestionsPage() {
         setGenerationError('An unexpected error occurred while generating suggestions. Please try the previous steps again.');
         setAllSuggestions([]);
       } finally {
-        setIsLoading(false);
+        setIsGenerating(false);
       }
     };
-    
-    return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, toast]);
 
   const handleSelectCareer = (careerName: string) => {
     setSelectedCareers(prev => {
@@ -173,7 +172,7 @@ export default function CareerSuggestionsPage() {
     }
   };
 
-  if (pageLoading || !user) {
+  if (pageLoading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   
@@ -194,14 +193,14 @@ export default function CareerSuggestionsPage() {
         </AlertDescription>
       </Alert>
       
-      {isLoading && (
+      {isGenerating && (
         <div className="flex flex-col justify-center items-center min-h-[20rem]">
           <LoadingSpinner size={48} />
           <p className="ml-4 mt-4 text-lg text-muted-foreground">Generating your top career suggestions...</p>
         </div>
       )}
 
-      {!isLoading && generationError && (
+      {!isGenerating && generationError && (
         <div className="max-w-2xl mx-auto">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
@@ -216,7 +215,7 @@ export default function CareerSuggestionsPage() {
         </div>
       )}
 
-      {!isLoading && !generationError && allSuggestions && allSuggestions.length > 0 && (
+      {!isGenerating && !generationError && allSuggestions && allSuggestions.length > 0 && (
         <>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {allSuggestions.map((career, index) => (
