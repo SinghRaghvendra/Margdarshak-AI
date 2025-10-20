@@ -1,8 +1,15 @@
 
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getAuthenticatedUser } from '@/lib/auth-utils';
 
 export async function POST(request: Request) {
+  try {
+    await getAuthenticatedUser(); // Secure the route
+  } catch (authError: any) {
+    return NextResponse.json({ error: authError.message, success: false }, { status: 401 });
+  }
+  
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await request.json();
   const keySecret = process.env.NEXT_PUBLIC_RAZORPAY_KEY_SECRET;
 

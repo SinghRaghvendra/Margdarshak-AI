@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Provides AI-powered career suggestions based on user traits and personalized answers.
@@ -9,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { getAuthenticatedUser } from '@/lib/auth-utils';
 
 const PersonalizedAnswersSchema = z.object({
   q1: z.string().describe("Answer to: Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?"),
@@ -47,6 +49,7 @@ const CareerSuggestionOutputSchema = z.object({
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
 
 export async function suggestCareers(input: CareerSuggestionInput): Promise<CareerSuggestionOutput> {
+  await getAuthenticatedUser(); // Secure the flow
   return suggestCareersFlow(input);
 }
 

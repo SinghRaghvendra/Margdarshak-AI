@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,6 +13,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { getAuthenticatedUser } from '@/lib/auth-utils';
 
 const PersonalizedAnswersSchema = z.object({
   q1: z.string().describe("Answer to: Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?"),
@@ -56,6 +58,7 @@ All sections must be in {{{preferredLanguage}}}.`),
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
 
 export async function generateRoadmap(input: GenerateRoadmapInput): Promise<GenerateRoadmapOutput> {
+  await getAuthenticatedUser(); // Secure the flow
   return generateRoadmapFlow(input);
 }
 

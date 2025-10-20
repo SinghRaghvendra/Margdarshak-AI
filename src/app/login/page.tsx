@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +21,7 @@ import { LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { auth, db } from '@/lib/firebase';
+import { auth as clientAuth, db } from '@/lib/firebase'; // Renamed to avoid conflict
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -36,7 +37,7 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (auth.currentUser) {
+    if (clientAuth.currentUser) {
       router.replace('/');
     }
   }, [router]);
@@ -51,8 +52,18 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await signInWithEmailAndPassword(clientAuth, data.email, data.password);
       const user = userCredential.user;
+
+      // Get the ID token
+      const idToken = await user.getIdToken();
+
+      // Send the ID token to the server to create a session cookie
+      await fetch('/api/auth/session', {
+          method: 'POST',
+          body: idToken,
+      });
+
 
       // Fetch user data from Firestore
       const userDocRef = doc(db, 'users', user.uid);
@@ -104,7 +115,7 @@ export default function LoginPage() {
     }
   }
 
-  if (auth.currentUser) {
+  if (clientAuth.currentUser) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 

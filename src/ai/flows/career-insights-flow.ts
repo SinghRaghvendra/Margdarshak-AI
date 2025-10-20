@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Provides AI-powered insights for a selected career based on the user's profile.
@@ -9,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import { getAuthenticatedUser } from '@/lib/auth-utils';
 
 const CareerInsightsInputSchema = z.object({
   selectedCareer: z.string().describe('The career path chosen by the user.'),
@@ -31,6 +33,7 @@ const CareerInsightsOutputSchema = z.object({
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
 export async function generateCareerInsights(input: CareerInsightsInput): Promise<CareerInsightsOutput> {
+  await getAuthenticatedUser(); // Secure the flow
   return careerInsightsFlow(input);
 }
 

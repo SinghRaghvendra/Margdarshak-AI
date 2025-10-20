@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/sheet';
 import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut, BookUser } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { auth } from '@/lib/firebase';
+import { auth as clientAuth } from '@/lib/firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 
 export default function Header() {
@@ -25,7 +25,7 @@ export default function Header() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(clientAuth, (currentUser) => {
       setUser(currentUser);
     });
 
@@ -35,7 +35,11 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await signOut(clientAuth);
+      
+      // Call the server to clear the session cookie
+      await fetch('/api/auth/session', { method: 'DELETE' });
+
       // Clear local storage on logout
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('margdarshak_')) {
