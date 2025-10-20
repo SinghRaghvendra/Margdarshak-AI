@@ -37,7 +37,7 @@ export default function WelcomeGuestPage() {
             // Determine progress state
             if (userData.paymentSuccessful) {
                 setProgressState('paid');
-            } else if (userData.selectedCareersList && userData.selectedCareersList.length === 3) {
+            } else if (userData.selectedCareersList && userData.selectedCareersList.length > 0) {
                 setProgressState('selection_complete_no_payment');
                 localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify(userData.selectedCareersList));
             } else if (userData.testCompleted) {
