@@ -73,26 +73,23 @@ export default function MyReportsPage() {
 
   const handleViewReport = (report: ReportHistoryItem) => {
     // We need to set the required items in localstorage for the roadmap page to work correctly.
-    // This is a bit of a workaround, but it lets us reuse the existing roadmap page.
     
     // 1. The selected careers list (can be mocked with just the one)
     localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify([report.careerName]));
 
     // 2. All career suggestions (find or mock the one for this report)
-    // For simplicity, we'll create a mock suggestion object.
+    // We'll create a mock suggestion object.
     const mockSuggestion = {
         name: report.careerName,
         matchScore: 'N/A',
         personalityProfile: 'From Saved Report',
         rationale: 'This report was loaded from your saved history.'
     };
-    // Ensure all suggestions are available, with the current one at the start.
-    const existingSuggestions = JSON.parse(localStorage.getItem('margdarshak_all_career_suggestions') || '[]');
-    const otherSuggestions = existingSuggestions.filter((s: any) => s.name !== report.careerName);
-    localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify([mockSuggestion, ...otherSuggestions]));
+    
+    // Set a minimal 'all suggestions' list for the roadmap page to work
+    localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify([mockSuggestion]));
 
-
-    // 3. Set the payment status
+    // 3. Set the payment status to true
     localStorage.setItem('margdarshak_payment_successful', 'true');
 
     // 4. Set the specific report markdown in its own cache item so roadmap page can pick it up
