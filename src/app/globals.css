@@ -1,0 +1,204 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 56 71% 94.5%; /* #FCFBE6 */
+    --foreground: 60 10% 20%; /* Dark warm gray for text */
+
+    --card: 56.5 100% 88.8%; /* #FFF9C4 Soft yellow */
+    --card-foreground: 60 10% 20%;
+
+    --popover: 56 71% 94.5%;
+    --popover-foreground: 60 10% 20%;
+
+    --primary: 45 97.7% 60.2%; /* #FDD835 Amber 600 */
+    --primary-foreground: 45 100% 10%; /* Dark text on primary */
+
+    --secondary: 56 50% 90.6%; /* Lighter shade of background for secondary elements */
+    --secondary-foreground: 60 10% 20%;
+
+    --muted: 56 50% 90.6%;
+    --muted-foreground: 56 20% 50.2%; /* For less important text */
+
+    --accent: 200 92.1% 85.3%; /* #B3E5FC Light blue */
+    --accent-foreground: 200 20% 25%; /* Darker blue text on accent */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 56 30% 85.1%;
+    --input: 56 30% 87.8%;
+    --ring: 45 97.7% 60.2%; /* Same as primary for focus rings */
+    
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Keeping default dark theme, can be adjusted if needed */
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  @keyframes revolve {
+    0% {
+      transform: rotateZ(0deg);
+    }
+    100% {
+      transform: rotateZ(360deg);
+    }
+  }
+
+  @keyframes pulse-waves {
+    0% {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.2;
+    }
+    100% {
+      transform: scale(3.5); /* Increased scale for wider reach */
+      opacity: 0;
+    }
+  }
+
+  @keyframes explosion-wave-anim {
+    0% {
+      transform: scale(0.1);
+      opacity: 0.7;
+      border-width: 4px;
+    }
+    80% {
+      opacity: 0.3;
+      border-width: 2px;
+    }
+    100% {
+      transform: scale(6); /* Greatly increased for screen-wide effect */
+      opacity: 0;
+      border-width: 1px;
+    }
+  }
+
+  .logo-container {
+      /* No transition by default */
+  }
+
+  .logo-popped {
+      transform: scale(1.35);
+      transition: transform 0.3s ease-out; /* Apply transition only when popped */
+  }
+
+  .pulsing-waves::before,
+  .pulsing-waves::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid hsl(var(--primary));
+    border-radius: 50%;
+    animation: pulse-waves 2s ease-out infinite;
+  }
+
+  .pulsing-waves::after {
+    animation-delay: 1s; /* Stagger the waves */
+  }
+
+  .pulsing-waves,
+  .explosion-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+  }
+
+  .explosion-wave {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid hsl(var(--primary));
+    border-radius: 50%;
+    animation: explosion-wave-anim 1.5s ease-out forwards;
+  }
+
+  .orbit {
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    transform-style: preserve-3d;
+    animation: revolve 6s linear infinite;
+    border: 1px solid hsla(var(--primary) / 0.3);
+    transition: animation-duration 0.5s ease-in-out;
+  }
+  
+  .energized .orbit {
+      animation-duration: 1.5s;
+  }
+
+  .orbit-1 { transform: rotateX(75deg) rotateY(20deg); }
+  .orbit-2 { transform: rotateX(75deg) rotateY(80deg); }
+  .orbit-3 { transform: rotateX(75deg) rotateY(140deg); }
+}
