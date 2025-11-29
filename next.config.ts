@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ['@genkit-ai/*'],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
