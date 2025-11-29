@@ -26,59 +26,21 @@
       "rootDirectory": "./",
       "startCommand": "npm run dev"
     },
-    "auth": {
-      "port": 9099
-    },
-    "functions": {
-      "port": 5001
-    },
-    "firestore": {
-      "port": 8080
-    },
-    "database": {
-      "port": 9000
-    },
-    "hosting": {
-      "port": 5000
-    },
-    "pubsub": {
-      "port": 8085
-    },
-    "storage": {
-      "port": 9199
-    },
-    "eventarc": {
-      "port": 9299
-    },
-    "tasks": {
-      "port": 9499
-    },
-    "ui": {
-      "enabled": true
-    },
+    "auth": { "port": 9099 },
+    "functions": { "port": 5001 },
+    "firestore": { "port": 8080 },
+    "database": { "port": 9000 },
+    "hosting": { "port": 5000 },
+    "pubsub": { "port": 8085 },
+    "storage": { "port": 9199 },
+    "eventarc": { "port": 9299 },
+    "tasks": { "port": 9499 },
+    "ui": { "enabled": true },
     "singleProjectMode": true
   },
   "dataconnect": {
     "source": "dataconnect"
   },
-  "functions": [
-    {
-      "codebase": "default",
-      "disallowLegacyRuntimeConfig": true,
-      "source": "functions",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ]
-    },
-    {
-      "source": ".firebase/margdarshak-ai/functions",
-      "codebase": "firebase-frameworks-margdarshak-ai"
-    }
-  ],
   "apphosting": {
     "backendId": "studio",
     "rootDir": "/",
@@ -91,15 +53,4 @@
     ],
     "alwaysDeployFromSource": true
   },
-  "storage": {
-    "rules": "storage.rules",
-    "bucket": "margdarshak-ai.firebasestorage.app"
-  },
-  "remoteconfig": {
-    "template": "remoteconfig.template.json"
-  },
-  "extensions": {},
-  "database": {
-    "rules": "database.rules.json"
-  }
-}
+  "storage"
