@@ -53,5 +53,8 @@
     ],
     "alwaysDeployFromSource": true
   },
-  "storage"
+  "storage": {
+    "rules": "storage.rules",
+    "bucket": "margdarshak-ai.firebasestorage.app"
+  }
 }
