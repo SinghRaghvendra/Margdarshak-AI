@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Sparkles, Loader2, Wand2, CreditCard } from 'lucide-react';
-import { useAuth } from '@/firebase/provider';
+import { useAuth } from '@/firebase';
 import { generateCareerInsights, type CareerInsightsInput, type CareerInsightsOutput } from '@/ai/flows/career-insights-flow';
 import ReactMarkdown from 'react-markdown';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';

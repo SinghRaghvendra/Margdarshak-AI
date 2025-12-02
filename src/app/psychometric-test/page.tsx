@@ -15,7 +15,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { useAuth, useFirestore } from '@/firebase/provider';
+import { useAuth, useFirestore } from '@/firebase';
 
 const TOTAL_SECTIONS = psychometricTestSections.length;
 const TOTAL_QUESTIONS = psychometricTestSections.reduce((acc, s) => acc + s.questions.length, 0);

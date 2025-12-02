@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useAuth } from '@/firebase/provider';
+import { useAuth } from '@/firebase';
 
 
 const forgotPasswordSchema = z.object({

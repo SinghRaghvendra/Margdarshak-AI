@@ -4,8 +4,7 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from './firebase/provider';
 
-// This file is now simplified to only contain the useUser hook,
-// which is client-side and depends on the provider.
+// This file is now the central point for client-side Firebase hooks.
 
 // Hook for user authentication state
 interface UserState {
@@ -29,6 +28,5 @@ export function useUser(): UserState {
   return { user, loading };
 }
 
-// Re-exporting hooks from provider for a single import point if desired
+// Re-exporting hooks from provider for a single import point.
 export { useAuth, useFirestore, FirebaseClientProvider } from './firebase/provider';
-export { app, auth, db } from './firebase/config';

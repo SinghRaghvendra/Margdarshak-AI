@@ -15,7 +15,7 @@ import { differenceInYears, parseISO } from 'date-fns';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { Progress } from '@/components/ui/progress';
 import type { User } from 'firebase/auth';
-import { useAuth, useFirestore } from '@/firebase/provider';
+import { useAuth, useFirestore } from '@/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 

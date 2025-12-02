@@ -1,3 +1,4 @@
+
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
@@ -18,13 +19,20 @@ const firebaseConfig = {
 // Initialize Firebase safely (avoids re-initialization)
 const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// Initialize App Check only in production to avoid local dev errors
+// Initialize App Check only on the client side in production
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-  const appCheck: AppCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY!),
-    isTokenAutoRefreshEnabled: true
-  });
+  if (process.env.NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY) {
+    try {
+      const appCheck: AppCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY),
+        isTokenAutoRefreshEnabled: true
+      });
+    } catch (err) {
+      console.error("Failed to initialize App Check", err);
+    }
+  }
 }
+
 
 // Initialize Firebase services
 const auth: Auth = getAuth(app);

@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { collection, query, where, getDocs, orderBy, Timestamp, getDoc, doc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { format } from 'date-fns';
-import { useAuth, useFirestore } from '@/firebase/provider';
+import { useAuth, useFirestore } from '@/firebase';
 import Link from 'next/link';
 
 interface ReportHistoryItem {

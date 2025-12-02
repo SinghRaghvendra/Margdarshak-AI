@@ -133,7 +133,7 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     
     console.log("📝 FINAL PROMPT FOR CAREER SUGGESTION:\n", prompt);
 
-    const aiResponseText = await generateContent(prompt, { model: 'gemini-2.5-flash', maxOutputTokens: 4096, responseMimeType: 'application/json' });
+    const aiResponseText = await generateContent(prompt, { model: 'gemini-1.5-flash-latest', maxOutputTokens: 4096, responseMimeType: 'application/json' });
 
     try {
         // Use the robust extraction function to get a clean JSON object
