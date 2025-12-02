@@ -10,19 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
-const models = [
-  "gemini-1.5-flash-latest",
-  "gemini-1.5-pro-latest",
-  "gemini-1.0-pro",
-  "gemini-1.0-pro-vision",
-  "gemini-2.5-flash",
-  "gemini-1.5-pro",
-  "gemini-2.0-flash-lite",
-  "gemini-2.5-flash-ga",
-];
+const modelToUse = "gemini-2.5-flash";
 
 export default function TestPage() {
   const { toast } = useToast();
@@ -31,9 +21,7 @@ export default function TestPage() {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // New state for model selection
-  const [selectedModel, setSelectedModel] = useState<string>(models[0]);
-  const [region, setRegion] = useState<string>('us-central1');
+  // Configuration state
   const [maxTokens, setMaxTokens] = useState<number>(512);
 
   const handleTest = async () => {
@@ -41,8 +29,8 @@ export default function TestPage() {
       setError('Please enter a prompt.');
       return;
     }
-    if (!selectedModel || !region || !maxTokens) {
-        toast({ title: 'Configuration Missing', description: 'Please ensure model, region, and max tokens are set.', variant: 'destructive'});
+    if (!maxTokens) {
+        toast({ title: 'Configuration Missing', description: 'Please ensure max tokens are set.', variant: 'destructive'});
         return;
     }
     setIsLoading(true);
@@ -50,8 +38,7 @@ export default function TestPage() {
     setError('');
     try {
       const responseText = await generateContent(prompt, {
-          model: selectedModel,
-          region: region,
+          model: modelToUse,
           maxOutputTokens: maxTokens
       });
       setResult(responseText);
@@ -76,23 +63,10 @@ export default function TestPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Configuration Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-secondary/30">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-secondary/30">
             <div className="space-y-2">
                 <Label htmlFor="model-select" className="flex items-center gap-1"><Cpu className="h-4 w-4"/>Model</Label>
-                <Select value={selectedModel} onValueChange={setSelectedModel}>
-                    <SelectTrigger id="model-select">
-                        <SelectValue placeholder="Select a model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {models.map(model => (
-                            <SelectItem key={model} value={model}>{model}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="region-input" className="flex items-center gap-1"><FileCog className="h-4 w-4"/>Region</Label>
-                <Input id="region-input" value={region} onChange={e => setRegion(e.target.value)} placeholder="e.g., us-central1" />
+                <Input id="model-select" value={modelToUse} disabled />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="tokens-input" className="flex items-center gap-1"><SlidersHorizontal className="h-4 w-4"/>Max Output Tokens</Label>
