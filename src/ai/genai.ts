@@ -40,7 +40,7 @@ const safetySettings = [
 
 
 export async function generateContent(promptText: string, options?: GenOptions): Promise<string> {
-    const modelToUse = options?.model || 'gemini-1.5-flash-latest';
+    const modelToUse = options?.model || 'gemini-2.5-flash';
     
     try {
         const model = genAI.getGenerativeModel({ 
@@ -71,5 +71,5 @@ export async function generateContent(promptText: string, options?: GenOptions):
 }
 
 export async function generateReport(prompt: string) {
-    return generateContent(prompt, { model: 'gemini-1.5-flash-latest', temperature: 0.8, maxOutputTokens: 8192 });
+    return generateContent(prompt, { model: 'gemini-2.5-flash', temperature: 0.8, maxOutputTokens: 8192 });
 }
