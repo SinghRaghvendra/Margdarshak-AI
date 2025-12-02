@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useUser } from '@/firebase/client-provider';
+import { useUser } from '@/firebase';
 import LoadingSpinner from './LoadingSpinner';
 import { cn } from '@/lib/utils';
 import {

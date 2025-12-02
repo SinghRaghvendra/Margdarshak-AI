@@ -16,7 +16,7 @@ import { Cake, ArrowRight, MapPinIcon } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { useAuth, useFirestore } from '@/firebase/client-provider';
+import { useAuth, useFirestore } from '@/firebase/provider';
 
 const birthDetailsFormSchema = z.object({
   birthDay: z.string()

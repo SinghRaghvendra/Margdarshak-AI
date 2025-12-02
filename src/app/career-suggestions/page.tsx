@@ -14,7 +14,7 @@ import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { collection, query, where, getDocs, setDoc, getDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { useAuth, useFirestore } from '@/firebase/client-provider';
+import { useAuth, useFirestore } from '@/firebase/provider';
 import { doc } from 'firebase/firestore';
 
 

@@ -10,7 +10,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { useAuth, useFirestore } from '@/firebase/client-provider';
+import { useAuth, useFirestore } from '@/firebase/provider';
 
 declare global {
   interface Window {

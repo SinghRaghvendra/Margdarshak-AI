@@ -15,7 +15,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Edit3, ArrowRight, ArrowLeft } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { useAuth, useFirestore } from '@/firebase/client-provider';
+import { useAuth, useFirestore } from '@/firebase/provider';
 
 
 const personalizedQuestions = [

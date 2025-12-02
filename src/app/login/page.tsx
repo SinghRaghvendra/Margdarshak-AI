@@ -23,7 +23,8 @@ import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { signInWithEmailAndPassword, User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { useAuth, useFirestore, useUser } from '@/firebase/client-provider';
+import { useAuth, useFirestore } from '@/firebase/provider';
+import { useUser } from '@/firebase';
 
 const loginFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),

@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import Link from 'next/link';
 import Script from 'next/script';
 import { Mail } from 'lucide-react';
-import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { FirebaseClientProvider } from '@/firebase/provider';
 import AuthStatus from '@/components/AuthStatus';
 
 export const metadata: Metadata = {

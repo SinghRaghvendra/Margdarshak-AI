@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useUser } from '@/firebase/client-provider';
+import { useUser } from '@/firebase';
 import { Badge } from './ui/badge';
 import { UserCircle, ShieldAlert } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';

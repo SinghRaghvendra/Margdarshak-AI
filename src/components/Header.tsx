@@ -17,7 +17,7 @@ import {
 import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut, BookUser, User as UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
-import { useAuth } from '@/firebase/client-provider';
+import { useAuth } from '@/firebase/provider';
 import AuthBeacon from './AuthBeacon';
 
 export default function Header() {

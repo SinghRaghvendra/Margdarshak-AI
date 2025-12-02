@@ -10,7 +10,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, getDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { useAuth, useFirestore } from '@/firebase/client-provider';
+import { useAuth, useFirestore } from '@/firebase/provider';
 import { Badge } from '@/components/ui/badge';
 
 interface UserProfile {
