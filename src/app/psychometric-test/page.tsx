@@ -15,7 +15,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 
 const TOTAL_SECTIONS = psychometricTestSections.length;
 const TOTAL_QUESTIONS = psychometricTestSections.reduce((acc, s) => acc + s.questions.length, 0);
@@ -44,7 +44,8 @@ const parseUserTraits = (traitsData: any): Record<string, string | number> => {
 export default function PsychometricTestPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
 
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [currentQuestionInSectionIndex, setCurrentQuestionInSectionIndex] = useState(0);
@@ -59,6 +60,7 @@ export default function PsychometricTestPage() {
   const [journeyId, setJourneyId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!auth || !db) return;
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -119,7 +121,7 @@ export default function PsychometricTestPage() {
 
 
   const saveProgress = useCallback(async () => {
-    if (!user || !journeyId || pageLoading) return;
+    if (!user || !journeyId || pageLoading || !db) return;
 
     const progress: TestProgress = {
       currentSectionIndex,
@@ -202,7 +204,7 @@ export default function PsychometricTestPage() {
   };
 
   const handleSubmitTest = async () => {
-    if (!user) {
+    if (!user || !db) {
         toast({ title: 'Error', description: 'You are not logged in.', variant: 'destructive'});
         return;
     }

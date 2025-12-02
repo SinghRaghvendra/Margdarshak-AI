@@ -10,7 +10,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, getDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 import { Badge } from '@/components/ui/badge';
 
 interface UserProfile {
@@ -33,11 +33,13 @@ interface UserProfile {
 export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
         fetchProfile(user);
@@ -50,6 +52,7 @@ export default function ProfilePage() {
   }, [router, toast, auth, db]);
 
   const fetchProfile = async (user: User) => {
+    if (!db) return;
     setIsLoading(true);
     try {
       const userDocRef = doc(db, 'users', user.uid);

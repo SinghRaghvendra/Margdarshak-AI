@@ -10,18 +10,19 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import Logo from '@/components/Logo';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth } from '@/firebase/client-provider';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
 export default function HomePage() {
   const router = useRouter();
-  const { auth } = useFirebase();
+  const auth = useAuth();
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });

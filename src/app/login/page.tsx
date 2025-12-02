@@ -23,7 +23,7 @@ import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { signInWithEmailAndPassword, User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore, useUser } from '@/firebase/client-provider';
 
 const loginFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -36,7 +36,9 @@ type LoginFormValues = z.infer<typeof loginFormSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db, authLoading } = useFirebase(); // Use authLoading from context
+  const auth = useAuth();
+  const db = useFirestore();
+  const { user: authUser, loading: authLoading } = useUser();
   const [pageLoading, setPageLoading] = useState(true);
 
   const form = useForm<LoginFormValues>({
@@ -48,33 +50,25 @@ export default function LoginPage() {
   });
   
   useEffect(() => {
-    // If the initial auth check is not done, we don't do anything yet.
     if (authLoading) {
       setPageLoading(true);
       return;
     }
 
-    // Once auth is checked, if a user exists, redirect them.
-    if (auth.currentUser) {
+    if (authUser) {
       router.replace('/welcome-guest');
-      // We don't need to set pageLoading to false here, as a redirect is happening.
     } else {
-      // If no user, we can show the login page.
       setPageLoading(false);
     }
-  }, [auth.currentUser, authLoading, router]);
+  }, [authUser, authLoading, router]);
 
 
   async function onSubmit(data: LoginFormValues) {
+    if (!auth || !db) return;
     try {
       const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      // We no longer call ensureUserProfile here.
-      // Instead, we will fetch/create the profile on a subsequent page
-      // where the auth state is guaranteed to be stable.
-
-      // For now, let's try to get what we can from the auth user object itself.
       const userProfileForLocal = {
         uid: user.uid,
         email: user.email,
@@ -82,7 +76,6 @@ export default function LoginPage() {
       };
       localStorage.setItem('margdarshak_user_info', JSON.stringify(userProfileForLocal));
 
-      // Clear any other stale journey data to start fresh from welcome page logic
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
           localStorage.removeItem(key);

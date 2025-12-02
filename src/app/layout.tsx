@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import Link from 'next/link';
 import Script from 'next/script';
 import { Mail } from 'lucide-react';
-import { FirebaseProvider } from '@/components/FirebaseProvider';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 import AuthStatus from '@/components/AuthStatus';
 
 export const metadata: Metadata = {
@@ -24,8 +24,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-      <body className="antialiased flex flex-col min-h-screen">
-        <FirebaseProvider>
+      <body>
+        <FirebaseClientProvider>
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />
           <Header />
           <main className="flex-grow container mx-auto px-4 py-8">
@@ -82,7 +82,7 @@ export default function RootLayout({
               </div>
           </footer>
           <Toaster />
-        </FirebaseProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

@@ -24,7 +24,7 @@ import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 
 
 const languages = [
@@ -59,10 +59,11 @@ type SignupFormValues = z.infer<typeof signupFormSchema>;
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
 
   useEffect(() => {
-    if (auth.currentUser) {
+    if (auth?.currentUser) {
       toast({ title: 'You are already logged in.' });
       router.replace('/welcome-guest');
     }
@@ -82,6 +83,7 @@ export default function SignupPage() {
   });
 
   async function onSubmit(data: SignupFormValues) {
+    if (!auth || !db) return;
     const { email, password, name, contact, country, language } = data;
 
     try {
@@ -139,7 +141,7 @@ export default function SignupPage() {
   }
 
 
-  if (auth.currentUser) {
+  if (auth?.currentUser) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 

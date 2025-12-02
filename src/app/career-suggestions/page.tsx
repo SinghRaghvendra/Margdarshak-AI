@@ -14,7 +14,7 @@ import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { collection, query, where, getDocs, setDoc, getDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 import { doc } from 'firebase/firestore';
 
 
@@ -38,7 +38,8 @@ function isValidJSONObject(str: string): boolean {
 export default function CareerSuggestionsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
   const [allSuggestions, setAllSuggestions] = useState<CareerSuggestion[] | null>(null);
   const [selectedCareer, setSelectedCareer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +54,7 @@ export default function CareerSuggestionsPage() {
     : [];
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
         if (currentUser) {
             setUser(currentUser);
@@ -121,7 +123,7 @@ export default function CareerSuggestionsPage() {
         toast({ title: `Please select a career`, description: `You must select one option to continue.`, variant: 'destructive'});
         return;
     }
-    if (!user) {
+    if (!user || !db) {
       toast({ title: 'User not logged in', description: 'Cannot save selections.', variant: 'destructive' });
       return;
     }

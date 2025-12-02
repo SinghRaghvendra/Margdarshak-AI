@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Sparkles, Loader2, Wand2, CreditCard } from 'lucide-react';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth } from '@/firebase/client-provider';
 import { generateCareerInsights, type CareerInsightsInput, type CareerInsightsOutput } from '@/ai/flows/career-insights-flow';
 import ReactMarkdown from 'react-markdown';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -41,7 +41,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function CareerInsightsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth } = useFirebase();
+  const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [birthDetails, setBirthDetails] = useState<BirthDetails | null>(null);
@@ -54,6 +54,7 @@ export default function CareerInsightsPage() {
   });
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
         const storedBirthDetails = localStorage.getItem('margdarshak_birth_details');

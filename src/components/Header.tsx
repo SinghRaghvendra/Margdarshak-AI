@@ -17,16 +17,17 @@ import {
 import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut, BookUser, User as UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth } from '@/firebase/client-provider';
 import AuthBeacon from './AuthBeacon';
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const { toast } = useToast();
-  const { auth } = useFirebase();
+  const auth = useAuth();
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
@@ -36,6 +37,7 @@ export default function Header() {
   }, [auth]);
 
   const handleLogout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       // Clear local storage on logout

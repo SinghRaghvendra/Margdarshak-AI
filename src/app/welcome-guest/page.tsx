@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useUser, useFirestore } from '@/firebase/client-provider';
 import { useToast } from '@/hooks/use-toast';
 import { doc, getDoc } from 'firebase/firestore';
 import { User } from 'firebase/auth';
@@ -18,7 +18,8 @@ import { User } from 'firebase/auth';
  */
 export default function WelcomeGuestPage() {
   const router = useRouter();
-  const { user, db, authLoading } = useFirebase();
+  const { user, loading: authLoading } = useUser();
+  const db = useFirestore();
   const { toast } = useToast();
   const [redirecting, setRedirecting] = useState(false);
 

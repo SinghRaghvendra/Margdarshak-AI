@@ -1,13 +1,13 @@
 
 'use client';
 
-import { useFirebase } from './FirebaseProvider';
+import { useUser } from '@/firebase/client-provider';
 import { Badge } from './ui/badge';
 import { UserCircle, ShieldAlert } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 
 export default function AuthStatus() {
-  const { user, authLoading } = useFirebase();
+  const { user, loading: authLoading } = useUser();
 
   if (authLoading) {
     return (

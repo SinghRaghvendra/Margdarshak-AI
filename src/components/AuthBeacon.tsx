@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFirebase } from './FirebaseProvider';
+import { useUser } from '@/firebase/client-provider';
 import LoadingSpinner from './LoadingSpinner';
 import { cn } from '@/lib/utils';
 import {
@@ -13,7 +13,7 @@ import {
 
 
 export default function AuthBeacon() {
-  const { user, authLoading } = useFirebase();
+  const { user, loading: authLoading } = useUser();
 
   const beaconClasses = "h-3 w-3 rounded-full relative flex items-center justify-center";
   const pulseClasses = "absolute h-full w-full rounded-full animate-ping";

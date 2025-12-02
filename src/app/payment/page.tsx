@@ -10,7 +10,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 
 declare global {
   interface Window {
@@ -23,7 +23,8 @@ const REPORT_AMOUNT_INR = 99; // in INR
 export default function PaymentPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [selectedCareer, setSelectedCareer] = useState<string | null>(null);
@@ -31,6 +32,7 @@ export default function PaymentPage() {
   const [user, setUser] = useState<User | null>(null);
   
   useEffect(() => {
+    if (!auth) return;
      const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -104,7 +106,7 @@ export default function PaymentPage() {
 
 
   const handlePayment = async () => {
-    if (!user) {
+    if (!user || !db) {
         toast({ title: 'User not authenticated', description: 'Please log in again.', variant: 'destructive' });
         return;
     }

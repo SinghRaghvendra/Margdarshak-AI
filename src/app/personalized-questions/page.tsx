@@ -15,7 +15,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Edit3, ArrowRight, ArrowLeft } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 
 
 const personalizedQuestions = [
@@ -38,7 +38,8 @@ type PersonalizedAnswersSchemaValues = z.infer<typeof personalizedAnswersSchema>
 export default function PersonalizedQuestionsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
   const [isLoading, setIsLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
@@ -52,6 +53,7 @@ export default function PersonalizedQuestionsPage() {
   });
 
   useEffect(() => {
+    if (!auth || !db) return;
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -112,7 +114,7 @@ export default function PersonalizedQuestionsPage() {
   }, [router, toast, form, auth, db]);
 
   const onSubmit = async (data: PersonalizedAnswersSchemaValues) => {
-    if (!user) {
+    if (!user || !db) {
       toast({ title: 'Error', description: 'You must be logged in to save answers.', variant: 'destructive' });
       return;
     }

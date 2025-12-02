@@ -16,7 +16,7 @@ import { Cake, ArrowRight, MapPinIcon } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 
 const birthDetailsFormSchema = z.object({
   birthDay: z.string()
@@ -66,7 +66,8 @@ interface StoredBirthDetails {
 export default function BirthDetailsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
   const [pageLoading, setPageLoading] = useState(true);
   const [userName, setUserName] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -85,6 +86,7 @@ export default function BirthDetailsPage() {
   });
 
   const ensureJourneyExists = async (currentUser: User) => {
+    if (!db) return;
     const existingJourneyId = localStorage.getItem('margdarshak_current_journey_id');
     
     // If a journey ID already exists in this session, do nothing.
@@ -113,6 +115,7 @@ export default function BirthDetailsPage() {
 
 
   useEffect(() => {
+    if (!auth || !db) return;
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         toast({ title: 'Not Authenticated', description: 'Redirecting to login.', variant: 'destructive' });
@@ -167,7 +170,7 @@ export default function BirthDetailsPage() {
 
 
   async function onSubmit(data: BirthDetailsFormValues) {
-    if (!user) {
+    if (!user || !db) {
       toast({ title: 'Error', description: 'You are not logged in. Please refresh and try again.', variant: 'destructive' });
       return;
     }

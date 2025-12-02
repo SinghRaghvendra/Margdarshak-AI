@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { collection, query, where, getDocs, orderBy, Timestamp, getDoc, doc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { format } from 'date-fns';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 import Link from 'next/link';
 
 interface ReportHistoryItem {
@@ -26,13 +26,15 @@ interface ReportHistoryItem {
 export default function MyReportsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [reports, setReports] = useState<ReportHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPaid, setHasPaid] = useState(false);
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
         setCurrentUser(user);
@@ -46,6 +48,7 @@ export default function MyReportsPage() {
   }, [router, toast, auth, db]);
 
   const fetchUserData = async (user: User) => {
+    if (!db) return;
     setIsLoading(true);
     try {
       const userDocRef = doc(db, 'users', user.uid);

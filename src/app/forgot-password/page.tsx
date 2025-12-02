@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth } from '@/firebase/client-provider';
 
 
 const forgotPasswordSchema = z.object({
@@ -33,7 +33,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth } = useFirebase();
+  const auth = useAuth();
 
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -43,6 +43,7 @@ export default function ForgotPasswordPage() {
   });
 
   async function onSubmit(data: ForgotPasswordFormValues) {
+    if (!auth) return;
     try {
       await sendPasswordResetEmail(auth, data.email);
       toast({

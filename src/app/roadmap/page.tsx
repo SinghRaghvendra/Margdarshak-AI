@@ -15,7 +15,7 @@ import { differenceInYears, parseISO } from 'date-fns';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { Progress } from '@/components/ui/progress';
 import type { User } from 'firebase/auth';
-import { useFirebase } from '@/components/FirebaseProvider';
+import { useAuth, useFirestore } from '@/firebase/client-provider';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 
@@ -62,7 +62,8 @@ type BaseRoadmapInputDataType = Omit<GenerateRoadmapInput, 'careerSuggestion' | 
 export default function RoadmapPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { auth, db } = useFirebase();
+  const auth = useAuth();
+  const db = useFirestore();
   
   const [selectedCareer, setSelectedCareer] = useState<string | null>(null);
   const [currentRoadmapMarkdown, setCurrentRoadmapMarkdown] = useState<string | null>(null);
@@ -80,6 +81,7 @@ export default function RoadmapPage() {
   const roadmapContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
         setCurrentUser(user);
