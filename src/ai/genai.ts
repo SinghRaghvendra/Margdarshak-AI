@@ -1,3 +1,4 @@
+
 'use server';
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
@@ -33,6 +34,12 @@ export async function generateContent(promptText: string, options?: GenOptions):
   const modelId = options?.model || 'gemini-2.5-flash';
 
   try {
+    // Defensive logging based on your excellent suggestion
+    console.log(`[AI_REQUEST_INFO] Model: ${modelId}, Prompt Length: ${promptText.length}, Max Tokens: ${options?.maxOutputTokens ?? 4096}`);
+    if (promptText.length > 30000) {
+        console.warn(`[AI_REQUEST_WARNING] Prompt length (${promptText.length}) is very high and may exceed model limits.`);
+    }
+
     const client = getGenAI();
     // Model initialization is now cleaner
     const model = client.getGenerativeModel({ 
