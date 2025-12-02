@@ -1,6 +1,7 @@
+
 'use server';
 
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, type GenerativeModel } from '@google/generative-ai';
 
 // Get API key from environment variables
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -10,7 +11,16 @@ if (!GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY is not set in environment variables.');
 }
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+// Use lazy initialization for the genAI instance
+let genAI: GoogleGenerativeAI | null = null;
+let modelInstance: GenerativeModel | null = null;
+
+function getGenAI() {
+    if (!genAI) {
+        genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    }
+    return genAI;
+}
 
 type GenOptions = {
     temperature?: number;
@@ -43,7 +53,8 @@ export async function generateContent(promptText: string, options?: GenOptions):
     const modelToUse = options?.model || 'gemini-2.5-flash';
     
     try {
-        const model = genAI.getGenerativeModel({ 
+        const client = getGenAI();
+        const model = client.getGenerativeModel({ 
             model: modelToUse,
             safetySettings,
             generationConfig: {
