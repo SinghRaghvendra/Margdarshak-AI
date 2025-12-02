@@ -13,7 +13,6 @@ if (!GEMINI_API_KEY) {
 
 // Use lazy initialization for the genAI instance
 let genAI: GoogleGenerativeAI | null = null;
-let modelInstance: GenerativeModel | null = null;
 
 function getGenAI() {
     if (!genAI) {
@@ -56,7 +55,7 @@ export async function generateContent(promptText: string, options?: GenOptions):
         const client = getGenAI();
         const model = client.getGenerativeModel({ 
             model: modelToUse,
-            safetySettings,
+            safetySettings: safetySettings,
             generationConfig: {
                 maxOutputTokens: options?.maxOutputTokens,
                 temperature: options?.temperature,
