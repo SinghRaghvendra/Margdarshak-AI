@@ -1,7 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # Dependencies
 /node_modules
+/functions/node_modules
 /.pnp
 .pnp.js
 .pnp.cjs
@@ -11,28 +10,31 @@
 
 # Next.js build output
 /.next/
-/out/
+functions/.next/
+out/
+
+# Firebase build cache
+.firebase/
+firebase-debug.log*
+firebase-debug.*.log
 
 # Production build
 /build
 
-# Miscellaneous
-.DS_Store
-*.pem
-
-# Debug logs
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-firebase-debug.log*
-firebase-debug.*.log
 
-# Local Environment Variables
-# Ignore all .env files to keep secrets out of version control.
+# Local environment vars
 .env*
 !.env.example
 !.env.template
+
+# Miscellaneous
+.DS_Store
+*.pem
 
 # Vercel
 .vercel
