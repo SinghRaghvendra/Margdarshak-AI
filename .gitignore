@@ -42,3 +42,25 @@ pnpm-debug.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# Firebase
+.firebase/
+firestore-debug.log*
+firebase-debug.log*
+
+# Next.js build
+.next/
+out/
+
+# Functions build
+functions/node_modules/
+functions/.next/
+
+# Node modules
+node_modules/
+functions/node_modules/
+
+# Build
+build/
+dist/
