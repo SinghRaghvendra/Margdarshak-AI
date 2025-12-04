@@ -18,7 +18,6 @@ import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut, 
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { useAuth } from '@/firebase';
-import AuthBeacon from './AuthBeacon';
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -100,12 +99,8 @@ export default function Header() {
               </Link>
             </>
           )}
-           <div className="pl-4">
-             <AuthBeacon />
-           </div>
         </nav>
         <div className="md:hidden flex items-center gap-2">
-          <AuthBeacon />
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
