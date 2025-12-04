@@ -1,3 +1,4 @@
+
 // src/firebase/config.ts
 
 // Your Firebase config is defined here.

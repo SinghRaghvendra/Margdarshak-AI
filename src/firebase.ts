@@ -1,3 +1,4 @@
+
 'use client';
 
 import { onAuthStateChanged, type User } from 'firebase/auth';
