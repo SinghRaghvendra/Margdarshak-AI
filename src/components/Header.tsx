@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -17,7 +18,7 @@ import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, FileText, LogOut, 
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { useAuth } from '@/firebase';
-import AuthBeacon from './AuthBeacon';
+import AuthBeacon from './AuthBeacon.tsx';
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
