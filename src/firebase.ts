@@ -13,9 +13,9 @@ interface UserState {
 }
 
 export function useUser(): UserState {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const authInstance = useAuth();
+  const [user, setUser] = useState<User | null>(authInstance.currentUser);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(authInstance, (user) => {
@@ -29,4 +29,4 @@ export function useUser(): UserState {
 }
 
 // Re-exporting hooks from provider for a single import point.
-export { useAuth, useFirestore, FirebaseClientProvider } from './firebase/provider';
+export { useAuth, useFirestore, FirebaseClientProvider, useFirebaseApp } from './firebase/provider';
