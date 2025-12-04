@@ -9,9 +9,9 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import Logo from '@/components/Logo';
 import { useAuth } from '@/firebase';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import logoImage from '../../../public/logo.png';
 
 
 export default function HomePage() {
@@ -120,7 +120,7 @@ export default function HomePage() {
               className={`absolute logo-container ${isHovered ? 'logo-popped' : ''}`}
           >
               <Image
-                src={logoImage}
+                src="/logo.png"
                 alt="AI Councel Lab Logo"
                 width={150}
                 height={150}
