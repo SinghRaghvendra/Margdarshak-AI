@@ -58,6 +58,7 @@
     "pdfjs-dist": "^4.4.172",
     "razorpay": "^2.9.6",
     "react": "^18.3.1",
+    "react-datepicker": "^8.10.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-firebase-hooks": "^5.1.1",
