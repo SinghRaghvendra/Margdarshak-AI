@@ -1,37 +1,44 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Dependencies
+# dependencies
 /node_modules
+/.pnp
+.pnp.js
 
-# Next.js build output
+# testing
+/coverage
+
+# next.js
 /.next/
 /out/
 
-# Production build
+# production
 /build
 
-# Environment variables
-.env
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Secret key files
-.gemini_key.txt
-*.pem
-keys/
-src/keys/
+# vercel
+.vercel
 
-# Log files
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# System files
-.DS_Store
-
-# TypeScript cache
+# typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# gemini key file
+.gemini_key.txt
+
+# .env file
+.env
