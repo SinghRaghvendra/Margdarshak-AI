@@ -4,10 +4,10 @@
 // Your Firebase config is defined here.
 // These variables are loaded from your .env.local file.
 export const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  apiKey: "AIzaSyBCU_pzGk1Dcvq5g-nJMwUp5FI7JDomvZg",
+  authDomain: "margdarshak-ai.firebaseapp.com",
+  projectId: "margdarshak-ai",
+  storageBucket: "margdarshak-ai.firebasestorage.app",
+  messagingSenderId: "736384619713",
+  appId: "1:736384619713:web:8f2136414ad6f5e903f040",
 };
