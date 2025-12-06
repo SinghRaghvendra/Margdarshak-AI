@@ -13,9 +13,9 @@ env:
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
   - variable: GEMINI_API_KEY
     secret: gemini-api-key
-  - variable: NEXT_PUBLIC_RAZORPAY_KEY_ID
+  - variable: RAZORPAY_KEY_ID
     secret: razorpay-key-id
-  - variable: NEXT_PUBLIC_RAZORPAY_KEY_SECRET
+  - variable: RAZORPAY_KEY_SECRET
     secret: razorpay-key-secret
 
 build:
