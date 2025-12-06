@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,6 +17,7 @@ import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, 
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { useAuth } from '@/firebase';
+import AuthStatus from './AuthStatus';
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -100,66 +100,71 @@ export default function Header() {
             </>
           )}
         </nav>
-        <div className="md:hidden flex items-center gap-2">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0">
-              <SheetHeader className="p-4 border-b">
-                <SheetTitle>
-                  <Logo />
-                </SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col space-y-2 p-4">
-                <SheetClose asChild>
-                   <Link href="/">
-                    <Button variant="ghost" className="w-full justify-start text-base py-3">
-                      <Home className="mr-2 h-5 w-5" /> Home
-                    </Button>
-                  </Link>
-                </SheetClose>
-                {navItems.map((item) => (
-                  <SheetClose asChild key={item.label}>
-                    <Link href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''} className="w-full">
-                         <Button variant="ghost" className="w-full justify-start text-base py-3">
-                           {item.icon} {item.label}
-                         </Button>
+        <div className="flex items-center gap-4">
+          <div className="hidden md:block">
+            <AuthStatus />
+          </div>
+          <div className="md:hidden flex items-center gap-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>
+                    <Logo />
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col space-y-2 p-4">
+                  <SheetClose asChild>
+                     <Link href="/">
+                      <Button variant="ghost" className="w-full justify-start text-base py-3">
+                        <Home className="mr-2 h-5 w-5" /> Home
+                      </Button>
                     </Link>
                   </SheetClose>
-                ))}
-                <div className="pt-4 border-t">
-                  {user ? (
-                     <SheetClose asChild>
-                        <Button onClick={handleLogout} variant="default" className="w-full text-base py-3 mt-2">
-                            <LogOut className="mr-2 h-5 w-5" /> Logout
-                        </Button>
-                     </SheetClose>
-                  ) : (
-                    <>
-                      <SheetClose asChild>
-                        <Link href="/login">
-                          <Button variant="ghost" className="w-full justify-start text-base py-3">
-                             <LogIn className="mr-2 h-5 w-5" /> Login
+                  {navItems.map((item) => (
+                    <SheetClose asChild key={item.label}>
+                      <Link href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''} className="w-full">
+                           <Button variant="ghost" className="w-full justify-start text-base py-3">
+                             {item.icon} {item.label}
+                           </Button>
+                      </Link>
+                    </SheetClose>
+                  ))}
+                  <div className="pt-4 border-t">
+                    {user ? (
+                       <SheetClose asChild>
+                          <Button onClick={handleLogout} variant="default" className="w-full text-base py-3 mt-2">
+                              <LogOut className="mr-2 h-5 w-5" /> Logout
                           </Button>
-                        </Link>
-                      </SheetClose>
-                      <SheetClose asChild>
-                        <Link href="/signup">
-                          <Button variant="default" className="w-full text-base py-3 mt-2">
-                             <UserPlus className="mr-2 h-5 w-5" /> Sign Up
-                          </Button>
-                        </Link>
-                      </SheetClose>
-                    </>
-                  )}
+                       </SheetClose>
+                    ) : (
+                      <>
+                        <SheetClose asChild>
+                          <Link href="/login">
+                            <Button variant="ghost" className="w-full justify-start text-base py-3">
+                               <LogIn className="mr-2 h-5 w-5" /> Login
+                            </Button>
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link href="/signup">
+                            <Button variant="default" className="w-full text-base py-3 mt-2">
+                               <UserPlus className="mr-2 h-5 w-5" /> Sign Up
+                            </Button>
+                          </Link>
+                        </SheetClose>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>

@@ -9,7 +9,6 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { Mail } from 'lucide-react';
 import { FirebaseClientProvider } from '@/firebase/provider';
-import AuthStatus from '@/components/AuthStatus';
 
 export const metadata: Metadata = {
   title: 'AI Councel Career Guide | AI COUNCEL LAB',
@@ -78,7 +77,6 @@ export default function RootLayout({
                   <p className="text-xs text-muted-foreground">
                       © 2024 AI Councel Lab. All rights reserved.
                   </p>
-                  <AuthStatus />
               </div>
           </footer>
           <Toaster />

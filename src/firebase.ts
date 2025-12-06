@@ -1,4 +1,3 @@
-
 'use client';
 
 import { onAuthStateChanged, type User } from 'firebase/auth';
@@ -15,15 +14,24 @@ interface UserState {
 
 export function useUser(): UserState {
   const authInstance = useAuth();
-  const [user, setUser] = useState<User | null>(authInstance.currentUser);
-  const [loading, setLoading] = useState(true);
+  // Initialize state based on whether auth is available.
+  const [user, setUser] = useState<User | null>(() => authInstance?.currentUser ?? null);
+  const [loading, setLoading] = useState(authInstance === null); // Start loading if auth isn't ready.
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-      setUser(user);
+    // Only subscribe if auth is initialized (on the client).
+    if (authInstance) {
+      setLoading(true);
+      const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+        setUser(user);
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    } else {
+      // If on the server, we are not loading and there is no user.
       setLoading(false);
-    });
-    return () => unsubscribe();
+      setUser(null);
+    }
   }, [authInstance]);
 
   return { user, loading };
