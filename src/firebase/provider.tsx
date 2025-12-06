@@ -25,6 +25,17 @@ export function FirebaseClientProvider({ children }: { children: ReactNode }) {
   const firebaseServices = useMemo(() => {
     // Crucially, check if we are in a browser environment.
     if (typeof window !== 'undefined') {
+      // **Critical Client-Side Check for Environment Variables**
+      // This check runs only in the browser. If the API key is missing, it means
+      // the environment variables were not set correctly for the deployment.
+      if (!firebaseConfig.apiKey) {
+        throw new Error(
+          'Firebase API Key is missing. This is a client-side error. ' +
+          'Please ensure your NEXT_PUBLIC_FIREBASE_* environment variables are set correctly in your hosting environment. ' +
+          'For Firebase App Hosting, use `firebase env:set KEY="VALUE"` and redeploy.'
+        );
+      }
+
       const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
       const auth = getAuth(app);
       const db = getFirestore(app);
