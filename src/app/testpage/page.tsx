@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
-const modelToUse = "gemini-1.5-flash-latest";
+const modelToUse = "gemini-2.5-flash";
 
 export default function TestPage() {
   const { toast } = useToast();
