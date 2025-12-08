@@ -9,14 +9,24 @@ runConfig:
 
 # Environment variables and secrets.
 env:
-  # Grant access to secrets in Cloud Secret Manager.
-  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
   - variable: GEMINI_API_KEY
     secret: gemini-api-key
   - variable: NEXT_PUBLIC_RAZORPAY_KEY_ID
     value: "rzp_test_Fv1mF3fA8QJ5jW"
   - variable: RAZORPAY_KEY_SECRET
     value: "5rM5g1oW6yY9wX4vD8zG7fB3"
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyBCU_pzGk1Dcvq5g-nJMwUp5FI7JDomvZg"
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "margdarshak-ai.firebaseapp.com"
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "margdarshak-ai"
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "margdarshak-ai.appspot.com"
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "736384619713"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:736384619713:web:8f2136414ad6f5e903f040"
 
 build:
   command: "npm run build"
