@@ -14,9 +14,9 @@ env:
   - variable: GEMINI_API_KEY
     secret: gemini-api-key
   - variable: NEXT_PUBLIC_RAZORPAY_KEY_ID
-    secret: razorpay-key-id
+    value: "rzp_test_Fv1mF3fA8QJ5jW"
   - variable: RAZORPAY_KEY_SECRET
-    secret: razorpay-key-secret
+    value: "5rM5g1oW6yY9wX4vD8zG7fB3"
 
 build:
   command: "npm run build"

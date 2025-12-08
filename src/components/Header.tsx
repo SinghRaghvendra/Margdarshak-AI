@@ -23,10 +23,10 @@ export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const { toast } = useToast();
-  const auth = useAuth();
+  const auth = useAuth(); // This can be null on initial render
 
   useEffect(() => {
-    if (!auth) return;
+    if (!auth) return; // Don't run if auth is not initialized yet
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
@@ -81,28 +81,30 @@ export default function Header() {
                 </Button>
             </Link>
           ))}
-          {user ? (
-            <Button onClick={handleLogout} variant="outline" className="text-sm ml-2 px-4 py-2">
-              <LogOut className="mr-2 h-4 w-4" /> Logout
-            </Button>
-          ) : (
-            <>
-              <Link href="/login">
-                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button className="text-sm ml-2 px-4 py-2">
-                  Sign Up
-                </Button>
-              </Link>
-            </>
+          {auth && ( // Only render auth buttons if auth is initialized
+            user ? (
+              <Button onClick={handleLogout} variant="outline" className="text-sm ml-2 px-4 py-2">
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+              </Button>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="text-sm ml-2 px-4 py-2">
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )
           )}
         </nav>
         <div className="flex items-center gap-4">
           <div className="hidden md:block">
-            <AuthStatus />
+            {auth && <AuthStatus />} 
           </div>
           <div className="md:hidden flex items-center gap-2">
             <Sheet>
@@ -136,29 +138,31 @@ export default function Header() {
                     </SheetClose>
                   ))}
                   <div className="pt-4 border-t">
-                    {user ? (
-                       <SheetClose asChild>
-                          <Button onClick={handleLogout} variant="default" className="w-full text-base py-3 mt-2">
-                              <LogOut className="mr-2 h-5 w-5" /> Logout
-                          </Button>
-                       </SheetClose>
-                    ) : (
-                      <>
-                        <SheetClose asChild>
-                          <Link href="/login">
-                            <Button variant="ghost" className="w-full justify-start text-base py-3">
-                               <LogIn className="mr-2 h-5 w-5" /> Login
+                    {auth && ( // Only render auth buttons if auth is initialized
+                      user ? (
+                         <SheetClose asChild>
+                            <Button onClick={handleLogout} variant="default" className="w-full text-base py-3 mt-2">
+                                <LogOut className="mr-2 h-5 w-5" /> Logout
                             </Button>
-                          </Link>
-                        </SheetClose>
-                        <SheetClose asChild>
-                          <Link href="/signup">
-                            <Button variant="default" className="w-full text-base py-3 mt-2">
-                               <UserPlus className="mr-2 h-5 w-5" /> Sign Up
-                            </Button>
-                          </Link>
-                        </SheetClose>
-                      </>
+                         </SheetClose>
+                      ) : (
+                        <>
+                          <SheetClose asChild>
+                            <Link href="/login">
+                              <Button variant="ghost" className="w-full justify-start text-base py-3">
+                                 <LogIn className="mr-2 h-5 w-5" /> Login
+                              </Button>
+                            </Link>
+                          </SheetClose>
+                          <SheetClose asChild>
+                            <Link href="/signup">
+                              <Button variant="default" className="w-full text-base py-3 mt-2">
+                                 <UserPlus className="mr-2 h-5 w-5" /> Sign Up
+                              </Button>
+                            </Link>
+                          </SheetClose>
+                        </>
+                      )
                     )}
                   </div>
                 </div>
