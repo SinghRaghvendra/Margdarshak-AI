@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { generateContent } from '@/ai/genai';
 import { Loader2, Terminal, AlertTriangle, Wand2, Cpu, FileCog, SlidersHorizontal } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
-const modelToUse = "gemini-2.5-flash";
+const modelToUse = "gemini-1.5-flash-latest";
 
 export default function TestPage() {
   const { toast } = useToast();
@@ -26,7 +25,7 @@ export default function TestPage() {
 
   const handleTest = async () => {
     if (!prompt) {
-      setError('Please enter a prompt.');
+      setError("Please enter a prompt.");
       return;
     }
     if (!maxTokens) {
@@ -36,14 +35,29 @@ export default function TestPage() {
     setIsLoading(true);
     setResult('');
     setError('');
+
     try {
-      const responseText = await generateContent(prompt, {
+      const response = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
           model: modelToUse,
-          maxOutputTokens: maxTokens
+          maxOutputTokens: maxTokens,
+        }),
       });
-      setResult(responseText);
-    } catch (e: any) {
-      setError(e.message || 'An unknown error occurred.');
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // If the response is not OK, the body contains the error message from the API route
+        throw new Error(data.error || `Request failed with status ${response.status}`);
+      }
+      
+      setResult(data.text);
+
+    } catch (err: any) {
+      setError(err.message || 'An unknown error occurred during fetch.');
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +72,7 @@ export default function TestPage() {
             Interactive Gemini API Test Page
           </CardTitle>
           <CardDescription>
-            Enter a prompt and select model configurations to send to the Gemini API via the server-side helper.
+            Enter a prompt and select model configurations to send to the Gemini API via a secure API route.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
