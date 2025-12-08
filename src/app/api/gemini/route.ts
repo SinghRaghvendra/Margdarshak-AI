@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -11,6 +12,7 @@ export async function POST(req: Request) {
     // Secure key from Secret Manager (Next.js automatically injects env)
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
+      // This is a server-side error, so it's safe to be specific.
       return NextResponse.json({ error: "API key not found on server" }, { status: 500 });
     }
 
@@ -36,6 +38,13 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: data.error?.message || "An error occurred with the Gemini API." }, { status: response.status });
     }
 
+    // Check for safety blocks BEFORE trying to access the text
+    if (!data.candidates || data.candidates.length === 0 || data.candidates[0].finishReason === 'SAFETY') {
+        const blockReason = data.promptFeedback?.blockReason || 'Unknown safety concern';
+        console.warn(`Gemini request blocked. Reason: ${blockReason}`);
+        return NextResponse.json({ error: `Request was blocked by safety filters. Reason: ${blockReason}` }, { status: 400 });
+    }
+    
     const text =
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "No response text from Gemini.";
