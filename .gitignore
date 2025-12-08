@@ -46,3 +46,7 @@ next-env.d.ts
 # Secrets
 .gemini_key.txt
 .razorpay_key_secret.txt
+.next/
+.firebase/
+functions/.next/
+functions/node_modules/
