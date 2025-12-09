@@ -17,7 +17,7 @@ export default function TestPageApi() {
     setResult('');
     setError('');
     try {
-      const response = await generateContent("Explain how AI works in a few words");
+      const response = await generateContent("Say Hello in 5 languages with name of country.");
       setResult(response);
     } catch (e: any) {
       setError(e.message || 'An unknown error occurred.');
