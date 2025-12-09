@@ -29,11 +29,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Prompt missing" }, { status: 400 });
     }
 
-    // Secure key from Secret Manager (Next.js automatically injects env)
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      // This is a server-side error, so it's safe to be specific.
-      return NextResponse.json({ error: "API key not found on server" }, { status: 500 });
+      return NextResponse.json({ error: "Missing GEMINI_API_KEY" }, { status: 500 });
     }
 
     const response = await fetch(
@@ -43,9 +41,13 @@ export async function POST(req: Request) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            maxOutputTokens: maxOutputTokens || 2048,
-          },
+          generationConfig: { maxOutputTokens: maxOutputTokens || 2048 },
+          safetySettings: [
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+          ],
         }),
       }
     );
@@ -57,19 +59,19 @@ export async function POST(req: Request) {
         console.error("Gemini API Error:", data.error);
         return NextResponse.json({ error: data.error?.message || "An error occurred with the Gemini API." }, { status: response.status });
     }
-
-    // Check for safety blocks BEFORE trying to access the text
+    
+    // Check for safety blocks even with BLOCK_NONE, as some things can still be blocked.
     if (!data.candidates || data.candidates.length === 0 || data.candidates[0].finishReason === 'SAFETY') {
         const blockReason = data.promptFeedback?.blockReason || 'Unknown safety concern';
         console.warn(`Gemini request blocked. Reason: ${blockReason}`);
         return NextResponse.json({ error: `Request was blocked by safety filters. Reason: ${blockReason}` }, { status: 400 });
     }
-    
-    const text = extractText(data) || "No response text from Gemini.";
+
+    const text = extractText(data) || "⚠ Gemini blocked this content or returned an empty response.";
 
     return NextResponse.json({ text });
-  } catch (error: any) {
-    console.error("API Route Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (err: any) {
+    console.error("API Route Error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
