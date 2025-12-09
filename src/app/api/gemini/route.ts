@@ -1,6 +1,26 @@
 
 import { NextResponse } from "next/server";
 
+function extractText(data: any) {
+  if (!data?.candidates?.length) return null;
+
+  // Some Gemini models return content.parts
+  const parts1 = data.candidates[0]?.content?.parts;
+
+  // Some return an array of content blocks
+  const parts2 = data.candidates[0]?.content?.[0]?.parts;
+
+  const parts = parts1 || parts2;
+  if (!parts) return null;
+
+  for (const p of parts) {
+    if (p?.text) return p.text;
+    if (typeof p === "string") return p;
+  }
+
+  return null;
+}
+
 export async function POST(req: Request) {
   try {
     const { prompt, model, maxOutputTokens } = await req.json();
@@ -45,9 +65,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: `Request was blocked by safety filters. Reason: ${blockReason}` }, { status: 400 });
     }
     
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response text from Gemini.";
+    const text = extractText(data) || "No response text from Gemini.";
 
     return NextResponse.json({ text });
   } catch (error: any) {
