@@ -15,7 +15,7 @@ const modelToUse = "gemini-2.5-flash";
 
 export default function TestPage() {
   const { toast } = useToast();
-  const [prompt, setPrompt] = useState<string>('Explain how AI works in a few words');
+  const [prompt, setPrompt] = useState<string>('Explain in 5 sentences how artificial intelligence works, in simple language for a beginner, avoid any sensitive topics.');
   const [result, setResult] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
