@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 export async function POST(request: Request) {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await request.json();
-  const keySecret = process.env.NEXT_PUBLIC_RAZORPAY_KEY_SECRET;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
   if (!keySecret) {
     return NextResponse.json({ error: 'Razorpay API key secret not configured.' }, { status: 500 });

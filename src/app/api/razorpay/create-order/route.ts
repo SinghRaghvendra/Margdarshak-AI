@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const { amount } = await request.json();
 
   const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-  const keySecret = process.env.NEXT_PUBLIC_RAZORPAY_KEY_SECRET;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
   if (!keyId || !keySecret) {
     return NextResponse.json({ error: 'Razorpay API keys not configured.' }, { status: 500 });
