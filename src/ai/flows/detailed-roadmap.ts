@@ -3,10 +3,11 @@
 
 /**
  * @fileOverview A flow that provides a detailed career report in Markdown format.
- * This file has been refactored to use the central /api/gemini route for stability.
+ * This file has been refactored to use a centralized API call function.
  */
 
 import {z} from 'zod';
+import { callGeminiApi } from '@/app/api/gemini/route';
 
 // Define PersonalizedAnswersSchema here to be used in GenerateRoadmapInputSchema
 const PersonalizedAnswersSchema = z.object({
@@ -144,28 +145,9 @@ export async function generateRoadmap(input: GenerateRoadmapInput): Promise<Gene
     `;
 
     try {
-        const response = await fetch(`/api/gemini`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                prompt,
-                model: "gemini-2.5-flash",
-                maxOutputTokens: 8192,
-            }),
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-            throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
-        }
-
-        if (!data.text) {
-             throw new Error("The AI model returned an empty response for the roadmap.");
-        }
-        
+        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 8192);
         return {
-          roadmapMarkdown: data.text
+          roadmapMarkdown: text
         };
     } catch (error: any) {
         console.error(`Error generating roadmap:`, error);

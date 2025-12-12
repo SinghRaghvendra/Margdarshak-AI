@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { callGeminiApi } from '@/app/api/gemini/route';
 
 // Define Zod schemas for clear, validated input and output.
 const CareerInsightsInputSchema = z.object({
@@ -49,27 +50,13 @@ export async function generateCareerInsights(input: CareerInsightsInput): Promis
     `;
     
     try {
-        const response = await fetch(`/api/gemini`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                prompt,
-                model: "gemini-2.5-flash",
-                maxOutputTokens: 1024,
-            }),
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-            throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
-        }
-
-        if (!data.text) {
+        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 1024);
+        
+        if (!text) {
              throw new Error("The AI model returned an empty response for career insights.");
         }
         
-        const parsedResponse = JSON.parse(data.text);
+        const parsedResponse = JSON.parse(text);
         return CareerInsightsOutputSchema.parse(parsedResponse);
     } catch (error: any) {
         console.error("Failed to process AI response for career insights:", error);

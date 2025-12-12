@@ -6,6 +6,7 @@
  */
 
 import {z} from 'zod';
+import { callGeminiApi } from '@/app/api/gemini/route';
 
 const PersonalizedAnswersSchema = z.object({
   q1: z.string().describe("Answer to: Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?"),
@@ -133,28 +134,8 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     console.log("📝 FINAL PROMPT FOR CAREER SUGGESTION:\n", prompt);
 
     try {
-        const response = await fetch(`/api/gemini`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                prompt,
-                model: "gemini-2.5-flash", 
-                maxOutputTokens: 4096,
-            }),
-        });
-
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
-        }
-
-        if (!data.text) {
-             throw new Error("The AI model returned an empty response.");
-        }
-
-        const parsedResponse = extractJsonFromText(data.text);
-        
+        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 4096);
+        const parsedResponse = extractJsonFromText(text);
         return CareerSuggestionOutputSchema.parse(parsedResponse);
     } catch (error: any) {
         console.error("Failed to process AI response for career suggestions:", error);
