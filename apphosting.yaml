@@ -12,9 +12,9 @@ env:
   - variable: GEMINI_API_KEY
     secret: gemini-api-key
   - variable: NEXT_PUBLIC_RAZORPAY_KEY_ID
-    value: "rzp_test_Fv1mF3fA8QJ5jW"
+    value: "rzp_live_Rqe0Dt9aWQ4FPR"
   - variable: RAZORPAY_KEY_SECRET
-    value: "5rM5g1oW6yY9wX4vD8zG7fB3"
+    value: "D8zyaEPzXsvnrzE0438ffwLT"
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     value: "AIzaSyBCU_pzGk1Dcvq5g-nJMwUp5FI7JDomvZg"
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
