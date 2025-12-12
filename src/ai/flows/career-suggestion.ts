@@ -2,10 +2,9 @@
 'use server';
 /**
  * @fileOverview Provides AI-powered career suggestions based on user traits and personalized answers.
- * This file now uses a robust JSON extraction method to handle variations in AI response format.
+ * This file has been refactored to use the central /api/gemini route for stability.
  */
 
-import { generateContent } from '@/ai/genai';
 import {z} from 'zod';
 
 const PersonalizedAnswersSchema = z.object({
@@ -48,7 +47,7 @@ export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema
  * @returns The parsed JSON object.
  */
 function extractJsonFromText(text: string): any {
-  // 1. Find the first '{' and the last '}'
+  // Find the first '{' and the last '}'
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
   
@@ -56,11 +55,11 @@ function extractJsonFromText(text: string): any {
     throw new Error('Could not find a valid JSON object in the AI response.');
   }
 
-  // 2. Extract the substring containing only the JSON structure
+  // Extract the substring containing only the JSON structure
   const jsonString = text.substring(start, end + 1);
 
   try {
-    // 3. Attempt to parse the cleaned string
+    // Attempt to parse the cleaned string
     return JSON.parse(jsonString);
   } catch (parseError) {
     console.error("JSON Parsing failed after extraction:", parseError);
@@ -133,17 +132,32 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     
     console.log("📝 FINAL PROMPT FOR CAREER SUGGESTION:\n", prompt);
 
-    const aiResponseText = await generateContent(prompt, { model: 'gemini-1.5-flash-latest', maxOutputTokens: 4096, responseMimeType: 'application/json' });
-
     try {
-        // Use the robust extraction function to get a clean JSON object
-        const parsedResponse = extractJsonFromText(aiResponseText);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/gemini`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                prompt,
+                model: "gemini-2.5-flash", 
+                maxOutputTokens: 4096,
+            }),
+        });
+
+        const data = await response.json();
         
-        // Final validation with Zod
+        if (data.error) {
+            throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
+        }
+
+        if (!data.text) {
+             throw new Error("The AI model returned an empty response.");
+        }
+
+        const parsedResponse = extractJsonFromText(data.text);
+        
         return CareerSuggestionOutputSchema.parse(parsedResponse);
     } catch (error: any) {
-        console.error("Failed to process AI response:", error);
-        // Re-throw a client-friendly message
-        throw new Error("The AI model's response could not be understood. Please try again.");
+        console.error("Failed to process AI response for career suggestions:", error);
+        throw new Error(`The AI model's response could not be understood. Details: ${error.message}`);
     }
 }

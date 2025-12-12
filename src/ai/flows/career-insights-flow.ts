@@ -1,10 +1,10 @@
+
 'use server';
 /**
  * @fileOverview Provides astrological and numerological insights for a selected career.
- * This file has been refactored to use the direct AI helper instead of Genkit.
+ * This file has been refactored to use the central /api/gemini route for stability.
  */
 
-import { generateContent } from '@/ai/genai';
 import { z } from 'zod';
 
 // Define Zod schemas for clear, validated input and output.
@@ -48,13 +48,31 @@ export async function generateCareerInsights(input: CareerInsightsInput): Promis
     - Adhere strictly to the requested JSON output format. Respond ONLY with a raw JSON object matching this schema: { "astrologicalReview": "...", "numerologicalReview": "..." }.
     `;
     
-    const llmResponse = await generateContent(prompt, { model: 'gemini-2.5-flash', responseMimeType: 'application/json' });
-
     try {
-        const parsedResponse = JSON.parse(llmResponse);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/gemini`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                prompt,
+                model: "gemini-2.5-flash",
+                maxOutputTokens: 1024,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
+        }
+
+        if (!data.text) {
+             throw new Error("The AI model returned an empty response for career insights.");
+        }
+        
+        const parsedResponse = JSON.parse(data.text);
         return CareerInsightsOutputSchema.parse(parsedResponse);
-    } catch (error) {
-        console.error("Failed to parse AI response for career insights:", error);
-        throw new Error("The AI model returned an invalid format for career insights. Please try again.");
+    } catch (error: any) {
+        console.error("Failed to process AI response for career insights:", error);
+        throw new Error(`The AI model's response could not be understood for career insights. Details: ${error.message}`);
     }
 }

@@ -27,6 +27,8 @@ env:
     value: "736384619713"
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: "1:736384619713:web:8f2136414ad6f5e903f040"
+  - variable: NEXT_PUBLIC_APP_URL
+    value: "http://localhost:3001"
 
 build:
   command: "npm run build"

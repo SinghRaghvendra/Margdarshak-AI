@@ -3,10 +3,9 @@
 
 /**
  * @fileOverview A flow that provides a detailed career report in Markdown format.
- * This file has been refactored to use the direct AI helper instead of Genkit.
+ * This file has been refactored to use the central /api/gemini route for stability.
  */
 
-import { generateReport } from '@/ai/genai';
 import {z} from 'zod';
 
 // Define PersonalizedAnswersSchema here to be used in GenerateRoadmapInputSchema
@@ -144,9 +143,32 @@ export async function generateRoadmap(input: GenerateRoadmapInput): Promise<Gene
     Return ONLY the raw markdown content for the report.
     `;
 
-    const markdown = await generateReport(prompt);
-    
-    return {
-      roadmapMarkdown: markdown
-    };
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/gemini`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                prompt,
+                model: "gemini-2.5-flash",
+                maxOutputTokens: 8192,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
+        }
+
+        if (!data.text) {
+             throw new Error("The AI model returned an empty response for the roadmap.");
+        }
+        
+        return {
+          roadmapMarkdown: data.text
+        };
+    } catch (error: any) {
+        console.error(`Error generating roadmap:`, error);
+        throw new Error(`Could not generate roadmap. Details: ${error.message}`);
+    }
 }
