@@ -8,11 +8,12 @@ export const runtime = 'nodejs'; // Ensure Node.js runtime
 export async function POST(request: Request) {
   const { amount } = await request.json();
 
-  const keyId = process.env.RAZORPAY_KEY_ID;
+  // FIX: Make sure these match your .env EXACTLY
+  const keyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
   if (!keyId || !keySecret) {
-    console.error('Razorpay API keys not configured on the server.');
+    console.error('Missing Keys:', { keyId: !!keyId, keySecret: !!keySecret });
     return NextResponse.json({ error: 'Razorpay API keys not configured.' }, { status: 500 });
   }
 

@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Script from 'next/script'; // Import this at the top
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, Loader2, ListChecks } from 'lucide-react'; 
@@ -216,35 +217,41 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="flex justify-center items-center py-8">
-      <Card className="w-full max-w-lg shadow-xl">
-        <CardHeader className="text-center">
-          <CreditCard className="h-12 w-12 text-primary mx-auto mb-4" />
-          <CardTitle className="text-3xl font-bold">Unlock Your Career Report</CardTitle>
-          <CardDescription>
-            Hi {userInfo.name}, you're one step away from your detailed report. Pay the one-time fee to generate your roadmap and see your full list of career matches.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
-          <div className="mb-6 p-4 border rounded-md bg-secondary/50">
-            <h4 className="text-lg font-semibold mb-2 flex items-center justify-center">
-                <ListChecks className="mr-2 h-5 w-5 text-primary" />
-                Selected Career for Detailed Report:
-            </h4>
-            <p className="font-bold text-xl">{selectedCareer}</p>
-          </div>
-          <p className="text-lg mb-2">Total Report Fee: <span className="font-bold text-2xl">₹{REPORT_AMOUNT_INR}</span></p>
-          <p className="text-sm text-muted-foreground mb-6">
-            This one-time payment unlocks a detailed report for your selected career and reveals your top 5 career matches with scores.
-          </p>
-          
-          <Button onClick={handlePayment} className="w-full text-lg py-6" disabled={isProcessing}>
-            {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
-            Pay ₹{REPORT_AMOUNT_INR} & Access Reports
-          </Button>
+    <>
+      <Script
+        id="razorpay-checkout-js"
+        src="https://checkout.razorpay.com/v1/checkout.js"
+      />
+      <div className="flex justify-center items-center py-8">
+        <Card className="w-full max-w-lg shadow-xl">
+          <CardHeader className="text-center">
+            <CreditCard className="h-12 w-12 text-primary mx-auto mb-4" />
+            <CardTitle className="text-3xl font-bold">Unlock Your Career Report</CardTitle>
+            <CardDescription>
+              Hi {userInfo.name}, you're one step away from your detailed report. Pay the one-time fee to generate your roadmap and see your full list of career matches.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="mb-6 p-4 border rounded-md bg-secondary/50">
+              <h4 className="text-lg font-semibold mb-2 flex items-center justify-center">
+                  <ListChecks className="mr-2 h-5 w-5 text-primary" />
+                  Selected Career for Detailed Report:
+              </h4>
+              <p className="font-bold text-xl">{selectedCareer}</p>
+            </div>
+            <p className="text-lg mb-2">Total Report Fee: <span className="font-bold text-2xl">₹{REPORT_AMOUNT_INR}</span></p>
+            <p className="text-sm text-muted-foreground mb-6">
+              This one-time payment unlocks a detailed report for your selected career and reveals your top 5 career matches with scores.
+            </p>
+            
+            <Button onClick={handlePayment} className="w-full text-lg py-6" disabled={isProcessing}>
+              {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
+              Pay ₹{REPORT_AMOUNT_INR} & Access Reports
+            </Button>
 
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
