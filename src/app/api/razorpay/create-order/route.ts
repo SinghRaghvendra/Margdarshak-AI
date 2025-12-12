@@ -8,7 +8,7 @@ export const runtime = 'nodejs'; // Ensure Node.js runtime
 export async function POST(request: Request) {
   const { amount } = await request.json();
 
-  const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
   if (!keyId || !keySecret) {
