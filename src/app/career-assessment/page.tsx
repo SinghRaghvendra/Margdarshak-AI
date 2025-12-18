@@ -1,19 +1,10 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { Metadata } from 'next';
 import Script from 'next/script';
-
-// This metadata would be for a static export, but we define it here for clarity.
-// In a dynamic app, this would be in the layout or page component.
-export const metadata: Metadata = {
-    title: 'AI Career Assessment – Find the Right Career Path',
-    description: 'Our AI career assessment analyzes your skills, interests, and personality to give you a personalized career match.',
-};
 
 const FaqSchema = {
     "@context": "https://schema.org",

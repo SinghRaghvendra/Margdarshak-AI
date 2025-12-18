@@ -44,26 +44,49 @@ export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema
 
 /**
  * Extracts a JSON object from a string that might contain other text.
+ * This version is stricter and looks for the specific structure of the careers object.
  * @param text The text from the AI response.
  * @returns The parsed JSON object.
  */
 function extractJsonFromText(text: string): any {
-  // Find the first '{' and the last '}'
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  
-  if (start === -1 || end === -1 || start > end) {
-    throw new Error('Could not find a valid JSON object in the AI response.');
+  // Look for the start of the 'careers' JSON structure.
+  const start = text.indexOf('{"careers":[');
+  if (start === -1) {
+    throw new Error("Could not find a valid 'careers' JSON object in the AI response.");
   }
 
-  // Extract the substring containing only the JSON structure
+  // Find the corresponding closing bracket for the array and then the object.
+  let openBrackets = 0;
+  let end = -1;
+  for (let i = start + '{"careers":['.length; i < text.length; i++) {
+    if (text[i] === '[') openBrackets++;
+    if (text[i] === ']') openBrackets--;
+    if (openBrackets < 0) {
+      // We found the closing bracket of the careers array. Now find the final '}'.
+      const finalBrace = text.indexOf('}', i);
+      if (finalBrace !== -1) {
+        end = finalBrace;
+        break;
+      }
+    }
+  }
+
+  if (end === -1) {
+    // Fallback to simpler method if bracket matching fails
+    const simpleEnd = text.lastIndexOf('}');
+    if (simpleEnd > start) {
+        end = simpleEnd;
+    } else {
+        throw new Error('Could not find the end of the JSON object in the AI response.');
+    }
+  }
+
   const jsonString = text.substring(start, end + 1);
 
   try {
-    // Attempt to parse the cleaned string
     return JSON.parse(jsonString);
   } catch (parseError) {
-    console.error("JSON Parsing failed after extraction:", parseError);
+    console.error("JSON Parsing failed after extraction:", parseError, "--- Extracted String:", jsonString);
     throw new Error('The extracted text was not valid JSON.');
   }
 }
