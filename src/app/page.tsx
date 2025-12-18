@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon } from 'lucide-react';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, MessageSquareQuestion } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
@@ -12,6 +12,7 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import Logo from '@/components/Logo';
 import { useAuth } from '@/firebase';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 export default function HomePage() {
@@ -79,6 +80,25 @@ export default function HomePage() {
       { point: "Unsure how your skills and interests translate into a real-world job." },
       { point: "Lacking a concrete plan to achieve your long-term career goals." },
       { point: "Getting rejected by automated systems before a human sees your resume." },
+  ];
+
+  const homeFaqs = [
+      {
+          question: 'Which career is best for me?',
+          answer: "Choosing the best career depends on your skills, interests, and personality. Instead of guessing, an AI-based career assessment analyzes these factors to recommend careers that match your profile.",
+      },
+      {
+          question: 'What career suits my personality?',
+          answer: "Personality plays a major role in career satisfaction. Career tests evaluate traits like introversion, creativity, and problem-solving style to suggest suitable career paths.",
+      },
+      {
+          question: 'Are career tests accurate?',
+          answer: "Career tests are accurate when they analyze multiple factors like skills, interests, and behavior patterns. AI-powered career assessments improve accuracy by learning from large datasets and real career outcomes.",
+      },
+      {
+          question: 'Can AI help me choose a career?',
+          answer: "Yes. AI helps eliminate bias and guesswork by matching your profile with career paths that have historically led to success for similar individuals.",
+      }
   ];
 
   const careerQuestions = [
@@ -249,14 +269,50 @@ export default function HomePage() {
            </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-16 md:py-24 bg-background">
+          <div className="container mx-auto px-4">
+              <div className="text-center mb-12 md:mb-16">
+                  <MessageSquareQuestion className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h2 className="text-3xl md:text-4xl font-bold text-foreground">Frequently Asked Questions</h2>
+                  <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
+                      Quick answers to your most pressing career questions.
+                  </p>
+              </div>
+              <div className="max-w-3xl mx-auto">
+                  <Accordion type="single" collapsible className="w-full space-y-3">
+                      {homeFaqs.map((faq, index) => (
+                          <AccordionItem value={`item-${index}`} key={index}>
+                              <Card className="bg-card/50 hover:bg-card transition-shadow shadow-sm hover:shadow-md">
+                                  <AccordionTrigger className="text-lg font-semibold text-left px-6 py-4 hover:no-underline">
+                                      {faq.question}
+                                  </AccordionTrigger>
+                                  <AccordionContent className="px-6 pb-4 text-base text-muted-foreground">
+                                      {faq.answer}
+                                  </AccordionContent>
+                              </Card>
+                          </AccordionItem>
+                      ))}
+                  </Accordion>
+              </div>
+              <div className="text-center mt-12">
+                <Link href="/career-faqs" passHref>
+                  <Button variant="outline">
+                    View All FAQs <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+          </div>
+      </section>
       
       {/* SEO Questions Section */}
-      <section id="career-questions" className="py-16 md:py-24 bg-background">
+      <section id="career-questions" className="py-16 md:py-24 bg-secondary/30">
         <div className="container mx-auto px-4">
             <div className="text-center mb-12 md:mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground">Career Questions People Ask Before Choosing a Career</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground">Trending Career Questions</h2>
                 <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                    Choosing the right career can be confusing. These are the most common career questions people search online before making a career decision. Click any question to get AI-backed guidance and take a personalized career assessment.
+                    Explore the most common questions people ask when making a career decision. Click any question to get AI-backed guidance.
                 </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
