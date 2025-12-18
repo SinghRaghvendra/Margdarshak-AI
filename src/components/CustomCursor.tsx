@@ -30,7 +30,7 @@ export default function CustomCursor() {
   return (
     <div
       className={cn(
-        'hidden md:block fixed w-8 h-8 rounded-full bg-primary/80 pointer-events-none z-[100] transition-transform duration-200 ease-in-out',
+        'hidden md:block fixed w-12 h-12 rounded-full bg-primary/80 pointer-events-none z-[100] transition-transform duration-200 ease-in-out',
         'mix-blend-difference', // This creates the color inversion effect
         isPointer ? 'scale-150' : 'scale-100'
       )}
