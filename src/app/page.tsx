@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon } from 'lucide-react';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
@@ -113,6 +113,27 @@ export default function HomePage() {
       "Career guidance for students",
       "Career advice for working professionals",
       "AI vs human career counseling"
+  ];
+  
+  const blogPosts = [
+    {
+      title: 'Which Career Is Best for Me?',
+      excerpt: 'Struggling with career confusion? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
+      imageUrl: '/blog-image-1.jpg',
+      href: '/blog/which-career-is-best-for-me',
+    },
+    {
+      title: 'How to Choose the Right Career in 2025',
+      excerpt: 'The job market is changing. Discover a modern framework for choosing a career that is not only fulfilling but also future-proof.',
+      imageUrl: '/blog-image-2.jpg',
+      href: '/blog/how-to-choose-the-right-career',
+    },
+    {
+      title: 'Are Career Tests Accurate? A Look at AI-Powered Assessments',
+      excerpt: "Not all career tests are created equal. We break down the science behind AI career assessments and why they are more reliable than traditional methods.",
+      imageUrl: '/blog-image-3.jpg',
+      href: '/blog/are-career-tests-accurate',
+    },
   ];
 
 
@@ -270,8 +291,57 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Blog Section */}
+      <section id="blog" className="py-16 md:py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 md:mb-16">
+            <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">From Our Blog</h2>
+            <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
+              Explore our latest articles for insights and guidance on your career journey.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {blogPosts.map((post, index) => (
+              <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
+                <Link href={post.href} className="block">
+                  <Image
+                    src={`https://picsum.photos/seed/${index+50}/600/400`}
+                    alt={post.title}
+                    width={600}
+                    height={400}
+                    className="w-full h-48 object-cover"
+                    data-ai-hint="career guidance"
+                  />
+                </Link>
+                <CardHeader>
+                  <CardTitle className="text-xl leading-snug">
+                     <Link href={post.href} className="hover:text-primary transition-colors">{post.title}</Link>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-sm text-muted-foreground">{post.excerpt}</p>
+                </CardContent>
+                <CardContent>
+                  <Link href={post.href}>
+                    <Button variant="link" className="p-0">Read More <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center mt-12">
+            <Link href="/blog">
+              <Button variant="outline" size="lg">
+                View All Articles
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Section */}
-      <section id="faq" className="py-16 md:py-24 bg-background">
+      <section id="faq" className="py-16 md:py-24 bg-secondary/30">
           <div className="container mx-auto px-4">
               <div className="text-center mb-12 md:mb-16">
                   <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -307,7 +377,7 @@ export default function HomePage() {
       </section>
       
       {/* SEO Questions Section */}
-      <section id="career-questions" className="py-16 md:py-24 bg-secondary/30">
+      <section id="career-questions" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
             <div className="text-center mb-12 md:mb-16">
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground">Trending Career Questions</h2>
@@ -330,7 +400,7 @@ export default function HomePage() {
       </section>
 
       {/* Final Call to Action Section */}
-      <section className="py-16 md:py-24 bg-background">
+      <section className="py-16 md:py-24 bg-secondary/30">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
