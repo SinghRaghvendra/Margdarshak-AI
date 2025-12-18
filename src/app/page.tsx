@@ -83,11 +83,16 @@ export default function HomePage() {
 
   const careerQuestions = [
       "Which career is best for me?",
-      "How do I choose the right career?",
+      "How to choose the right career in 2025",
       "What career suits my personality?",
       "Are career tests accurate?",
       "Can AI help me choose a career?",
-      "How does career matching work?"
+      "How does career matching work?",
+      "Career options after graduation",
+      "How to find the right career path",
+      "Career guidance for students",
+      "Career advice for working professionals",
+      "AI vs human career counseling"
   ];
 
 
@@ -245,7 +250,7 @@ export default function HomePage() {
         </div>
       </section>
       
-      {/* SEO Questions Section */}
+      {/* SEO Questions Section from User */}
       <section id="career-questions" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
             <div className="text-center mb-12 md:mb-16">
@@ -285,3 +290,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
