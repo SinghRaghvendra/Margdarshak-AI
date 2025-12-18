@@ -22,7 +22,7 @@ export default function BlogPostWhichCareerIsBest() {
             </header>
 
             <div className="prose max-w-none text-foreground/90">
-                <p>It’s one of the biggest questions we ask ourselves: **"Which career is best for me?"** The pressure to answer it correctly can be overwhelming, leading to what’s known as “analysis paralysis” or career confusion. You’re told to follow your passion, but what if you have many? Or what if your passion doesn't seem to pay the bills?</p>
+                <p>It’s one of the biggest questions we ask ourselves: <strong>"Which career is best for me?"</strong> The pressure to answer it correctly can be overwhelming, leading to what’s known as “analysis paralysis” or career confusion. You’re told to follow your passion, but what if you have many? Or what if your passion doesn't seem to pay the bills?</p>
 
                 <p>The truth is, the old methods of career planning are outdated. A modern, more reliable approach uses data to align who you are with what the world needs. This guide will walk you through how to answer this question not with guesswork, but with clarity.</p>
 
@@ -33,15 +33,15 @@ export default function BlogPostWhichCareerIsBest() {
                     <li><strong>Following the Money:</strong> Choosing a career solely for its high salary often leads to burnout and a lack of fulfillment.</li>
                     <li><strong>Listening to Others:</strong> Family and societal expectations can push you toward a path that isn't a genuine fit for your personality or skills.</li>
                 </ul>
-                <p>These approaches are unreliable because they ignore the most critical factor: **you**. A successful and fulfilling career is built on a deep understanding of your own unique profile.</p>
+                <p>These approaches are unreliable because they ignore the most critical factor: <strong>you</strong>. A successful and fulfilling career is built on a deep understanding of your own unique profile.</p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">A Better Way: The Data-Driven Approach</h2>
                 <p>Instead of starting with a list of jobs, start with a list of your own traits. The most effective way to find the right career is to build a comprehensive picture of yourself first, and then map that picture to the job market. This involves understanding your:</p>
                 <ul>
-                    <li>**Personality & Temperament:** Are you introverted or extroverted? Do you prefer logic or intuition?</li>
-                    <li>**Interests & Enjoyment:** What kind of activities naturally energize you? Do you prefer building, analyzing, or creating?</li>
-                    <li>**Motivations & Values:** Is financial security more important than making an impact? Do you value stability or dynamic change?</li>
-                    <li>**Cognitive Style:** Are you a big-picture thinker or detail-oriented? How do you approach problem-solving?</li>
+                    <li><strong>Personality & Temperament:</strong> Are you introverted or extroverted? Do you prefer logic or intuition?</li>
+                    <li><strong>Interests & Enjoyment:</strong> What kind of activities naturally energize you? Do you prefer building, analyzing, or creating?</li>
+                    <li><strong>Motivations & Values:</strong> Is financial security more important than making an impact? Do you value stability or dynamic change?</li>
+                    <li><strong>Cognitive Style:</strong> Are you a big-picture thinker or detail-oriented? How do you approach problem-solving?</li>
                 </ul>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">How AI Provides the Answer</h2>
