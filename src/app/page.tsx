@@ -250,7 +250,7 @@ export default function HomePage() {
         </div>
       </section>
       
-      {/* SEO Questions Section from User */}
+      {/* SEO Questions Section */}
       <section id="career-questions" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
             <div className="text-center mb-12 md:mb-16">
@@ -290,5 +290,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
