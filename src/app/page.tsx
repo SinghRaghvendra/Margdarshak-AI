@@ -117,19 +117,19 @@ export default function HomePage() {
   
   const blogPosts = [
     {
-      title: 'Which Career Is Best for Me?',
-      excerpt: 'Struggling with career confusion? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
-      href: '/blog/which-career-is-best-for-me',
+      title: 'Which Career Is Best for Students?',
+      excerpt: 'Struggling with career confusion as a student? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
+      href: '/blog/which-career-is-best-for-students',
     },
     {
-      title: 'How to Choose the Right Career in 2025',
-      excerpt: 'The job market is changing. Discover a modern framework for choosing a career that is not only fulfilling but also future-proof.',
-      href: '/blog/how-to-choose-the-right-career',
+      title: 'Best Career Move for Professionals Feeling Stuck?',
+      excerpt: 'The best career move is not quitting blindly—it’s making a strategic, informed transition. Here\'s how to find your next step with confidence.',
+      href: '/blog/best-career-move-for-working-professionals',
     },
     {
-      title: 'Are Career Tests Accurate? A Look at AI-Powered Assessments',
-      excerpt: "Not all career tests are created equal. We break down the science behind AI career assessments and why they are more reliable than traditional methods.",
-      href: '/blog/are-career-tests-accurate',
+      title: 'Best Career Options for 2026',
+      excerpt: "The job market is changing fast. To succeed in 2026 and beyond, choosing a future-proof career is essential. Discover top options here.",
+      href: '/blog/best-career-options-for-2026',
     },
   ];
 

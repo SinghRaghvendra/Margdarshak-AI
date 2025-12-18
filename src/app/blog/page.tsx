@@ -12,25 +12,22 @@ export const metadata: Metadata = {
 
 const allBlogPosts = [
     {
-      title: 'Which Career Is Best for Me?',
-      excerpt: 'Struggling with career confusion? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
-      href: '/blog/which-career-is-best-for-me',
-      date: '2024-07-28',
-      seed: 101,
+      title: 'Which Career Is Best for Students? A Clear Guide to Choosing the Right Career',
+      excerpt: 'Struggling with career confusion as a student? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
+      href: '/blog/which-career-is-best-for-students',
+      date: '2024-08-01',
     },
     {
-      title: 'How to Choose the Right Career in 2025',
-      excerpt: 'The job market is changing. Discover a modern framework for choosing a career that is not only fulfilling but also future-proof.',
-      href: '/blog/how-to-choose-the-right-career',
-      date: '2024-07-27',
-      seed: 102,
+      title: 'What Is the Best Career Move for Working Professionals Feeling Stuck?',
+      excerpt: 'Feeling stuck, underpaid, or unfulfilled in your job? The best career move is not quitting blindly—it’s making a strategic, informed transition.',
+      href: '/blog/best-career-move-for-working-professionals',
+      date: '2024-07-31',
     },
     {
-      title: 'Are Career Tests Accurate? A Look at AI-Powered Assessments',
-      excerpt: "Not all career tests are created equal. We break down the science behind AI career assessments and why they're more reliable.",
-      href: '/blog/are-career-tests-accurate',
-      date: '2024-07-26',
-      seed: 103,
+      title: 'Best Career Options for 2026: How to Future-Proof Your Career',
+      excerpt: "The job market is changing fast. To succeed in 2026 and beyond, choosing a future-proof career is essential. Here's how.",
+      href: '/blog/best-career-options-for-2026',
+      date: '2024-07-30',
     },
 ];
 
