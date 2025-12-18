@@ -1,7 +1,6 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Compass, Lightbulb, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,15 +14,6 @@ export const metadata: Metadata = {
 export default function BlogPostHowToChooseCareer() {
     return (
         <article className="py-12 max-w-3xl mx-auto">
-            <Image
-                src="https://picsum.photos/seed/102/1200/600"
-                alt="A person standing at a crossroads with multiple paths"
-                width={1200}
-                height={600}
-                className="w-full h-auto rounded-lg mb-8 shadow-lg"
-                data-ai-hint="crossroads path"
-            />
-
             <header className="text-center mb-12">
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">How to Choose the Right Career in 2025</h1>
                 <p className="text-lg text-muted-foreground">

@@ -1,7 +1,6 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, BookOpen } from 'lucide-react';
@@ -50,16 +49,6 @@ export default function BlogPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {allBlogPosts.map((post) => (
                 <Card key={post.href} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
-                    <Link href={post.href} className="block">
-                        <Image
-                            src={`https://picsum.photos/seed/${post.seed}/600/400`}
-                            alt={post.title}
-                            width={600}
-                            height={400}
-                            className="w-full h-48 object-cover"
-                            data-ai-hint="career skills"
-                        />
-                    </Link>
                     <CardHeader>
                         <CardTitle className="text-xl leading-snug">
                             <Link href={post.href} className="hover:text-primary transition-colors">{post.title}</Link>

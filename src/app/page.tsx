@@ -119,19 +119,16 @@ export default function HomePage() {
     {
       title: 'Which Career Is Best for Me?',
       excerpt: 'Struggling with career confusion? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
-      imageUrl: '/blog-image-1.jpg',
       href: '/blog/which-career-is-best-for-me',
     },
     {
       title: 'How to Choose the Right Career in 2025',
       excerpt: 'The job market is changing. Discover a modern framework for choosing a career that is not only fulfilling but also future-proof.',
-      imageUrl: '/blog-image-2.jpg',
       href: '/blog/how-to-choose-the-right-career',
     },
     {
       title: 'Are Career Tests Accurate? A Look at AI-Powered Assessments',
       excerpt: "Not all career tests are created equal. We break down the science behind AI career assessments and why they are more reliable than traditional methods.",
-      imageUrl: '/blog-image-3.jpg',
       href: '/blog/are-career-tests-accurate',
     },
   ];
@@ -304,16 +301,6 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-8">
             {blogPosts.map((post, index) => (
               <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
-                <Link href={post.href} className="block">
-                  <Image
-                    src={`https://picsum.photos/seed/${index+50}/600/400`}
-                    alt={post.title}
-                    width={600}
-                    height={400}
-                    className="w-full h-48 object-cover"
-                    data-ai-hint="career guidance"
-                  />
-                </Link>
                 <CardHeader>
                   <CardTitle className="text-xl leading-snug">
                      <Link href={post.href} className="hover:text-primary transition-colors">{post.title}</Link>

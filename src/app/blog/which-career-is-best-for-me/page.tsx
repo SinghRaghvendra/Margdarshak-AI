@@ -1,7 +1,6 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,15 +14,6 @@ export const metadata: Metadata = {
 export default function BlogPostWhichCareerIsBest() {
     return (
         <article className="py-12 max-w-3xl mx-auto">
-            <Image
-                src="https://picsum.photos/seed/101/1200/600"
-                alt="A compass pointing towards a bright light"
-                width={1200}
-                height={600}
-                className="w-full h-auto rounded-lg mb-8 shadow-lg"
-                data-ai-hint="compass light"
-            />
-
             <header className="text-center mb-12">
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Which Career Is Best for Me?</h1>
                 <p className="text-lg text-muted-foreground">
@@ -39,9 +29,9 @@ export default function BlogPostWhichCareerIsBest() {
                 <h2 className="text-2xl font-semibold mt-8 mb-4">The Problem with Traditional Approaches</h2>
                 <p>For years, career advice has centered on vague ideas:</p>
                 <ul>
-                    <li>**The "One True Passion" Myth:** This suggests you have a single, hidden passion to uncover. For most people, interests are diverse and evolve over time.</li>
-                    <li>**Following the Money:** Choosing a career solely for its high salary often leads to burnout and a lack of fulfillment.</li>
-                    <li>**Listening to Others:** Family and societal expectations can push you toward a path that isn't a genuine fit for your personality or skills.</li>
+                    <li><strong>The "One True Passion" Myth:</strong> This suggests you have a single, hidden passion to uncover. For most people, interests are diverse and evolve over time.</li>
+                    <li><strong>Following the Money:</strong> Choosing a career solely for its high salary often leads to burnout and a lack of fulfillment.</li>
+                    <li><strong>Listening to Others:</strong> Family and societal expectations can push you toward a path that isn't a genuine fit for your personality or skills.</li>
                 </ul>
                 <p>These approaches are unreliable because they ignore the most critical factor: **you**. A successful and fulfilling career is built on a deep understanding of your own unique profile.</p>
 
