@@ -15,23 +15,23 @@ const allBlogPosts = [
     {
       title: 'Which Career Is Best for Me?',
       excerpt: 'Struggling with career confusion? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
-      imageUrl: '/blog-image-1.jpg',
       href: '/blog/which-career-is-best-for-me',
       date: '2024-07-28',
+      seed: 101,
     },
     {
       title: 'How to Choose the Right Career in 2025',
       excerpt: 'The job market is changing. Discover a modern framework for choosing a career that is not only fulfilling but also future-proof.',
-      imageUrl: '/blog-image-2.jpg',
       href: '/blog/how-to-choose-the-right-career',
       date: '2024-07-27',
+      seed: 102,
     },
     {
       title: 'Are Career Tests Accurate? A Look at AI-Powered Assessments',
       excerpt: "Not all career tests are created equal. We break down the science behind AI career assessments and why they're more reliable.",
-      imageUrl: '/blog-image-3.jpg',
       href: '/blog/are-career-tests-accurate',
       date: '2024-07-26',
+      seed: 103,
     },
 ];
 
@@ -48,11 +48,11 @@ export default function BlogPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allBlogPosts.map((post, index) => (
-                <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
+            {allBlogPosts.map((post) => (
+                <Card key={post.href} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
                     <Link href={post.href} className="block">
                         <Image
-                            src={`https://picsum.photos/seed/${index+60}/600/400`}
+                            src={`https://picsum.photos/seed/${post.seed}/600/400`}
                             alt={post.title}
                             width={600}
                             height={400}
