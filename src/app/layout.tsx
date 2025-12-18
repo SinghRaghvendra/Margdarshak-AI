@@ -9,6 +9,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { Mail } from 'lucide-react';
 import AppProviders from '@/components/AppProviders';
+import CustomCursor from '@/components/CustomCursor';
 
 export const metadata: Metadata = {
   title: 'AI Councel Career Guide | AI COUNCEL LAB',
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body>
         <AppProviders>
+          <CustomCursor />
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />
           <Header />
           <main className="flex-grow container mx-auto px-4 py-8">
