@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,7 +31,7 @@ const faqSections = [
                 question: 'What career suits my personality?',
                 keyword: 'career test',
                 answer: "Personality plays a major role in career satisfaction. Career tests evaluate traits like introversion, creativity, and problem-solving style to suggest suitable career paths.",
-                blogLink: '/blog/career-based-on-personality',
+                blogLink: null, // No page created yet
             },
         ],
     },
@@ -47,13 +48,13 @@ const faqSections = [
                 question: 'What is a career assessment?',
                 keyword: 'career assessment',
                 answer: "A career assessment is a structured evaluation of your strengths, interests, and personality to recommend suitable career options. Modern assessments use AI to deliver personalized career matches instead of generic advice.",
-                blogLink: '/blog/what-is-career-assessment',
+                blogLink: null,
             },
             {
                 question: 'Is a free career test reliable?',
                 keyword: 'career test online',
                 answer: "Free career tests can offer initial insights, but deeper AI-driven assessments provide more accurate and personalized guidance for long-term career planning.",
-                blogLink: '/blog/free-vs-paid-career-tests',
+                blogLink: null,
             },
         ],
     },
@@ -64,19 +65,19 @@ const faqSections = [
                 question: 'What is AI career guidance?',
                 keyword: 'AI career guidance',
                 answer: "AI career guidance uses artificial intelligence to analyze your profile and recommend careers based on real-world data, skill trends, and personal preferences.",
-                blogLink: '/blog/what-is-ai-career-guidance',
+                blogLink: null,
             },
             {
                 question: 'Can AI help me choose a career?',
                 keyword: 'AI career guidance',
                 answer: "Yes. AI helps eliminate bias and guesswork by matching your profile with career paths that have historically led to success for similar individuals.",
-                blogLink: '/blog/can-ai-help-you-choose-a-career',
+                blogLink: null,
             },
             {
                 question: 'Is AI career counseling reliable?',
                 keyword: 'AI career counseling',
                 answer: "AI career counseling is reliable when used alongside validated psychological models and real career data. It provides consistency, scalability, and personalization that traditional counseling often lacks.",
-                blogLink: '/blog/ai-vs-human-career-counseling',
+                blogLink: null,
             },
         ],
     },
@@ -87,19 +88,19 @@ const faqSections = [
                 question: 'Career options after graduation',
                 keyword: 'career options after graduation',
                 answer: "Career options after graduation vary based on your degree, skills, and interests. An AI career match helps identify both traditional and emerging career paths.",
-                blogLink: '/blog/career-options-after-graduation',
+                blogLink: null,
             },
             {
                 question: 'Career guidance for students',
                 keyword: 'career guidance for students',
                 answer: "Students benefit from early career guidance by understanding their strengths and aligning education choices with future careers.",
-                blogLink: '/blog/career-guidance-for-students',
+                blogLink: null,
             },
             {
                 question: 'Career advice for working professionals',
                 keyword: 'career advice for professionals',
                 answer: "Professionals often seek career advice when switching roles, industries, or aiming for growth. AI-based guidance helps identify upskilling paths and better-fit roles.",
-                blogLink: '/blog/career-advice-for-professionals',
+                blogLink: null,
             },
         ],
     }
@@ -133,10 +134,14 @@ export default function CareerFaqsPage() {
                                                 <Link href="/career-assessment" className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                                                     <ChevronRight className="h-4 w-4 mr-1" /> Take the AI Career Assessment
                                                 </Link>
-                                                <br/>
-                                                <Link href={faq.blogLink} className="inline-flex items-center text-sm font-semibold text-primary/80 hover:underline">
-                                                    <ChevronRight className="h-4 w-4 mr-1" /> Read Related Blog Post
-                                                </Link>
+                                                {faq.blogLink && (
+                                                  <>
+                                                    <br/>
+                                                    <Link href={faq.blogLink} className="inline-flex items-center text-sm font-semibold text-primary/80 hover:underline">
+                                                        <ChevronRight className="h-4 w-4 mr-1" /> Read Related Blog Post
+                                                    </Link>
+                                                  </>
+                                                )}
                                             </div>
                                         </div>
                                     </AccordionContent>
