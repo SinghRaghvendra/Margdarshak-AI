@@ -82,11 +82,6 @@ export default function CareerAssessmentPage() {
                             <p>
                                 After completing the assessment, you will receive AI-driven career suggestions. For a small fee, you can unlock a detailed 10-year roadmap for your chosen career.
                             </p>
-                            <p>
-                                <a href="/career-test" className="text-primary hover:underline font-medium mx-2">Career Test</a>|
-                                <a href="/ai-career-guidance" className="text-primary hover:underline font-medium mx-2">AI Career Guidance</a>|
-                                <a href="/career-match" className="text-primary hover:underline font-medium mx-2">Career Match</a>
-                            </p>
                         </div>
                     </CardContent>
                 </Card>
