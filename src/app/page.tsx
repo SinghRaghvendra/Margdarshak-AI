@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, MessageSquareQuestion } from 'lucide-react';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
@@ -274,7 +274,7 @@ export default function HomePage() {
       <section id="faq" className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
               <div className="text-center mb-12 md:mb-16">
-                  <MessageSquareQuestion className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
                   <h2 className="text-3xl md:text-4xl font-bold text-foreground">Frequently Asked Questions</h2>
                   <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
                       Quick answers to your most pressing career questions.
