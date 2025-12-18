@@ -27,6 +27,7 @@ interface CareerSuggestion {
 
 // Helper to check if a string is a valid JSON object
 function isValidJSONObject(str: string): boolean {
+  if (!str) return false;
   try {
     const obj = JSON.parse(str);
     return obj && typeof obj === 'object' && !Array.isArray(obj);
@@ -76,18 +77,18 @@ export default function CareerSuggestionsPage() {
       const userTraitsString = localStorage.getItem('margdarshak_user_traits');
       const personalizedAnswersString = localStorage.getItem('margdarshak_personalized_answers');
 
-      if (!userTraitsString || !personalizedAnswersString) {
-          toast({ title: 'Incomplete Information', description: 'Please complete the psychometric test and personalized questions first.', variant: 'destructive', duration: 6000 });
-          router.push('/personalized-questions');
-          return;
-      }
-      
       if (!isValidJSONObject(userTraitsString)) {
-          toast({ title: 'Outdated Test Data', description: 'Your psychometric test data is in an old format. Please retake the test to continue.', variant: 'destructive', duration: 8000 });
+          toast({ title: 'Outdated or Missing Test Data', description: 'Your psychometric test data is missing or in an old format. Please retake the test to continue.', variant: 'destructive', duration: 8000 });
           router.push('/psychometric-test');
           return;
       }
 
+      if (!isValidJSONObject(personalizedAnswersString)) {
+          toast({ title: 'Incomplete Information', description: 'Please complete the personalized questions first.', variant: 'destructive', duration: 6000 });
+          router.push('/personalized-questions');
+          return;
+      }
+      
       const input: CareerSuggestionInput = {
         traits: JSON.parse(userTraitsString),
         personalizedAnswers: JSON.parse(personalizedAnswersString),
