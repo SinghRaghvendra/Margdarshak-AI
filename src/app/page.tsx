@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -78,6 +79,15 @@ export default function HomePage() {
       { point: "Unsure how your skills and interests translate into a real-world job." },
       { point: "Lacking a concrete plan to achieve your long-term career goals." },
       { point: "Getting rejected by automated systems before a human sees your resume." },
+  ];
+
+  const careerQuestions = [
+      "Which career is best for me?",
+      "How do I choose the right career?",
+      "What career suits my personality?",
+      "Are career tests accurate?",
+      "Can AI help me choose a career?",
+      "How does career matching work?"
   ];
 
 
@@ -232,6 +242,29 @@ export default function HomePage() {
                 <span className="font-semibold text-primary">AI Councel</span> replaces confusion with data-driven, personalized action plans, so you can move forward with confidence and purpose.
              </p>
            </div>
+        </div>
+      </section>
+      
+      {/* SEO Questions Section */}
+      <section id="career-questions" className="py-16 md:py-24 bg-background">
+        <div className="container mx-auto px-4">
+            <div className="text-center mb-12 md:mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground">Career Questions People Ask Before Choosing a Career</h2>
+                <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
+                    Choosing the right career can be confusing. These are the most common career questions people search online before making a career decision. Click any question to get AI-backed guidance and take a personalized career assessment.
+                </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+                {careerQuestions.map((question, index) => (
+                    <Link
+                        key={index}
+                        href="/career-assessment"
+                        className="block p-4 bg-card hover:bg-accent rounded-lg font-medium text-card-foreground hover:text-accent-foreground transition-all duration-200 ease-in-out transform hover:-translate-y-1 shadow-sm hover:shadow-lg"
+                    >
+                        {question}
+                    </Link>
+                ))}
+            </div>
         </div>
       </section>
 
