@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -14,7 +13,6 @@ import { User } from 'firebase/auth';
  * This page now acts as a Smart Linear Router.
  * Its only job is to ensure the user is authenticated and then
  * redirect them to the correct next step in their journey based on
-
  * their progress stored in Firestore.
  */
 export default function WelcomeGuestPage() {

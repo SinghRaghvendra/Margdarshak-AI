@@ -12,6 +12,18 @@ export const metadata: Metadata = {
 
 const allBlogPosts = [
     {
+      title: 'How to Choose the Right Career in 2025',
+      excerpt: 'A modern guide to choosing the right career. Learn how to balance your passions, skills, and market demand to find a fulfilling and future-proof job path with the help of AI.',
+      href: '/blog/how-to-choose-the-right-career',
+      date: '2024-08-03',
+    },
+    {
+      title: 'Are Career Tests Accurate? A Look at AI-Powered Assessments',
+      excerpt: 'Explore the accuracy of career tests, from traditional personality quizzes to modern AI-powered career assessments and data-driven guidance.',
+      href: '/blog/are-career-tests-accurate',
+      date: '2024-08-02',
+    },
+    {
       title: 'Which Career Is Best for Students? A Clear Guide to Choosing the Right Career',
       excerpt: 'Struggling with career confusion as a student? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
       href: '/blog/which-career-is-best-for-students',
@@ -28,6 +40,12 @@ const allBlogPosts = [
       excerpt: "The job market is changing fast. To succeed in 2026 and beyond, choosing a future-proof career is essential. Here's how.",
       href: '/blog/best-career-options-for-2026',
       date: '2024-07-30',
+    },
+    {
+      title: 'Which Career Is Best for Me? A Data-Driven Guide',
+      excerpt: 'Feeling lost about your career? This guide helps you answer "Which career is best for me?" by focusing on a data-driven approach using AI-powered career assessments.',
+      href: '/blog/which-career-is-best-for-me',
+      date: '2024-07-29',
     },
 ];
 

@@ -15,25 +15,15 @@ import {
 } from '@/components/ui/sheet';
 import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useAuth, useUser } from '@/firebase';
 import AuthStatus from './AuthStatus';
 
 export default function Header() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth(); // This can be null on initial render
-
-  useEffect(() => {
-    if (!auth) return; // Don't run if auth is not initialized yet
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, [auth]);
 
   const handleLogout = async () => {
     if (!auth) return;
