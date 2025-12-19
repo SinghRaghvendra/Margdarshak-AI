@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowRight, BookOpen } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: 'AI Councel Blog – Career Advice, Guidance & Insights',
     description: 'Explore articles on career guidance, AI-powered career matching, personality-based career tests, and how to choose the right career path in the modern job market.',
