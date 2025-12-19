@@ -134,7 +134,7 @@ export default function HomePageClient() {
 
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-10rem)]">
+    <div className="flex flex-col">
       {/* Hero Section */}
       <section
         className="relative pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30 overflow-hidden"
