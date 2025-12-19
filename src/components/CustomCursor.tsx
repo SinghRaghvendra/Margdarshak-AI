@@ -7,8 +7,15 @@ import { cn } from '@/lib/utils';
 export default function CustomCursor() {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isPointer, setIsPointer] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
 
@@ -25,12 +32,16 @@ export default function CustomCursor() {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []);
+  }, [isClient]);
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div
       className={cn(
-        'hidden md:block fixed w-12 h-12 rounded-full bg-primary/80 pointer-events-none z-[100] transition-transform duration-200 ease-in-out',
+        'hidden md:block fixed w-12 h-12 rounded-full bg-primary pointer-events-none z-[100] transition-transform duration-200 ease-in-out',
         'mix-blend-difference', // This creates the color inversion effect
         isPointer ? 'scale-150' : 'scale-100'
       )}
