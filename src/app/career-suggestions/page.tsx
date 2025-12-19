@@ -73,6 +73,25 @@ export default function CareerSuggestionsPage() {
   const fetchSuggestions = async () => {
     setIsLoading(true);
     setGenerationError(null);
+
+    const cachedSuggestions = localStorage.getItem('margdarshak_all_career_suggestions');
+    if (cachedSuggestions) {
+        try {
+            const parsed = JSON.parse(cachedSuggestions);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                setAllSuggestions(parsed);
+                setIsLoading(false);
+                setPageLoading(false);
+                toast({ title: 'Loaded Cached Suggestions', description: 'Showing previously generated career matches for this session.' });
+                return;
+            }
+        } catch(e) {
+            // Invalid JSON, proceed to fetch new suggestions
+            localStorage.removeItem('margdarshak_all_career_suggestions');
+        }
+    }
+
+
     try {
       const userTraitsString = localStorage.getItem('margdarshak_user_traits');
       const personalizedAnswersString = localStorage.getItem('margdarshak_personalized_answers');
