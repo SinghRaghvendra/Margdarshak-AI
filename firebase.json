@@ -1,73 +1,26 @@
-
 {
-  "hosting": {
-    "source": ".",
+  "apphosting": {
+    "backendId": "studio",
+    "location": "asia-south1",
+    "rootDir": ".",
+    "alwaysDeployFromSource": true,
     "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "appHosting": {
-      "backendId": "studio"
-    }
+      "node_modules",
+      ".git",
+      ".next",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "functions"
+    ]
   },
+
   "firestore": {
     "database": "(default)",
     "location": "asia-south2",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "emulators": {
-    "apphosting": {
-      "port": 5002,
-      "rootDirectory": "./",
-      "startCommand": "npm run dev"
-    },
-    "auth": {
-      "port": 9099
-    },
-    "functions": {
-      "port": 5001
-    },
-    "firestore": {
-      "port": 8080
-    },
-    "database": {
-      "port": 9000
-    },
-    "hosting": {
-      "port": 5000
-    },
-    "pubsub": {
-      "port": 8085
-    },
-    "storage": {
-      "port": 9199
-    },
-    "eventarc": {
-      "port": 9299
-    },
-    "tasks": {
-      "port": 9499
-    },
-    "ui": {
-      "enabled": true
-    },
-    "singleProjectMode": true
-  },
-  "apphosting": {
-    "backendId": "studio",
-    "location": "us-central1",
-    "rootDir": "/",
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log",
-      "functions"
-    ],
-    "alwaysDeployFromSource": true
-  },
+
   "storage": {
     "rules": "storage.rules",
     "bucket": "margdarshak-ai.firebasestorage.app"
