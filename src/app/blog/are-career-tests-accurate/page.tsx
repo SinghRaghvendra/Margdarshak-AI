@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: 'Are Career Tests Accurate? AI vs. Traditional Methods | AI Councel',
     description: 'Explore the accuracy of career tests, from traditional personality quizzes to modern AI-powered career assessments. Understand how AI provides more reliable, data-driven career guidance.',

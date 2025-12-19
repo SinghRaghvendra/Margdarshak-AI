@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: 'Best Career Options for 2026: How to Future-Proof Your Career | AI Councel',
     description: 'Discover the best career options for 2026. Learn how to future-proof your career by aligning your strengths with high-growth industries like AI, Data Science, and Cybersecurity.',

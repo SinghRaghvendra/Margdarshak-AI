@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: 'Which Career Is Best for Students? A Clear Guide | AI Councel',
     description: 'A clear guide for students on choosing the right career. Understand how to align your interests, skills, and future demand to find the perfect career path.',

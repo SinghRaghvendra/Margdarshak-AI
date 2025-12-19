@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: 'Best Career Move for Working Professionals Feeling Stuck | AI Councel',
     description: 'Feeling stuck in your career? Learn the best career moves for working professionals, from identifying transferable skills to making a strategic, informed transition with AI.',
