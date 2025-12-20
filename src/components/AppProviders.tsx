@@ -1,22 +1,27 @@
-
 'use client';
 
 import { FirebaseClientProvider } from '@/firebase/provider';
 import React, { useState, useEffect } from 'react';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {
-  const [isClient, setIsClient] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setIsMounted(true);
   }, []);
 
-  if (!isClient) {
-    // On the server, or before the first client render, you might want to return null 
-    // or a loading skeleton if the children depend heavily on client-side providers.
-    return null;
+  if (!isMounted) {
+    // On the server, or before the component has mounted on the client,
+    // show a loading spinner to prevent hydration errors and provide feedback.
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
+  // Once mounted on the client, render the actual providers and children.
   return (
     <FirebaseClientProvider>
       {children}
