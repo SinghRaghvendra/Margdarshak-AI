@@ -137,12 +137,15 @@ export default function HomePageClient() {
     <div>
       {/* Hero Section */}
       <section
-        className="relative pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30 overflow-hidden"
+        className="relative isolate z-0 pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30 overflow-hidden"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseEnter={handleMouseEnter}
       >
-        <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-0"></div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-background/50"
+        ></div>
 
         <div
           className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center [transform-style:preserve-3d] transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
@@ -230,7 +233,7 @@ export default function HomePageClient() {
       </section>
 
       {/* All other sections are wrapped in a new div to isolate them */}
-      <div id="page-content" className="relative">
+      <div id="page-content" className="relative z-10 bg-background">
         {/* Features Section */}
         <section id="features" className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
