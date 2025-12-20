@@ -229,176 +229,179 @@ export default function HomePageClient() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-16 md:py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Navigate Your Career with AI-Powered Guidance</h2>
-            <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-             Our tools are designed to provide clear, data-driven insights into your professional life. Let AI illuminate your path to a fulfilling career.
-            </p>
+      {/* All other sections are wrapped in a new div to isolate them */}
+      <div id="page-content" className="relative">
+        {/* Features Section */}
+        <section id="features" className="py-16 md:py-24 bg-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12 md:mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Navigate Your Career with AI-Powered Guidance</h2>
+              <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
+              Our tools are designed to provide clear, data-driven insights into your professional life. Let AI illuminate your path to a fulfilling career.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-1 gap-8 max-w-2xl mx-auto">
+              {features.map((feature, index) => (
+                <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card flex flex-col">
+                  <CardHeader className="items-center text-center">
+                    {feature.icon}
+                    <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center flex-grow">
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  </CardContent>
+                  <CardContent>
+                      <Link href={feature.href} target={feature.isExternal ? '_blank' : '_self'} rel={feature.isExternal ? 'noopener noreferrer' : ''}>
+                            <Button className="w-full" suppressHydrationWarning={true}>
+                              {feature.cta} <ArrowRight className="ml-2 h-5 w-5" />
+                            </Button>
+                      </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-          <div className="grid md:grid-cols-1 gap-8 max-w-2xl mx-auto">
-            {features.map((feature, index) => (
-              <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card flex flex-col">
-                <CardHeader className="items-center text-center">
-                  {feature.icon}
-                  <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center flex-grow">
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </CardContent>
-                <CardContent>
-                    <Link href={feature.href} target={feature.isExternal ? '_blank' : '_self'} rel={feature.isExternal ? 'noopener noreferrer' : ''}>
-                          <Button className="w-full" suppressHydrationWarning={true}>
-                            {feature.cta} <ArrowRight className="ml-2 h-5 w-5" />
-                          </Button>
+        </section>
+
+        {/* Pain Points Section */}
+        <section id="pain-points" className="py-16 md:py-24 bg-secondary/30">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12 md:mb-16">
+              <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
+              <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
+                The modern job market is confusing. Do any of these sound familiar?
+              </p>
+            </div>
+            <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-x-12 gap-y-6">
+              {painPoints.map((item, index) => (
+                  <div key={index} className="flex items-start">
+                      <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                      <p className="text-foreground/80">{item.point}</p>
+                  </div>
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <p className="text-lg text-foreground max-w-3xl mx-auto">
+                  <span className="font-semibold text-primary">AI Councel</span> replaces confusion with data-driven, personalized action plans, so you can move forward with confidence and purpose.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Blog Section */}
+        <section id="blog" className="py-16 md:py-24 bg-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12 md:mb-16">
+              <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">From Our Blog</h2>
+              <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
+                Explore our latest articles for insights and guidance on your career journey.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              {blogPosts.map((post, index) => (
+                <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="text-xl leading-snug">
+                      <Link href={post.href} className="hover:text-primary transition-colors">{post.title}</Link>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-sm text-muted-foreground">{post.excerpt}</p>
+                  </CardContent>
+                  <CardContent>
+                    <Link href={post.href}>
+                      <Button variant="link" className="p-0">Read More <ArrowRight className="ml-2 h-4 w-4" /></Button>
                     </Link>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <Link href="/blog">
+                <Button variant="outline" size="lg">
+                  View All Articles
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pain Points Section */}
-       <section id="pain-points" className="py-16 md:py-24 bg-secondary/30">
-        <div className="container mx-auto px-4">
-           <div className="text-center mb-12 md:mb-16">
-            <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
-            <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-              The modern job market is confusing. Do any of these sound familiar?
-            </p>
-          </div>
-          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-x-12 gap-y-6">
-            {painPoints.map((item, index) => (
-                <div key={index} className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
-                    <p className="text-foreground/80">{item.point}</p>
+        {/* FAQ Section */}
+        <section id="faq" className="py-16 md:py-24 bg-secondary/30">
+            <div className="container mx-auto px-4">
+                <div className="text-center mb-12 md:mb-16">
+                    <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
+                    <h2 className="text-3xl md:text-4xl font-bold text-foreground">Frequently Asked Questions</h2>
+                    <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
+                        Quick answers to your most pressing career questions.
+                    </p>
                 </div>
-            ))}
-          </div>
-           <div className="text-center mt-12">
-             <p className="text-lg text-foreground max-w-3xl mx-auto">
-                <span className="font-semibold text-primary">AI Councel</span> replaces confusion with data-driven, personalized action plans, so you can move forward with confidence and purpose.
-             </p>
-           </div>
-        </div>
-      </section>
-
-      {/* Blog Section */}
-      <section id="blog" className="py-16 md:py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16">
-            <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">From Our Blog</h2>
-            <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-              Explore our latest articles for insights and guidance on your career journey.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {blogPosts.map((post, index) => (
-              <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-xl leading-snug">
-                     <Link href={post.href} className="hover:text-primary transition-colors">{post.title}</Link>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-sm text-muted-foreground">{post.excerpt}</p>
-                </CardContent>
-                <CardContent>
-                  <Link href={post.href}>
-                    <Button variant="link" className="p-0">Read More <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                <div className="max-w-3xl mx-auto">
+                    <Accordion type="single" collapsible className="w-full space-y-3">
+                        {homeFaqs.map((faq, index) => (
+                            <AccordionItem value={`item-${index}`} key={index}>
+                                <Card className="bg-card/50 hover:bg-card transition-shadow shadow-sm hover:shadow-md">
+                                    <AccordionTrigger className="text-lg font-semibold text-left px-6 py-4 hover:no-underline">
+                                        {faq.question}
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-6 pb-4 text-base text-muted-foreground">
+                                        {faq.answer}
+                                    </AccordionContent>
+                                </Card>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                </div>
+                <div className="text-center mt-12">
+                  <Link href="/career-faqs" passHref>
+                    <Button variant="outline">
+                      View All FAQs <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
                   </Link>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+            </div>
+        </section>
+        
+        {/* SEO Questions Section */}
+        <section id="career-questions" className="py-16 md:py-24 bg-background">
+          <div className="container mx-auto px-4">
+              <div className="text-center mb-12 md:mb-16">
+                  <h2 className="text-3xl md:text-4xl font-bold text-foreground">Trending Career Questions</h2>
+                  <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
+                      Explore the most common questions people ask when making a career decision. Click any question to get AI-backed guidance.
+                  </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+                  {careerQuestions.map((question, index) => (
+                      <Link
+                          key={index}
+                          href="/career-assessment"
+                          className="block p-4 bg-card hover:bg-accent rounded-lg font-medium text-card-foreground hover:text-accent-foreground transition-all duration-200 ease-in-out transform hover:-translate-y-1 shadow-sm hover:shadow-lg"
+                      >
+                          {question}
+                      </Link>
+                  ))}
+              </div>
           </div>
-          <div className="text-center mt-12">
-            <Link href="/blog">
-              <Button variant="outline" size="lg">
-                View All Articles
+        </section>
+
+        {/* Final Call to Action Section */}
+        <section className="py-16 md:py-24 bg-secondary/30">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+              Take the first step towards a career that aligns with your true potential.
+            </p>
+            <Link href={careerGuidanceHref}>
+              <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
+                {isLoggedIn ? "Continue Your Journey" : "Get Started Now"} <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section id="faq" className="py-16 md:py-24 bg-secondary/30">
-          <div className="container mx-auto px-4">
-              <div className="text-center mb-12 md:mb-16">
-                  <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <h2 className="text-3xl md:text-4xl font-bold text-foreground">Frequently Asked Questions</h2>
-                  <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-                      Quick answers to your most pressing career questions.
-                  </p>
-              </div>
-              <div className="max-w-3xl mx-auto">
-                  <Accordion type="single" collapsible className="w-full space-y-3">
-                      {homeFaqs.map((faq, index) => (
-                          <AccordionItem value={`item-${index}`} key={index}>
-                              <Card className="bg-card/50 hover:bg-card transition-shadow shadow-sm hover:shadow-md">
-                                  <AccordionTrigger className="text-lg font-semibold text-left px-6 py-4 hover:no-underline">
-                                      {faq.question}
-                                  </AccordionTrigger>
-                                  <AccordionContent className="px-6 pb-4 text-base text-muted-foreground">
-                                      {faq.answer}
-                                  </AccordionContent>
-                              </Card>
-                          </AccordionItem>
-                      ))}
-                  </Accordion>
-              </div>
-              <div className="text-center mt-12">
-                <Link href="/career-faqs" passHref>
-                  <Button variant="outline">
-                    View All FAQs <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-          </div>
-      </section>
-      
-      {/* SEO Questions Section */}
-      <section id="career-questions" className="py-16 md:py-24 bg-background">
-        <div className="container mx-auto px-4">
-            <div className="text-center mb-12 md:mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground">Trending Career Questions</h2>
-                <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                    Explore the most common questions people ask when making a career decision. Click any question to get AI-backed guidance.
-                </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-                {careerQuestions.map((question, index) => (
-                    <Link
-                        key={index}
-                        href="/career-assessment"
-                        className="block p-4 bg-card hover:bg-accent rounded-lg font-medium text-card-foreground hover:text-accent-foreground transition-all duration-200 ease-in-out transform hover:-translate-y-1 shadow-sm hover:shadow-lg"
-                    >
-                        {question}
-                    </Link>
-                ))}
-            </div>
-        </div>
-      </section>
-
-      {/* Final Call to Action Section */}
-      <section className="py-16 md:py-24 bg-secondary/30">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-            Take the first step towards a career that aligns with your true potential.
-          </p>
-          <Link href={careerGuidanceHref}>
-            <Button size="lg" className="text-lg py-7 px-10 shadow-lg" suppressHydrationWarning={true}>
-              {isLoggedIn ? "Continue Your Journey" : "Get Started Now"} <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }
