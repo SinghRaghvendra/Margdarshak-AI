@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -148,7 +147,7 @@ export default function HomePageClient() {
         ></div>
 
         <div
-          className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center [transform-style:preserve-3d] transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
+          className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
           style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
         >
           {/* Base Pulsating Waves */}
