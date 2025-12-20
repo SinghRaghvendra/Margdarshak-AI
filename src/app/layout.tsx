@@ -11,6 +11,8 @@ import { Mail } from 'lucide-react';
 import AppProviders from '@/components/AppProviders';
 import CustomCursor from '@/components/CustomCursor';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'AI Councel Career Guide | AI COUNCEL LAB',
   description: 'AI-Powered Career Guidance. Get a data-driven career roadmap or instantly tailor your resume for any job application. Your professional journey, guided by AI.',
@@ -29,7 +31,7 @@ export default function RootLayout({
           <CustomCursor />
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />
           <Header />
-          <main className="flex-grow container mx-auto px-4 py-8">
+          <main className="flex-grow">
             {children}
           </main>
           <footer className="py-8 text-sm border-t bg-secondary/30">
