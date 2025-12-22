@@ -59,13 +59,13 @@ const plans = [
 export default function PricingPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [timer, setTimer] = useState('01:00');
+  const [timer, setTimer] = useState('05:00');
   const [offerExpired, setOfferExpired] = useState(false);
 
   useEffect(() => {
     let offerEndTime = localStorage.getItem('margdarshak_offer_end_time');
     if (!offerEndTime) {
-      offerEndTime = (Date.now() + 60000).toString();
+      offerEndTime = (Date.now() + 300000).toString(); // 5 minutes in milliseconds
       localStorage.setItem('margdarshak_offer_end_time', offerEndTime);
     }
 
