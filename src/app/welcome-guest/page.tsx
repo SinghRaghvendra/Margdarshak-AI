@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useUser } from '@/firebase';
-import { useFirestore } from '@/firebase/provider';
+import { useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { doc, getDoc } from 'firebase/firestore';
 import { User } from 'firebase/auth';
@@ -20,10 +19,10 @@ export default function WelcomeGuestPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
-  const [redirecting, setRedirecting] = useState(false);
+  const [routing, setRouting] = useState(false);
 
   useEffect(() => {
-    if (authLoading || redirecting || !db) {
+    if (authLoading || routing || !db) {
       return;
     }
 
@@ -34,11 +33,12 @@ export default function WelcomeGuestPage() {
         variant: 'destructive',
       });
       router.replace('/login');
-      setRedirecting(true);
+      setRouting(true);
       return;
     }
 
     const routeUser = async (currentUser: User) => {
+      setRouting(true);
       try {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const userDoc = await getDoc(userDocRef);
@@ -46,17 +46,16 @@ export default function WelcomeGuestPage() {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           
-          // If the user has paid, their primary destination is the My Reports page.
           if (userData.paymentSuccessful) {
-            router.replace('/my-reports');
+            router.replace('/roadmap');
           } else if (!userData.birthDetailsCompleted) {
             router.replace('/birth-details');
           } else if (!userData.testCompleted) {
             router.replace('/psychometric-test');
-          } else if (!userData.personalizedAnswers) {
+          } else if (!userData.personalizedAnswersCompleted) {
             router.replace('/personalized-questions');
           } else {
-            // Default to career suggestions if intermediate steps are complete but payment isn't.
+            // Default to plans page if all steps are complete but payment isn't.
             router.replace('/career-suggestions');
           }
         } else {
@@ -72,14 +71,12 @@ export default function WelcomeGuestPage() {
           variant: 'destructive'
         });
         router.replace('/birth-details');
-      } finally {
-        setRedirecting(true);
       }
     };
 
     routeUser(user);
 
-  }, [user, db, authLoading, router, redirecting, toast]);
+  }, [user, db, authLoading, router, routing, toast]);
 
   return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
 }

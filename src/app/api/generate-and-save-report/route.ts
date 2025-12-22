@@ -1,14 +1,12 @@
-
 import { NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { callGeminiApi } from '@/app/api/gemini/route';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
-import { saveReport } from '@/services/report-service-server'; // Server-side save
+import { saveReport } from '@/services/report-service-server';
 
 // Initialize Firebase Admin SDK
-// This is necessary for server-side operations to securely access Firestore.
 const serviceAccount = require('../../../../../service-account.json');
 
 if (!getApps().length) {
@@ -19,8 +17,98 @@ if (!getApps().length) {
 
 const db = getFirestore();
 
-// Helper function to build the massive prompt for the AI
-function getRoadmapPrompt(input: any) {
+// --- PROMPT GENERATION FUNCTIONS FOR EACH TIER ---
+
+function getVerdictPrompt(input: any) {
+  return `
+    You are an expert career counselor. Generate a concise "Career Verdict" report.
+    The report MUST be in Markdown format and STRICTLY follow this structure.
+    The ENTIRE textual content MUST be in: **${input.preferredLanguage}**.
+
+    # Career Verdict for: ${input.userName}
+    
+    ## Top Career Match: ${input.careerSuggestion}
+    
+    ### Match Score: ${input.matchScore}
+    
+    ### Career Fit Assessment
+    Provide a concise, qualitative assessment (2-3 paragraphs, approx. 200-250 words) of why this career is a strong fit for ${input.userName}. Base your analysis on their traits, personality profile, and answers to personalized questions. **Crucially, do NOT mention internal trait codes (e.g., 's1q1').** Refer to the concepts they represent (e.g., 'preference for teamwork,' 'creative interests').
+    (Ensure all text is in ${input.preferredLanguage})
+    
+    ### Personality Profile Alignment: ${input.personalityProfile}
+    Briefly elaborate (1-2 sentences) on how the user's personality profile (${input.personalityProfile}) aligns with the demands of ${input.careerSuggestion}. (In ${input.preferredLanguage})
+
+    ---
+    (The following promotional text must also be in ${input.preferredLanguage})
+    You've unlocked your top career match! To understand your full potential, including your top 3 career options and a deep dive into your personality, upgrade to the full report.
+    
+    **For further assistance:**
+    *   [➡️ Upgrade to Full Report](/career-suggestions)
+    *   [➡️ Contact Our Career Counsellor](/contact)
+    ---
+    
+    Return ONLY the raw markdown content. Do not include any other text or explanations.
+    
+    --- Internal Reference Data (Do NOT quote directly in the report) ---
+    User Traits: ${JSON.stringify(input.userTraits)}
+    Personalized Answers: ${JSON.stringify(input.personalizedAnswers)}
+  `;
+}
+
+function getClarityPrompt(input: any) {
+    return `
+      You are an expert career counselor preparing a "Career Clarity Report".
+      The report MUST be in Markdown format and STRICTLY follow the structure below.
+      The ENTIRE textual content MUST be in: **${input.preferredLanguage}**.
+  
+      # Career Clarity Report for: ${input.userName}
+      
+      ## 1. Top 3 Career Recommendations
+      - **Primary Match: ${input.careerSuggestion} (Match Score: ${input.matchScore})**
+      - **Alternative 1:** ${input.alternativeCareers[0].name} (Match Score: ${input.alternativeCareers[0].matchScore})
+      - **Alternative 2:** ${input.alternativeCareers[1].name} (Match Score: ${input.alternativeCareers[1].matchScore})
+  
+      ## 2. In-Depth Analysis for: ${input.careerSuggestion}
+      
+      ### Career Fit Assessment
+      Provide a qualitative assessment (2-3 paragraphs) of why this career is a strong fit for ${input.userName}. Base your analysis on their traits, personality profile, and answers to personalized questions. **Crucially, do NOT mention internal trait codes (e.g., 's1q1').** (In ${input.preferredLanguage})
+  
+      ### Personality Profile: ${input.personalityProfile}
+      Elaborate on how the user's personality profile aligns with this career. Discuss strengths and potential blind spots or risk areas. (In ${input.preferredLanguage})
+  
+      ### General Career Demand (Localized for ${input.country})
+      Briefly discuss the general demand and outlook for **${input.careerSuggestion}** in **${input.country}**. Is it a growing field? What is the general sentiment? (In ${input.preferredLanguage})
+  
+      ## 3. Astrological & Numerological Validation
+      (This entire section must be in ${input.preferredLanguage})
+  
+      ### Astrological Insights
+      Provide a concise textual overview (approx 150 words) describing key zodiac placements or characteristics based on the user's birth details. Frame this positively as potential influences for their career journey.
+      
+      ### Numerological Insights (Life Path Number: ${input.lifePathNumber})
+      Briefly explain the general meaning of Life Path Number ${input.lifePathNumber}. Then, provide a short analysis (approx 100 words) on how this number's traits could support them in their chosen career path.
+  
+      ---
+      (The following promotional text must also be in ${input.preferredLanguage})
+      You now have clarity on your best-fit careers! To get a step-by-step 10-year plan to achieve success in ${input.careerSuggestion}, unlock your full Career Blueprint.
+      
+      **For further assistance:**
+      *   [➡️ Unlock Your 10-Year Career Blueprint](/career-suggestions)
+      *   [➡️ Contact Our Career Counsellor](/contact)
+      ---
+  
+      Return ONLY the raw markdown content.
+      
+      --- Internal Reference Data (Do NOT quote directly) ---
+      User Details: DOB: ${input.dateOfBirth}, Time: ${input.timeOfBirth}, Place: ${input.placeOfBirth}
+      User Traits: ${JSON.stringify(input.userTraits)}
+      Personalized Answers: ${JSON.stringify(input.personalizedAnswers)}
+    `;
+  }
+  
+
+  function getBlueprintPrompt(input: any) {
+    // This is the original, full-length prompt
     return `You are an expert career counselor preparing a comprehensive, personalized career report.
     The report MUST be in Markdown format and STRICTLY follow the structure and content guidelines below.
     The ENTIRE textual content of the report (headings, descriptions, predictions, advice, etc.) MUST be in the following language: **${input.preferredLanguage}**.
@@ -117,7 +205,7 @@ function getRoadmapPrompt(input: any) {
     
     **For further assistance:**
     
-    *   [➡️ Contact Our Career Counsellor](/contact)** - Get personalized advice from our experts.
+    *   [➡️ Contact Our Career Counsellor](/contact)
     *   [➡️ Subscribe Now for Professional Guidance (Rs. 2999/-)](/subscribe-guidance)** - Unlock ongoing support and resources.
     --- END OF REPORT MARKDOWN ---
     Return ONLY the raw markdown content for the report.
@@ -126,13 +214,12 @@ function getRoadmapPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, careerName, language } = await req.json();
+    const { userId, plan, language } = await req.json();
 
-    if (!userId || !careerName || !language) {
-      return NextResponse.json({ error: 'Missing required parameters: userId, careerName, or language.' }, { status: 400 });
+    if (!userId || !plan || !language) {
+      return NextResponse.json({ error: 'Missing required parameters: userId, plan, or language.' }, { status: 400 });
     }
 
-    // --- Server-side Data Fetching ---
     const userDocRef = db.collection('users').doc(userId);
     const userDoc = await userDocRef.get();
     
@@ -141,38 +228,32 @@ export async function POST(req: Request) {
     }
     const userData = userDoc.data()!;
 
-    if (!userData.paymentSuccessful) {
-        return NextResponse.json({ error: 'Payment required to generate a new report.' }, { status: 402 });
+    if (!userData.paymentSuccessful || userData.purchasedPlan !== plan) {
+        return NextResponse.json({ error: `Payment required for the '${plan}' plan.` }, { status: 402 });
     }
 
-    // --- Assemble Data for Prompt ---
-    const {
-      name, country, birthDetails, userTraits,
-      personalizedAnswers, lastPaymentId
-    } = userData;
+    const { name, country, birthDetails, userTraits, personalizedAnswers, lastPaymentId } = userData;
 
     if (!name || !birthDetails || !userTraits || !personalizedAnswers) {
         return NextResponse.json({ error: 'User profile is incomplete. Cannot generate report.' }, { status: 400 });
     }
     
-    const allSuggestions = (await db.collection('users').doc(userId).collection('journeys').doc('latest').get()).data()?.allCareerSuggestions || [];
-    const careerDetails = allSuggestions.find((s: any) => s.name === careerName);
-
-    if (!careerDetails) {
-        // Fallback to suggestions stored in user document if not in journey
-        const userSuggestions = userData.allCareerSuggestions || [];
-        const fallbackDetails = userSuggestions.find((s: any) => s.name === careerName);
-        if (!fallbackDetails) {
-            return NextResponse.json({ error: `Details for career '${careerName}' not found.` }, { status: 400 });
-        }
+    const journeyId = localStorage.getItem('margdarshak_current_journey_id') || `journey_${Date.now()}`;
+    const journeyDoc = await db.collection('users').doc(userId).collection('journeys').doc(journeyId).get();
+    const allSuggestions = journeyDoc.exists ? journeyDoc.data()?.allCareerSuggestions : userData.allCareerSuggestions || [];
+    
+    if (!allSuggestions || allSuggestions.length === 0) {
+        return NextResponse.json({ error: 'Career suggestions not found. Please complete the test first.' }, { status: 400 });
     }
-
+    
+    const sortedSuggestions = [...allSuggestions].sort((a: any, b: any) => parseFloat(b.matchScore) - parseFloat(a.matchScore));
+    const topCareer = sortedSuggestions[0];
 
     const age = differenceInYears(new Date(), parseISO(birthDetails.dateOfBirth));
     const lifePathNumber = calculateLifePathNumber(birthDetails.dateOfBirth);
 
-    const roadmapInput = {
-      careerSuggestion: careerName,
+    const baseInput = {
+      careerSuggestion: topCareer.name,
       userTraits,
       country,
       userName: name,
@@ -181,41 +262,61 @@ export async function POST(req: Request) {
       placeOfBirth: birthDetails.placeOfBirth,
       age,
       personalizedAnswers,
-      matchScore: careerDetails?.matchScore || 'N/A',
-      personalityProfile: careerDetails?.personalityProfile || 'N/A',
+      matchScore: topCareer.matchScore || 'N/A',
+      personalityProfile: topCareer.personalityProfile || 'N/A',
       lifePathNumber,
       preferredLanguage: language,
     };
 
-    // --- Call AI Model ---
-    const prompt = getRoadmapPrompt(roadmapInput);
-    const roadmapMarkdown = await callGeminiApi(prompt, "gemini-1.5-flash", 8192);
+    let prompt;
+    let maxTokens;
 
-    if (!roadmapMarkdown) {
+    switch (plan) {
+        case 'verdict':
+            prompt = getVerdictPrompt(baseInput);
+            maxTokens = 2048;
+            break;
+        case 'clarity':
+            const clarityInput = {
+                ...baseInput,
+                alternativeCareers: sortedSuggestions.slice(1, 3)
+            };
+            prompt = getClarityPrompt(clarityInput);
+            maxTokens = 4096;
+            break;
+        case 'blueprint':
+            prompt = getBlueprintPrompt(baseInput);
+            maxTokens = 8192;
+            break;
+        default:
+            return NextResponse.json({ error: 'Invalid plan specified.' }, { status: 400 });
+    }
+
+    const reportMarkdown = await callGeminiApi(prompt, "gemini-1.5-flash", maxTokens);
+
+    if (!reportMarkdown) {
       throw new Error("The AI model returned an empty response.");
     }
     
-    // --- Save to DB ---
     const reportData = {
       userId,
       userName: name,
-      careerName,
+      careerName: topCareer.name,
       reportMarkdown,
       language,
       paymentId: lastPaymentId,
+      plan,
       assessmentData: {
         userTraits,
-        matchScore: careerDetails?.matchScore || 'N/A',
-        personalityProfile: careerDetails?.personalityProfile || 'N/A',
+        matchScore: topCareer.matchScore || 'N/A',
+        personalityProfile: topCareer.personalityProfile || 'N/A',
       },
     };
     
     await saveReport(db, reportData);
 
-    // Consume the payment by updating the flag in Firestore
     await userDocRef.update({ paymentSuccessful: false });
 
-    // --- Return final result to client ---
     return NextResponse.json({ roadmapMarkdown });
 
   } catch (err: any) {

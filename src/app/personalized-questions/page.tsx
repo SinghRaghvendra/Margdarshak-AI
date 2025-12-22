@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -61,7 +60,6 @@ export default function PersonalizedQuestionsPage() {
           const userDocRef = doc(db, 'users', currentUser.uid);
           const userDoc = await getDoc(userDocRef);
 
-          // Prerequisite checks
           if (!userDoc.exists()) {
              toast({ title: 'User data not found', description: 'Redirecting to signup.', variant: 'destructive' });
              router.replace('/signup');
@@ -82,24 +80,19 @@ export default function PersonalizedQuestionsPage() {
             return;
           }
 
-          const userName = userData.name || 'Guest';
-          document.title = `Personalized Questions for ${userName}`;
-
-          // Load saved answers from Firestore first, as it's the source of truth.
           if (userData.personalizedAnswers) {
             form.reset(userData.personalizedAnswers);
             toast({ title: 'Loaded Your Saved Answers', description: 'You can review or edit your previous responses.' });
           } else {
-            // Fallback to localStorage for the current session's progress.
              const storedAnswers = localStorage.getItem('margdarshak_personalized_answers');
              if (storedAnswers) {
                  form.reset(JSON.parse(storedAnswers));
              }
           }
         } catch (error) {
-          console.error("Error loading personalized questions page data:", error);
-          toast({ title: 'Error loading page data', description: 'An unexpected error occurred. Please try again.', variant: 'destructive' });
-          router.replace('/welcome-guest'); // Fallback to a safe page.
+          console.error("Error loading page data:", error);
+          toast({ title: 'Error loading page data', variant: 'destructive' });
+          router.replace('/welcome-guest');
           return;
         }
       } else {
@@ -119,27 +112,16 @@ export default function PersonalizedQuestionsPage() {
       return;
     }
     setIsLoading(true);
-    toast({ title: 'Saving Your Answers', description: 'Getting ready to suggest careers...' });
+    toast({ title: 'Saving Your Answers...', description: 'Preparing your personalized plans...' });
     try {
-      // Save to both Firestore and localStorage
       const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, { personalizedAnswers: data }, { merge: true });
+      await setDoc(userDocRef, { personalizedAnswers: data, personalizedAnswersCompleted: true }, { merge: true });
       localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
       
-      // Clear subsequent data to ensure a fresh flow from this point
-      localStorage.removeItem('margdarshak_all_career_suggestions');
-      localStorage.removeItem('margdarshak_selected_careers_list'); 
-      // DO NOT clear payment status, as it's a persistent state
-      // localStorage.removeItem('margdarshak_payment_successful');
+      // Clear any data from a previous plan selection/payment flow
+      localStorage.removeItem('margdarshak_selected_plan');
       
-      // Clear cached roadmaps
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('margdarshak_roadmap_')) {
-          localStorage.removeItem(key);
-        }
-      });
-
-      router.push('/career-suggestions');
+      router.push('/career-suggestions'); // This page is now the plans page
     } catch (error) {
       console.error('Error saving personalized answers:', error);
       toast({ title: 'Error Saving Answers', description: 'Could not save your answers. Please try again.', variant: 'destructive' });
@@ -194,7 +176,7 @@ export default function PersonalizedQuestionsPage() {
                   <LoadingSpinner />
                 ) : (
                   <>
-                    Continue <ArrowRight className="ml-2 h-5 w-5" />
+                    See My Plans <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>

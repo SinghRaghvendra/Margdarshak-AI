@@ -1,12 +1,11 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Script from 'next/script'; // Import this at the top
+import Script from 'next/script';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Loader2, ListChecks } from 'lucide-react'; 
+import { CreditCard, Loader2, ListChecks, ArrowLeft } from 'lucide-react'; 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
@@ -19,7 +18,10 @@ declare global {
   }
 }
 
-const REPORT_AMOUNT_INR = 99; // in INR
+interface SelectedPlan {
+    id: string;
+    price: number;
+}
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -28,7 +30,7 @@ export default function PaymentPage() {
   const db = useFirestore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [selectedCareer, setSelectedCareer] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
   const [userInfo, setUserInfo] = useState({ name: 'Guest', email: '', contact: '' });
   const [user, setUser] = useState<User | null>(null);
   
@@ -45,61 +47,26 @@ export default function PaymentPage() {
     });
 
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth]);
+  }, [auth, router, toast]);
 
   const initializePage = (currentUser: User) => {
     try {
       const storedUserInfo = localStorage.getItem('margdarshak_user_info');
       if (storedUserInfo) {
-        const parsedInfo = JSON.parse(storedUserInfo);
-        setUserInfo({
-          name: parsedInfo.name || 'Guest',
-          email: parsedInfo.email || '',
-          contact: parsedInfo.contact || ''
-        });
+        setUserInfo(JSON.parse(storedUserInfo));
       } else {
-        toast({ title: 'User info not found', description: 'Redirecting to signup.', variant: 'destructive' });
-        router.replace('/signup');
-        return;
+        throw new Error("User info missing.");
       }
 
-      const storedSelection = localStorage.getItem('margdarshak_selected_career');
-      if (storedSelection) {
-        setSelectedCareer(storedSelection);
+      const storedPlan = localStorage.getItem('margdarshak_selected_plan');
+      if (storedPlan) {
+        setSelectedPlan(JSON.parse(storedPlan));
       } else {
-        toast({ title: 'No career selected', description: 'Please select a career first. Redirecting.', variant: 'destructive' });
-        router.replace('/career-suggestions');
-        return;
+        throw new Error("No plan selected.");
       }
-
-      // Verify all prerequisite data for report generation is present before allowing payment
-      const prerequisites = [
-        'margdarshak_user_traits',
-        'margdarshak_birth_details',
-        'margdarshak_personalized_answers',
-        'margdarshak_user_info'
-      ];
-      const missingPrerequisites = prerequisites.filter(key => !localStorage.getItem(key));
-
-      if (missingPrerequisites.length > 0) {
-        toast({
-          title: 'Missing Information for Report',
-          description: `The following are missing: ${missingPrerequisites.join(', ').replace(/margdarshak_/g, '')}. Please complete all steps. Redirecting...`,
-          variant: 'destructive',
-          duration: 7000,
-        });
-        if (missingPrerequisites.includes('margdarshak_personalized_answers')) router.replace('/personalized-questions');
-        else if (missingPrerequisites.includes('margdarshak_user_traits')) router.replace('/psychometric-test');
-        else if (missingPrerequisites.includes('margdarshak_birth_details')) router.replace('/birth-details');
-        else router.replace('/signup');
-        return;
-      }
-
-    } catch (error) {
-      console.error("Error loading data for payment page:", error);
-      toast({ title: 'Error loading page data', description: 'Please try again from an earlier step.', variant: 'destructive'});
-      router.replace('/career-suggestions');
+    } catch (error: any) {
+      toast({ title: 'Data Missing', description: `${error.message} Redirecting to plans page.`, variant: 'destructive'});
+      router.replace('/career-suggestions'); // This is now the plans page
     } finally {
       setPageLoading(false);
     }
@@ -107,19 +74,18 @@ export default function PaymentPage() {
 
 
   const handlePayment = async () => {
-    if (!user || !db) {
-        toast({ title: 'User not authenticated', description: 'Please log in again.', variant: 'destructive' });
+    if (!user || !db || !selectedPlan) {
+        toast({ title: 'Session Error', description: 'User or plan details are missing. Please try again.', variant: 'destructive' });
         return;
     }
     setIsProcessing(true);
     toast({ title: 'Initializing Payment', description: 'Please wait...' });
 
     try {
-      // 1. Create Order on backend
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: REPORT_AMOUNT_INR }), // amount in INR
+        body: JSON.stringify({ amount: selectedPlan.price }),
       });
       
       const orderData = await orderResponse.json();
@@ -128,17 +94,15 @@ export default function PaymentPage() {
         throw new Error(orderData.error || 'Failed to create order');
       }
 
-      // 2. Open Razorpay Checkout
       const options = {
         key: orderData.key_id,
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'AI Councel',
-        description: 'Career Report Generation',
+        description: `Career Report Plan: ${selectedPlan.id}`,
         order_id: orderData.id,
         handler: async function (response: any) {
-          // 3. Verify payment on backend
-          toast({ title: 'Verifying Payment', description: 'This may take a moment, please do not close this page.' });
+          toast({ title: 'Verifying Payment', description: 'Please do not close this page.' });
           try {
             const verificationResponse = await fetch('/api/razorpay/verify-payment', {
               method: 'POST',
@@ -153,22 +117,21 @@ export default function PaymentPage() {
             const verificationData = await verificationResponse.json();
             
             if (verificationData.success) {
-                // Save payment success state to both localStorage and Firestore
-                localStorage.setItem('margdarshak_payment_successful', 'true');
                 const userDocRef = doc(db, 'users', user.uid);
                 await setDoc(userDocRef, { 
-                  paymentSuccessful: true, 
+                  paymentSuccessful: true,
+                  purchasedPlan: selectedPlan.id,
                   lastPaymentId: response.razorpay_payment_id 
                 }, { merge: true });
 
                 toast({ title: 'Payment Successful!', description: 'Proceeding to generate your report...' });
-                router.push('/roadmap'); // Directly go to roadmap to generate the report
+                router.push('/roadmap');
             } else {
                 throw new Error(verificationData.error || 'Payment verification failed.');
             }
 
           } catch (verifyError: any) {
-             toast({ title: 'Payment Verification Failed', description: verifyError.message || 'An error occurred during verification. Please contact support.', variant: 'destructive', duration: 8000});
+             toast({ title: 'Verification Failed', description: verifyError.message, variant: 'destructive', duration: 8000});
              setIsProcessing(false);
           }
         },
@@ -178,7 +141,7 @@ export default function PaymentPage() {
           contact: userInfo.contact,
         },
         theme: {
-          color: '#FDD835' // This is the primary color from your theme
+          color: '#FDD835'
         }
       };
 
@@ -189,7 +152,7 @@ export default function PaymentPage() {
         console.error('Razorpay payment failed:', response.error);
         toast({
           title: 'Payment Failed',
-          description: `${response.error.description} (Reason: ${response.error.reason})`,
+          description: `${response.error.description}`,
           variant: 'destructive',
           duration: 8000,
         });
@@ -202,19 +165,10 @@ export default function PaymentPage() {
     }
   };
   
-  if (pageLoading || !user) {
+  if (pageLoading || !user || !selectedPlan) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
   
-  if (!selectedCareer) { 
-     return (
-      <div className="text-center py-10">
-        <h1 className="text-2xl font-semibold mb-4">Career Selection Incomplete</h1>
-        <p className="text-muted-foreground mb-6">Please select a career on the previous page to proceed.</p>
-        <Button onClick={() => router.push('/career-suggestions')}>Select a Career</Button>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -226,27 +180,28 @@ export default function PaymentPage() {
         <Card className="w-full max-w-lg shadow-xl">
           <CardHeader className="text-center">
             <CreditCard className="h-12 w-12 text-primary mx-auto mb-4" />
-            <CardTitle className="text-3xl font-bold">Unlock Your Career Report</CardTitle>
+            <CardTitle className="text-3xl font-bold">Confirm Your Purchase</CardTitle>
             <CardDescription>
-              Hi {userInfo.name}, you're one step away from your detailed report. Pay the one-time fee to generate your roadmap and see your full list of career matches.
+              Hi {userInfo.name}, you are one step away from unlocking your personalized career report.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <div className="mb-6 p-4 border rounded-md bg-secondary/50">
               <h4 className="text-lg font-semibold mb-2 flex items-center justify-center">
                   <ListChecks className="mr-2 h-5 w-5 text-primary" />
-                  Selected Career for Detailed Report:
+                  Selected Plan
               </h4>
-              <p className="font-bold text-xl">{selectedCareer}</p>
+              <p className="font-bold text-xl capitalize">{selectedPlan.id} Report</p>
             </div>
-            <p className="text-lg mb-2">Total Report Fee: <span className="font-bold text-2xl">₹{REPORT_AMOUNT_INR}</span></p>
-            <p className="text-sm text-muted-foreground mb-6">
-              This one-time payment unlocks a detailed report for your selected career and reveals your top 5 career matches with scores.
-            </p>
+            <p className="text-lg mb-2">Total Amount Due: <span className="font-bold text-2xl">₹{selectedPlan.price}</span></p>
             
-            <Button onClick={handlePayment} className="w-full text-lg py-6" disabled={isProcessing}>
+            <Button onClick={handlePayment} className="w-full text-lg py-6 mt-4" disabled={isProcessing}>
               {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
-              Pay ₹{REPORT_AMOUNT_INR} & Access Reports
+              Pay ₹{selectedPlan.price} Securely
+            </Button>
+            
+            <Button variant="link" className="mt-4 text-muted-foreground" onClick={() => router.back()}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Change Plan
             </Button>
 
           </CardContent>
