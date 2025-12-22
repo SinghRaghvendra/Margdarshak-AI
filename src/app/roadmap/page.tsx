@@ -41,6 +41,7 @@ export default function RoadmapPage() {
     language: string;
     userName: string;
     selectedCareer: string;
+    allSuggestions: any[];
   } | null>(null);
 
   const roadmapContentRef = useRef<HTMLDivElement>(null);
@@ -64,8 +65,10 @@ export default function RoadmapPage() {
       }
       
       const selectedCareer = localStorage.getItem('margdarshak_selected_career');
-      if (!selectedCareer) {
-        toast({ title: 'No Career Selected', description: 'Please select a career to generate a report.', variant: 'destructive' });
+      const allSuggestionsString = localStorage.getItem('margdarshak_all_career_suggestions');
+
+      if (!selectedCareer || !allSuggestionsString) {
+        toast({ title: 'Data Missing', description: 'Career selection is missing. Please select a career first.', variant: 'destructive' });
         router.replace('/career-suggestions');
         return;
       }
@@ -83,10 +86,11 @@ export default function RoadmapPage() {
         language: userData.language || 'English',
         userName: userData.name || 'User',
         selectedCareer: selectedCareer,
+        allSuggestions: JSON.parse(allSuggestionsString),
       };
       
       setPageData(pageInfo);
-      await fetchAndSetRoadmap(currentUser, plan, pageInfo.language, selectedCareer);
+      await fetchAndSetRoadmap(currentUser, pageInfo);
 
     } catch (error: any) {
        toast({ title: 'Error loading page', description: error.message || 'An unexpected error occurred.', variant: 'destructive'});
@@ -106,8 +110,9 @@ export default function RoadmapPage() {
     return () => clearInterval(timer);
   }, [isGeneratingReport, generationProgress]);
 
-  const fetchAndSetRoadmap = async (currentUser: User, plan: string, language: string, career: string) => {
-    const cachedReportKey = `margdarshak_roadmap_${career.replace(/\s/g, '_')}_${plan}_${language}`;
+  const fetchAndSetRoadmap = async (currentUser: User, pageInfo: NonNullable<typeof pageData>) => {
+    const { purchasedPlan, language, selectedCareer, allSuggestions } = pageInfo;
+    const cachedReportKey = `margdarshak_roadmap_${selectedCareer.replace(/\s/g, '_')}_${purchasedPlan}_${language}`;
     const cachedDataString = localStorage.getItem(cachedReportKey);
 
     if (cachedDataString) {
@@ -115,7 +120,7 @@ export default function RoadmapPage() {
         const cachedReport: StoredRoadmapData = JSON.parse(cachedDataString);
         if (Date.now() - cachedReport.generatedAt < REPORT_CACHE_DURATION) {
           setCurrentRoadmapMarkdown(cachedReport.markdown);
-          toast({ title: 'Report Loaded from Cache', description: `Showing cached ${plan} report for ${career}.` });
+          toast({ title: 'Report Loaded from Cache', description: `Showing cached ${purchasedPlan} report for ${selectedCareer}.` });
           setIsGeneratingReport(false);
           return;
         }
@@ -133,7 +138,13 @@ export default function RoadmapPage() {
       const response = await fetch('/api/generate-and-save-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.uid, plan, language, career }),
+        body: JSON.stringify({ 
+            userId: currentUser.uid, 
+            plan: purchasedPlan, 
+            language, 
+            career: selectedCareer,
+            allSuggestions // Pass all suggestions to the API
+        }),
       });
 
       const result = await response.json();
@@ -145,7 +156,7 @@ export default function RoadmapPage() {
       setGenerationProgress(100);
       setCurrentRoadmapMarkdown(result.roadmapMarkdown);
 
-      const newCachedReport: StoredRoadmapData = { markdown: result.roadmapMarkdown, generatedAt: Date.now(), language, plan };
+      const newCachedReport: StoredRoadmapData = { markdown: result.roadmapMarkdown, generatedAt: Date.now(), language, plan: purchasedPlan };
       localStorage.setItem(cachedReportKey, JSON.stringify(newCachedReport));
       
       toast({ title: 'Report Generated & Saved!', description: `Your ${language} report is ready.` });

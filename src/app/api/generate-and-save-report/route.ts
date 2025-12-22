@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -7,7 +8,8 @@ import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
 
 // Initialize Firebase Admin SDK
-const serviceAccount = require('../../../../../service-account.json');
+// Corrected the path to point to the root directory
+const serviceAccount = require('../../../../service-account.json');
 
 if (!getApps().length) {
   initializeApp({
@@ -214,10 +216,10 @@ function getClarityPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, plan, language } = await req.json();
+    const { userId, plan, language, career, allSuggestions } = await req.json();
 
-    if (!userId || !plan || !language) {
-      return NextResponse.json({ error: 'Missing required parameters: userId, plan, or language.' }, { status: 400 });
+    if (!userId || !plan || !language || !career || !allSuggestions) {
+      return NextResponse.json({ error: 'Missing required parameters.' }, { status: 400 });
     }
 
     const userDocRef = db.collection('users').doc(userId);
@@ -228,6 +230,8 @@ export async function POST(req: Request) {
     }
     const userData = userDoc.data()!;
 
+    // This check can be simplified or removed if we trust the client flow
+    // but it's good for server-side validation.
     if (!userData.paymentSuccessful || userData.purchasedPlan !== plan) {
         return NextResponse.json({ error: `Payment required for the '${plan}' plan.` }, { status: 402 });
     }
@@ -238,22 +242,17 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'User profile is incomplete. Cannot generate report.' }, { status: 400 });
     }
     
-    const journeyId = localStorage.getItem('margdarshak_current_journey_id') || `journey_${Date.now()}`;
-    const journeyDoc = await db.collection('users').doc(userId).collection('journeys').doc(journeyId).get();
-    const allSuggestions = journeyDoc.exists ? journeyDoc.data()?.allCareerSuggestions : userData.allCareerSuggestions || [];
-    
-    if (!allSuggestions || allSuggestions.length === 0) {
-        return NextResponse.json({ error: 'Career suggestions not found. Please complete the test first.' }, { status: 400 });
+    const selectedCareerDetails = allSuggestions.find((s: any) => s.name === career);
+
+    if (!selectedCareerDetails) {
+       return NextResponse.json({ error: 'Selected career details not found in the provided suggestions.' }, { status: 400 });
     }
     
-    const sortedSuggestions = [...allSuggestions].sort((a: any, b: any) => parseFloat(b.matchScore) - parseFloat(a.matchScore));
-    const topCareer = sortedSuggestions[0];
-
     const age = differenceInYears(new Date(), parseISO(birthDetails.dateOfBirth));
     const lifePathNumber = calculateLifePathNumber(birthDetails.dateOfBirth);
 
     const baseInput = {
-      careerSuggestion: topCareer.name,
+      careerSuggestion: selectedCareerDetails.name,
       userTraits,
       country,
       userName: name,
@@ -262,8 +261,8 @@ export async function POST(req: Request) {
       placeOfBirth: birthDetails.placeOfBirth,
       age,
       personalizedAnswers,
-      matchScore: topCareer.matchScore || 'N/A',
-      personalityProfile: topCareer.personalityProfile || 'N/A',
+      matchScore: selectedCareerDetails.matchScore || 'N/A',
+      personalityProfile: selectedCareerDetails.personalityProfile || 'N/A',
       lifePathNumber,
       preferredLanguage: language,
     };
@@ -279,7 +278,7 @@ export async function POST(req: Request) {
         case 'clarity':
             const clarityInput = {
                 ...baseInput,
-                alternativeCareers: sortedSuggestions.slice(1, 3)
+                alternativeCareers: allSuggestions.filter((s:any) => s.name !== career).slice(0, 2)
             };
             prompt = getClarityPrompt(clarityInput);
             maxTokens = 4096;
@@ -301,23 +300,25 @@ export async function POST(req: Request) {
     const reportData = {
       userId,
       userName: name,
-      careerName: topCareer.name,
+      careerName: selectedCareerDetails.name,
       reportMarkdown,
       language,
       paymentId: lastPaymentId,
       plan,
       assessmentData: {
         userTraits,
-        matchScore: topCareer.matchScore || 'N/A',
-        personalityProfile: topCareer.personalityProfile || 'N/A',
+        matchScore: selectedCareerDetails.matchScore || 'N/A',
+        personalityProfile: selectedCareerDetails.personalityProfile || 'N/A',
       },
     };
     
     await saveReport(db, reportData);
 
+    // After saving, invalidate the payment status to prevent re-generation
+    // without a new payment.
     await userDocRef.update({ paymentSuccessful: false });
 
-    return NextResponse.json({ roadmapMarkdown });
+    return NextResponse.json({ roadmapMarkdown: reportMarkdown });
 
   } catch (err: any) {
     console.error("API Route Error in /generate-and-save-report:", err);
