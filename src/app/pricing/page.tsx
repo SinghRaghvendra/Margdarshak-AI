@@ -61,8 +61,15 @@ export default function PricingPage() {
   const { toast } = useToast();
   const [timer, setTimer] = useState('05:00');
   const [offerExpired, setOfferExpired] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     let offerEndTime = localStorage.getItem('margdarshak_offer_end_time');
     if (!offerEndTime) {
       offerEndTime = (Date.now() + 300000).toString(); // 5 minutes in milliseconds
@@ -83,7 +90,7 @@ export default function PricingPage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isClient]);
 
   const handleSelectPlan = (planId: string, price: number) => {
     const selectedPlan = { id: planId, price: offerExpired ? plans.find(p => p.id === planId)!.mrp : price };
@@ -107,7 +114,7 @@ export default function PricingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            {!offerExpired && (
+            {isClient && !offerExpired && (
               <div className="mb-8 p-3 bg-primary/20 border border-primary/50 rounded-lg max-w-md mx-auto">
                   <p className="font-semibold text-lg text-primary">Special Offer Expires In:</p>
                   <p className="text-4xl font-bold tracking-widest">{timer}</p>
@@ -126,7 +133,7 @@ export default function PricingPage() {
                         <CardDescription>{plan.description}</CardDescription>
                         <div className="flex items-baseline justify-center gap-2 mt-4">
                             <span className="text-4xl font-extrabold">₹{offerExpired ? plan.mrp : plan.price}</span>
-                            {!offerExpired && <span className="text-xl font-medium text-muted-foreground line-through">₹{plan.mrp}</span>}
+                            {!offerExpired && isClient && <span className="text-xl font-medium text-muted-foreground line-through">₹{plan.mrp}</span>}
                         </div>
                     </CardHeader>
                     <CardContent className="flex-grow">
