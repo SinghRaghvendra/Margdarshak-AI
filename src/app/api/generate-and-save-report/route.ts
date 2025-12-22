@@ -1,23 +1,35 @@
 
 import { NextResponse } from 'next/server';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { callGeminiApi } from '@/app/api/gemini/route';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
 
-// Initialize Firebase Admin SDK
 // Corrected the path to point to the root directory
-const serviceAccount = require('../../../../service-account.json');
+let adminApp: App;
+let db: ReturnType<typeof getFirestore>;
 
-if (!getApps().length) {
-  initializeApp({
-    credential: cert(serviceAccount),
-  });
+function initializeFirebaseAdmin() {
+  if (!getApps().length) {
+    try {
+      const serviceAccount = require('../../../../service-account.json');
+      adminApp = initializeApp({
+        credential: cert(serviceAccount),
+      });
+      db = getFirestore(adminApp);
+    } catch (e: any) {
+      console.error("Failed to initialize Firebase Admin SDK:", e);
+      // This will prevent the app from crashing if service-account.json is missing or invalid during development,
+      // but the API route will fail if called.
+    }
+  } else {
+    adminApp = getApps()[0];
+    db = getFirestore(adminApp);
+  }
 }
 
-const db = getFirestore();
 
 // --- PROMPT GENERATION FUNCTIONS FOR EACH TIER ---
 
@@ -216,6 +228,12 @@ function getClarityPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
+    initializeFirebaseAdmin();
+    // Ensure db is initialized before proceeding
+    if (!db) {
+        throw new Error("Firebase Admin SDK is not initialized. Check your service account credentials.");
+    }
+
     const { userId, plan, language, career, allSuggestions } = await req.json();
 
     if (!userId || !plan || !language || !career || !allSuggestions) {

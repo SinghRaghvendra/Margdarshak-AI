@@ -60,7 +60,7 @@ export default function RoadmapPage() {
 
       if (!userDoc.exists() || !userDoc.data().paymentSuccessful) {
         toast({ title: 'Payment Required', description: 'Please purchase a plan to generate a report.', variant: 'destructive' });
-        router.replace('/career-suggestions'); // This is the plans page now
+        router.replace('/pricing');
         return;
       }
       
@@ -77,7 +77,7 @@ export default function RoadmapPage() {
       const plan = userData.purchasedPlan;
       if (!plan) {
         toast({ title: 'No Plan Purchased', description: 'Please purchase a plan first.', variant: 'destructive' });
-        router.replace('/career-suggestions');
+        router.replace('/pricing');
         return;
       }
       
