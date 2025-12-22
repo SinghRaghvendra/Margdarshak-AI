@@ -145,7 +145,7 @@ export async function generateRoadmap(input: GenerateRoadmapInput): Promise<Gene
     `;
 
     try {
-        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 8192);
+        const text = await callGeminiApi(prompt, "gemini-1.5-flash", 8192);
         return {
           roadmapMarkdown: text
         };
