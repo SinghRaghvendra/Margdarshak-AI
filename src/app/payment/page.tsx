@@ -68,7 +68,7 @@ export default function PaymentPage() {
       }
     } catch (error: any) {
       toast({ title: 'Data Missing', description: `${error.message} Redirecting to select a plan.`, variant: 'destructive'});
-      router.replace('/career-suggestions'); // This is the plans page now
+      router.replace('/pricing');
     } finally {
       setPageLoading(false);
     }
@@ -127,7 +127,8 @@ export default function PaymentPage() {
                 }, { merge: true });
 
                 toast({ title: 'Payment Successful!', description: 'Proceeding to your career suggestions...' });
-                router.push('/career-suggestions'); // REDIRECT TO SUGGESTIONS PAGE NOW
+                // CORRECTED: Redirect to career-suggestions page AFTER payment.
+                router.push('/career-suggestions');
             } else {
                 throw new Error(verificationData.error || 'Payment verification failed.');
             }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -121,7 +122,8 @@ export default function PersonalizedQuestionsPage() {
       // Clear any data from a previous plan selection/payment flow
       localStorage.removeItem('margdarshak_selected_plan');
       
-      router.push('/career-suggestions'); // This page is now the plans page
+      // CORRECTED: Redirect to the pricing/plans page first.
+      router.push('/pricing');
     } catch (error) {
       console.error('Error saving personalized answers:', error);
       toast({ title: 'Error Saving Answers', description: 'Could not save your answers. Please try again.', variant: 'destructive' });

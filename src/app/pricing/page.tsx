@@ -1,15 +1,19 @@
+
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Ticket, ArrowRight, CheckCircle, Star } from 'lucide-react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
 
 const plans = [
     {
         id: 'verdict',
         title: 'Career Verdict',
-        price: 99,
+        price: 49,
+        mrp: 99,
         description: 'Get your single best career match and a concise explanation of why it fits you.',
         features: [
             'Top Career Recommendation',
@@ -22,7 +26,8 @@ const plans = [
     {
         id: 'clarity',
         title: 'Career Clarity Report',
-        price: 199,
+        price: 99,
+        mrp: 199,
         isPopular: true,
         description: 'Understand your options with a deep dive into your top 3 matches and personality.',
         features: [
@@ -37,7 +42,8 @@ const plans = [
     {
         id: 'blueprint',
         title: 'Complete Career Blueprint',
-        price: 399,
+        price: 199,
+        mrp: 399,
         description: 'The ultimate guide. A full 10-year, step-by-step plan to achieve your top career choice.',
         features: [
             'Everything in Career Clarity Report',
@@ -51,17 +57,63 @@ const plans = [
 ];
 
 export default function PricingPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [timer, setTimer] = useState('01:00');
+  const [offerExpired, setOfferExpired] = useState(false);
+
+  useEffect(() => {
+    let offerEndTime = localStorage.getItem('margdarshak_offer_end_time');
+    if (!offerEndTime) {
+      offerEndTime = (Date.now() + 60000).toString();
+      localStorage.setItem('margdarshak_offer_end_time', offerEndTime);
+    }
+
+    const interval = setInterval(() => {
+      const remainingTime = Number(offerEndTime) - Date.now();
+      if (remainingTime <= 0) {
+        clearInterval(interval);
+        setTimer('00:00');
+        setOfferExpired(true);
+      } else {
+        const minutes = Math.floor((remainingTime / 1000) / 60);
+        const seconds = Math.floor((remainingTime / 1000) % 60);
+        setTimer(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSelectPlan = (planId: string, price: number) => {
+    const selectedPlan = { id: planId, price: offerExpired ? plans.find(p => p.id === planId)!.mrp : price };
+    localStorage.setItem('margdarshak_selected_plan', JSON.stringify(selectedPlan));
+    toast({
+      title: `Plan Selected: ${planId.charAt(0).toUpperCase() + planId.slice(1)}`,
+      description: `Proceeding to payment...`,
+    });
+    router.push('/payment');
+  };
+
+
   return (
     <div className="py-12">
       <Card className="w-full max-w-5xl mx-auto text-center shadow-none border-none">
         <CardHeader>
           <Ticket className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="text-4xl font-bold">Simple, Transparent Pricing</CardTitle>
+          <CardTitle className="text-4xl font-bold">Choose Your Personalised Report Plan</CardTitle>
           <CardDescription className="text-lg text-muted-foreground mt-2">
-            Choose the plan that's right for your career journey.
+            You've completed the assessment! Now, unlock the report that's right for your journey.
           </CardDescription>
         </CardHeader>
         <CardContent>
+            {!offerExpired && (
+              <div className="mb-8 p-3 bg-primary/20 border border-primary/50 rounded-lg max-w-md mx-auto">
+                  <p className="font-semibold text-lg text-primary">Special Offer Expires In:</p>
+                  <p className="text-4xl font-bold tracking-widest">{timer}</p>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {plans.map((plan) => (
                 <Card 
@@ -73,8 +125,8 @@ export default function PricingPage() {
                         <CardTitle className="text-2xl font-bold">{plan.title}</CardTitle>
                         <CardDescription>{plan.description}</CardDescription>
                         <div className="flex items-baseline justify-center gap-2 mt-4">
-                            <span className="text-4xl font-extrabold">₹{plan.price}</span>
-                            <span className="text-sm font-medium text-muted-foreground">/ one-time</span>
+                            <span className="text-4xl font-extrabold">₹{offerExpired ? plan.mrp : plan.price}</span>
+                            {!offerExpired && <span className="text-xl font-medium text-muted-foreground line-through">₹{plan.mrp}</span>}
                         </div>
                     </CardHeader>
                     <CardContent className="flex-grow">
@@ -87,16 +139,15 @@ export default function PricingPage() {
                             ))}
                         </ul>
                     </CardContent>
-                    <CardContent>
-                        <Link href="/signup" passHref>
-                            <Button 
-                                className="w-full text-lg py-6"
-                                variant={plan.isPopular ? 'default' : 'outline'}
-                            >
-                              Get Started <ArrowRight className="ml-2 h-5 w-5" />
-                            </Button>
-                        </Link>
-                    </CardContent>
+                    <CardFooter>
+                        <Button 
+                            className="w-full text-lg py-6"
+                            variant={plan.isPopular ? 'default' : 'outline'}
+                            onClick={() => handleSelectPlan(plan.id, plan.price)}
+                        >
+                          {plan.cta} <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                    </CardFooter>
                 </Card>
               ))}
             </div>
