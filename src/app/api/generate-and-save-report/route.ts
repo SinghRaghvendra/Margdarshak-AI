@@ -1,0 +1,225 @@
+
+import { NextResponse } from 'next/server';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { callGeminiApi } from '@/app/api/gemini/route';
+import { calculateLifePathNumber } from '@/lib/numerology';
+import { differenceInYears, parseISO } from 'date-fns';
+import { saveReport } from '@/services/report-service-server'; // Server-side save
+
+// Initialize Firebase Admin SDK
+// This is necessary for server-side operations to securely access Firestore.
+const serviceAccount = require('../../../../../service-account.json');
+
+if (!getApps().length) {
+  initializeApp({
+    credential: cert(serviceAccount),
+  });
+}
+
+const db = getFirestore();
+
+// Helper function to build the massive prompt for the AI
+function getRoadmapPrompt(input: any) {
+    return `You are an expert career counselor preparing a comprehensive, personalized career report.
+    The report MUST be in Markdown format and STRICTLY follow the structure and content guidelines below.
+    The ENTIRE textual content of the report (headings, descriptions, predictions, advice, etc.) MUST be in the following language: **${input.preferredLanguage}**.
+    
+    Report for: ${input.userName}
+    Chosen Career: ${input.careerSuggestion}
+    User's Current Age: ${input.age}
+    User's Country (for localization): ${input.country}
+    User's Date of Birth: ${input.dateOfBirth}
+    User's Time of Birth: ${input.timeOfBirth}
+    User's Place of Birth: ${input.placeOfBirth}
+    User Traits Summary (for internal reference, do not quote these codes in the report): ${JSON.stringify(input.userTraits)}
+    User's Personalized Answers:
+    Ideal Workday: ${input.personalizedAnswers.q1}
+    Hobbies & Interests: ${input.personalizedAnswers.q2}
+    5-Year Vision: ${input.personalizedAnswers.q3}
+    Industry Interest: ${input.personalizedAnswers.q4}
+    Career Motivations: ${input.personalizedAnswers.q5}
+    User's Life Path Number: ${input.lifePathNumber}
+    
+    --- START OF REPORT MARKDOWN (in ${input.preferredLanguage}) ---
+    
+    # Career Option: ${input.careerSuggestion}
+    
+    ## Match Score: ${input.matchScore}
+    
+    ## Career Fit Assessment
+    Provide a qualitative assessment (2-3 sentences) of why this career is a strong, moderate, or developing fit for ${input.userName}, based on their traits, answers, and personality profile alignment. **Crucially, do NOT mention the internal trait codes (e.g., 's1q1', 's2q3') in your response.** Instead, refer to the concepts they represent (e.g., 'preference for teamwork,' 'creative interests'). (Ensure this text is in ${input.preferredLanguage})
+    
+    ## Personal Details
+    - **Name:** ${input.userName}
+    - **DOB:** ${input.dateOfBirth}
+    - **Age:** ${input.age}
+    - **Country:** ${input.country}
+    (Field names like "Name", "DOB", "Age", "Country" should be translated to ${input.preferredLanguage} if appropriate for that language's conventions in reports, otherwise keep them in English but ensure the values are presented correctly.)
+    
+    ## Personality Profile Alignment: ${input.personalityProfile}
+    Briefly elaborate (1-2 sentences) on how the user's personality profile (${input.personalityProfile}) aligns with the demands and characteristics of the career in ${input.careerSuggestion}. (Ensure this text is in ${input.preferredLanguage})
+    
+    ## Astrological Insights & Zodiac Chart Overview
+    (This entire section's text must be in ${input.preferredLanguage})
+    Provide a textual overview that describes key zodiac placements or characteristics based on the user's birth details (Date of Birth: ${input.dateOfBirth}, Time of Birth: ${input.timeOfBirth}, Place of Birth: ${input.placeOfBirth}).
+    Follow this with a detailed Zodiac-based prediction for the career **${input.careerSuggestion}**. This prediction should be approximately 500 words and conclude with **exactly 10 key bullet points summarizing the astrological outlook** for this career.
+    Frame this positively and as potential influences.
+    
+    ## Numerological Insights
+    (This entire section's text must be in ${input.preferredLanguage})
+    **Life Path Number:** ${input.lifePathNumber}
+    
+    Briefly explain the general meaning and characteristics typically associated with Life Path Number ${input.lifePathNumber}.
+    Then, based on this Life Path Number (${input.lifePathNumber}) and the user's full Date of Birth (${input.dateOfBirth}), provide a detailed Numerology-based prediction for the career **${input.careerSuggestion}**. This prediction should be approximately 200 words and conclude with **exactly 10 key bullet points summarizing the numerological outlook** for this career.
+    Frame this positively and as potential influences.
+    
+    ## Career Prospect & Why It Is a Good Fit for You?
+    (This entire section's text must be in ${input.preferredLanguage})
+    Elaborate on the prospects of the career **${input.careerSuggestion}** generally, and then specifically explain why it is a good fit for ${input.userName}, drawing connections to their stated traits, personality profile (${input.personalityProfile}), and personalized answers. **Crucially, do NOT mention the internal trait codes (e.g., 's1q1', 's2q3') in your response.** Instead, refer to the concepts they represent (e.g., 'preference for teamwork,' 'creative interests').
+    
+    ## 10-Year Career Roadmap (Age-Specific for ${input.careerSuggestion}})
+    (This entire section's text must be in ${input.preferredLanguage})
+    Generate a detailed 10-year career roadmap for ${input.userName}, starting from their current age of ${input.age}.
+    For each of the 10 years:
+    -   Use a main heading (e.g., "### Year 1 (Age ${input.age}): Foundation Building"). Increment age for subsequent years. (Translate "Year X (Age Y): Title" into ${input.preferredLanguage})
+    -   **Title:** A concise title for the year's focus. (In ${input.preferredLanguage})
+    -   **Description:** A paragraph describing objectives and focus. (In ${input.preferredLanguage})
+    -   **Expected Salary:** Estimated salary range, **localized for ${input.country} with currency symbol/name** (e.g., "₹X,XX,XXX - ₹Y,YY,YYY INR" or "$XX,000 - $YY,000 USD"). The salary figures and currency should remain, but descriptive text around it should be in ${input.preferredLanguage}.
+    -   **Suggested Courses:** Bulleted list of relevant courses. (In ${input.preferredLanguage})
+    -   **Key Activities:** Bulleted list of activities (networking, projects). (In ${input.preferredLanguage})
+    
+    ## Suggested Education, Courses & Programmes
+    (This entire section's text must be in ${input.preferredLanguage})
+    Provide specific guidance on relevant degrees (Bachelor's, Master's, PhD), important certifications, online courses, and other academic/vocational programmes beneficial for pursuing a career in **${input.careerSuggestion}**.
+    
+    ## Key Interests (Top 5)
+    (This entire section's text must be in ${input.preferredLanguage})
+    Based on the user's traits (which you must not mention directly) and personalized answers (Hobbies: ${input.personalizedAnswers.q2}, Motivations: ${input.personalizedAnswers.q5}, Ideal Workday: ${input.personalizedAnswers.q1}), identify and list their Top 5 Key Interests relevant to career exploration. Present as a bulleted list.
+    - Interest 1 (in ${input.preferredLanguage})
+    - Interest 2 (in ${input.preferredLanguage})
+    - ...
+    
+    ## Expected Salary (Localized for ${input.country})
+    (Descriptive text in ${input.preferredLanguage}, salary figures/currency remain as is)
+    Provide specific, localized salary expectations for ${input.careerSuggestion} in ${input.country} at these milestones:
+    -   **Year 1 (Starting):** [Salary Range with Currency] (Translate "Year 1 (Starting)" to ${input.preferredLanguage})
+    -   **Year 5:** [Salary Range with Currency] (Translate "Year 5" to ${input.preferredLanguage})
+    -   **Year 10:** [Salary Range with Currency] (Translate "Year 10" to ${input.preferredLanguage})
+    
+    ## 20-Year Outlook & Future Trends for ${input.careerSuggestion}
+    (This entire section's text must be in ${input.preferredLanguage})
+    Provide a forward-looking perspective on how the field of **${input.careerSuggestion}** might evolve over the next 20 years. Discuss potential technological advancements, shifts in demand, emerging specializations, and key future trends. What skills will likely remain valuable or become even more critical? How can one prepare for long-term success in this career, especially considering future technological integration?
+    
+    ---
+    (The following promotional text and links should also be in ${input.preferredLanguage}. If the AI cannot reliably translate the links or pricing, it should retain them in English but translate the surrounding promotional text.)
+    Need a professional career guide? We will offer a professional career guide who will keep you on track to achive your goals and will guide and connect you to right people to build confidence to succeed. Annual subscription of Rs. 2999/-
+    
+    **For further assistance:**
+    
+    *   [➡️ Contact Our Career Counsellor](/contact)** - Get personalized advice from our experts.
+    *   [➡️ Subscribe Now for Professional Guidance (Rs. 2999/-)](/subscribe-guidance)** - Unlock ongoing support and resources.
+    --- END OF REPORT MARKDOWN ---
+    Return ONLY the raw markdown content for the report.
+    `;
+}
+
+export async function POST(req: Request) {
+  try {
+    const { userId, careerName, language } = await req.json();
+
+    if (!userId || !careerName || !language) {
+      return NextResponse.json({ error: 'Missing required parameters: userId, careerName, or language.' }, { status: 400 });
+    }
+
+    // --- Server-side Data Fetching ---
+    const userDocRef = db.collection('users').doc(userId);
+    const userDoc = await userDocRef.get();
+    
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: 'User not found.' }, { status: 404 });
+    }
+    const userData = userDoc.data()!;
+
+    if (!userData.paymentSuccessful) {
+        return NextResponse.json({ error: 'Payment required to generate a new report.' }, { status: 402 });
+    }
+
+    // --- Assemble Data for Prompt ---
+    const {
+      name, country, birthDetails, userTraits,
+      personalizedAnswers, lastPaymentId
+    } = userData;
+
+    if (!name || !birthDetails || !userTraits || !personalizedAnswers) {
+        return NextResponse.json({ error: 'User profile is incomplete. Cannot generate report.' }, { status: 400 });
+    }
+    
+    const allSuggestions = (await db.collection('users').doc(userId).collection('journeys').doc('latest').get()).data()?.allCareerSuggestions || [];
+    const careerDetails = allSuggestions.find((s: any) => s.name === careerName);
+
+    if (!careerDetails) {
+        // Fallback to suggestions stored in user document if not in journey
+        const userSuggestions = userData.allCareerSuggestions || [];
+        const fallbackDetails = userSuggestions.find((s: any) => s.name === careerName);
+        if (!fallbackDetails) {
+            return NextResponse.json({ error: `Details for career '${careerName}' not found.` }, { status: 400 });
+        }
+    }
+
+
+    const age = differenceInYears(new Date(), parseISO(birthDetails.dateOfBirth));
+    const lifePathNumber = calculateLifePathNumber(birthDetails.dateOfBirth);
+
+    const roadmapInput = {
+      careerSuggestion: careerName,
+      userTraits,
+      country,
+      userName: name,
+      dateOfBirth: birthDetails.dateOfBirth,
+      timeOfBirth: birthDetails.timeOfBirth,
+      placeOfBirth: birthDetails.placeOfBirth,
+      age,
+      personalizedAnswers,
+      matchScore: careerDetails?.matchScore || 'N/A',
+      personalityProfile: careerDetails?.personalityProfile || 'N/A',
+      lifePathNumber,
+      preferredLanguage: language,
+    };
+
+    // --- Call AI Model ---
+    const prompt = getRoadmapPrompt(roadmapInput);
+    const roadmapMarkdown = await callGeminiApi(prompt, "gemini-1.5-flash", 8192);
+
+    if (!roadmapMarkdown) {
+      throw new Error("The AI model returned an empty response.");
+    }
+    
+    // --- Save to DB ---
+    const reportData = {
+      userId,
+      userName: name,
+      careerName,
+      reportMarkdown,
+      language,
+      paymentId: lastPaymentId,
+      assessmentData: {
+        userTraits,
+        matchScore: careerDetails?.matchScore || 'N/A',
+        personalityProfile: careerDetails?.personalityProfile || 'N/A',
+      },
+    };
+    
+    await saveReport(db, reportData);
+
+    // Consume the payment by updating the flag in Firestore
+    await userDocRef.update({ paymentSuccessful: false });
+
+    // --- Return final result to client ---
+    return NextResponse.json({ roadmapMarkdown });
+
+  } catch (err: any) {
+    console.error("API Route Error in /generate-and-save-report:", err);
+    return NextResponse.json({ error: err.message || 'An unknown server error occurred.' }, { status: 500 });
+  }
+}

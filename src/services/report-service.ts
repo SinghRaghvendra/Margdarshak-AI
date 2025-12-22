@@ -1,25 +1,24 @@
 
+
 'use server';
 /**
- * @fileOverview Service functions for managing user reports in Firestore.
+ * @fileOverview This file is DEPRECATED for client-side use.
+ * Service functions for managing user reports are now split into
+ * client-safe and server-only versions.
  */
 
-import { collection, query, where, getDocs, addDoc, serverTimestamp, limit, orderBy } from 'firebase/firestore';
-// This file CANNOT be a server component if it's used by client components
-// and relies on a client-side context hook like useFirebase.
-// For this architecture to work, you'd need to pass the `db` instance from
-// the component to these functions.
-
+import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import type { Firestore } from 'firebase/firestore';
+
 
 // Defines the structure of the compressed user traits data
 export interface CompressedTraits {
-  s1: Record<string, number>; // Personality & Temperament
-  s2: Record<string, string>; // Interests & Enjoyment
-  s3: Record<string, string | number>; // Motivation & Values
-  s4: Record<string, string | number>; // Cognitive Style
-  s5: Record<string, string | number>; // Social Style
-  optional?: Record<string, number>; // Optional ratings
+  s1: Record<string, number>;
+  s2: Record<string, string>;
+  s3: Record<string, string | number>;
+  s4: Record<string, string | number>;
+  s5: Record<string, string | number>;
+  optional?: Record<string, number>;
 }
 
 export interface ReportData {
@@ -28,37 +27,26 @@ export interface ReportData {
   careerName: string;
   reportMarkdown: string;
   language: string;
-  paymentId?: string; // Add the payment ID for auditing
-  generatedAt?: any; // Firestore timestamp will be handled here
+  paymentId?: string;
+  generatedAt?: any;
   assessmentData: {
-    userTraits: CompressedTraits; // Using the new structured type
+    userTraits: CompressedTraits;
     matchScore: string;
     personalityProfile: string;
   };
 }
 
 /**
- * Saves a new report to the generatedReports collection in Firestore.
- * @param db The Firestore instance.
- * @param reportData The data for the report to be saved.
- * @returns The ID of the newly created report document.
+ * @deprecated This function should not be used from the client.
+ * Server-side logic now handles report saving.
  */
 export async function saveReport(db: Firestore, reportData: ReportData): Promise<string> {
-  try {
-    const reportsCollection = collection(db, 'generatedReports');
-    const docRef = await addDoc(reportsCollection, {
-      ...reportData,
-      generatedAt: serverTimestamp(),
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error("Error saving report to Firestore:", error);
-    throw new Error("Could not save the report to the database.");
-  }
+  throw new Error("saveReport is deprecated on the client. Use the API route for saving reports.");
 }
 
 /**
  * Fetches the latest report for a specific user, career, and language from Firestore.
+ * This function is safe to call from the client as it only performs reads.
  * @param db The Firestore instance.
  * @param userId The ID of the user.
  * @param careerName The name of the career.
@@ -81,14 +69,12 @@ export async function getLatestReport(db: Firestore, userId: string, careerName:
 
     if (!querySnapshot.empty) {
       const reportDoc = querySnapshot.docs[0];
-      // Note: Timestamps will be objects. They are handled by the client.
       return reportDoc.data() as ReportData;
     }
 
     return null;
   } catch (error) {
     console.error("Error fetching report from Firestore:", error);
-    // Returning null instead of throwing an error allows the app to try generating a new report.
     return null;
   }
 }
