@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -47,7 +48,8 @@ export default function PaymentPage() {
     });
 
     return () => unsubscribe();
-  }, [auth, router, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth]);
 
   const initializePage = (currentUser: User) => {
     try {
@@ -65,8 +67,8 @@ export default function PaymentPage() {
         throw new Error("No plan selected.");
       }
     } catch (error: any) {
-      toast({ title: 'Data Missing', description: `${error.message} Redirecting to plans page.`, variant: 'destructive'});
-      router.replace('/career-suggestions'); // This is now the plans page
+      toast({ title: 'Data Missing', description: `${error.message} Redirecting to select a plan.`, variant: 'destructive'});
+      router.replace('/career-suggestions'); // This is the plans page now
     } finally {
       setPageLoading(false);
     }
@@ -124,8 +126,8 @@ export default function PaymentPage() {
                   lastPaymentId: response.razorpay_payment_id 
                 }, { merge: true });
 
-                toast({ title: 'Payment Successful!', description: 'Proceeding to generate your report...' });
-                router.push('/roadmap');
+                toast({ title: 'Payment Successful!', description: 'Proceeding to your career suggestions...' });
+                router.push('/career-suggestions'); // REDIRECT TO SUGGESTIONS PAGE NOW
             } else {
                 throw new Error(verificationData.error || 'Payment verification failed.');
             }

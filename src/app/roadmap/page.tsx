@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -10,7 +11,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import type { User } from 'firebase/auth';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, useUser } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 
@@ -26,7 +27,7 @@ const REPORT_CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 export default function RoadmapPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const auth = useAuth();
+  const { user } = useUser();
   const db = useFirestore();
   
   const [currentRoadmapMarkdown, setCurrentRoadmapMarkdown] = useState<string | null>(null);
@@ -35,44 +36,37 @@ export default function RoadmapPage() {
   const [generationProgress, setGenerationProgress] = useState(0);
   
   const [pageLoading, setPageLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [pageData, setPageData] = useState<{
     purchasedPlan: string;
     language: string;
     userName: string;
+    selectedCareer: string;
   } | null>(null);
 
   const roadmapContentRef = useRef<HTMLDivElement>(null);
 
+
   useEffect(() => {
-    if (!auth) return;
+    if (!user || !db) return;
+    initializePage(user);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, db]);
 
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      if (user) {
-        setCurrentUser(user);
-        initializePage(user);
-      } else {
-        toast({ title: 'Authentication Error', variant: 'destructive'});
-        router.replace('/login');
-      }
-    });
-
-    return () => unsubscribe();
-  }, [auth, router, toast]);
-
-  const initializePage = async (user: User) => {
-    if (!db) {
-        toast({ title: 'Database connection not ready.', variant: 'destructive' });
-        router.replace('/welcome-guest');
-        return;
-    }
+  const initializePage = async (currentUser: User) => {
     try {
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, 'users', currentUser.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists() || !userDoc.data().paymentSuccessful) {
         toast({ title: 'Payment Required', description: 'Please purchase a plan to generate a report.', variant: 'destructive' });
         router.replace('/career-suggestions'); // This is the plans page now
+        return;
+      }
+      
+      const selectedCareer = localStorage.getItem('margdarshak_selected_career');
+      if (!selectedCareer) {
+        toast({ title: 'No Career Selected', description: 'Please select a career to generate a report.', variant: 'destructive' });
+        router.replace('/career-suggestions');
         return;
       }
 
@@ -88,13 +82,14 @@ export default function RoadmapPage() {
         purchasedPlan: plan,
         language: userData.language || 'English',
         userName: userData.name || 'User',
+        selectedCareer: selectedCareer,
       };
       
       setPageData(pageInfo);
-      await fetchAndSetRoadmap(user, plan, pageInfo.language);
+      await fetchAndSetRoadmap(currentUser, plan, pageInfo.language, selectedCareer);
 
-    } catch (error) {
-       toast({ title: 'Error loading page', description: 'An unexpected error occurred.', variant: 'destructive'});
+    } catch (error: any) {
+       toast({ title: 'Error loading page', description: error.message || 'An unexpected error occurred.', variant: 'destructive'});
        router.replace('/welcome-guest');
     } finally {
         setPageLoading(false);
@@ -111,8 +106,8 @@ export default function RoadmapPage() {
     return () => clearInterval(timer);
   }, [isGeneratingReport, generationProgress]);
 
-  const fetchAndSetRoadmap = async (user: User, plan: string, language: string) => {
-    const cachedReportKey = `margdarshak_roadmap_${plan}_${language}`;
+  const fetchAndSetRoadmap = async (currentUser: User, plan: string, language: string, career: string) => {
+    const cachedReportKey = `margdarshak_roadmap_${career.replace(/\s/g, '_')}_${plan}_${language}`;
     const cachedDataString = localStorage.getItem(cachedReportKey);
 
     if (cachedDataString) {
@@ -120,7 +115,7 @@ export default function RoadmapPage() {
         const cachedReport: StoredRoadmapData = JSON.parse(cachedDataString);
         if (Date.now() - cachedReport.generatedAt < REPORT_CACHE_DURATION) {
           setCurrentRoadmapMarkdown(cachedReport.markdown);
-          toast({ title: 'Report Loaded from Cache', description: `Showing cached ${plan} report.` });
+          toast({ title: 'Report Loaded from Cache', description: `Showing cached ${plan} report for ${career}.` });
           setIsGeneratingReport(false);
           return;
         }
@@ -138,7 +133,7 @@ export default function RoadmapPage() {
       const response = await fetch('/api/generate-and-save-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.uid, plan, language }),
+        body: JSON.stringify({ userId: currentUser.uid, plan, language, career }),
       });
 
       const result = await response.json();
@@ -202,7 +197,7 @@ export default function RoadmapPage() {
           <MapPinned className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="text-4xl font-bold capitalize">{pageData.purchasedPlan} Report</CardTitle>
           <CardDescription className="text-xl text-muted-foreground">
-            Your detailed {pageData.language} report for {pageData.userName}.
+            Your detailed {pageData.language} report for <strong className="text-primary/90">{pageData.selectedCareer}</strong>.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-2 sm:px-6 py-4">
