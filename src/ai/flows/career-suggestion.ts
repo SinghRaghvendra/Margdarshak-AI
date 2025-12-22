@@ -157,7 +157,7 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     console.log("📝 FINAL PROMPT FOR CAREER SUGGESTION:\n", prompt);
 
     try {
-        const text = await callGeminiApi(prompt, "gemini-1.5-flash", 4096);
+        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 4096);
         const parsedResponse = extractJsonFromText(text);
         return CareerSuggestionOutputSchema.parse(parsedResponse);
     } catch (error: any) {

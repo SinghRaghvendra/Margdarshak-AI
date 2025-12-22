@@ -291,7 +291,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid plan specified.' }, { status: 400 });
     }
 
-    const reportMarkdown = await callGeminiApi(prompt, "gemini-1.5-flash", maxTokens);
+    const reportMarkdown = await callGeminiApi(prompt, "gemini-2.5-flash", maxTokens);
 
     if (!reportMarkdown) {
       throw new Error("The AI model returned an empty response.");
