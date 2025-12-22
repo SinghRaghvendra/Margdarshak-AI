@@ -93,7 +93,8 @@ export default function PricingPage() {
   }, [isClient]);
 
   const handleSelectPlan = (planId: string, price: number) => {
-    const selectedPlan = { id: planId, price: offerExpired ? plans.find(p => p.id === planId)!.mrp : price };
+    // The price is now always the special offer price, regardless of the timer.
+    const selectedPlan = { id: planId, price: price };
     localStorage.setItem('margdarshak_selected_plan', JSON.stringify(selectedPlan));
     toast({
       title: `Plan Selected: ${planId.charAt(0).toUpperCase() + planId.slice(1)}`,
@@ -120,6 +121,12 @@ export default function PricingPage() {
                   <p className="text-4xl font-bold tracking-widest">{timer}</p>
               </div>
             )}
+             {isClient && offerExpired && (
+              <div className="mb-8 p-3 bg-destructive/20 border border-destructive/50 rounded-lg max-w-md mx-auto">
+                  <p className="font-semibold text-lg text-destructive">Special Offer Expired</p>
+                  <p className="text-muted-foreground mt-1">But you can still access the discounted prices!</p>
+              </div>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {plans.map((plan) => (
@@ -132,8 +139,10 @@ export default function PricingPage() {
                         <CardTitle className="text-2xl font-bold">{plan.title}</CardTitle>
                         <CardDescription>{plan.description}</CardDescription>
                         <div className="flex items-baseline justify-center gap-2 mt-4">
-                            <span className="text-4xl font-extrabold">₹{offerExpired ? plan.mrp : plan.price}</span>
-                            {!offerExpired && isClient && <span className="text-xl font-medium text-muted-foreground line-through">₹{plan.mrp}</span>}
+                            {/* The displayed price is now always the offer price. */}
+                            <span className="text-4xl font-extrabold">₹{plan.price}</span>
+                            {/* The original price is always shown as crossed out. */}
+                            <span className="text-xl font-medium text-muted-foreground line-through">₹{plan.mrp}</span>
                         </div>
                     </CardHeader>
                     <CardContent className="flex-grow">
