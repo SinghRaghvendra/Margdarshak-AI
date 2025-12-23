@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Loader2, HardDriveDownload, BookUser, Wand2, PlusCircle, ArrowRight } from 'lucide-react';
+import { FileText, HardDriveDownload, BookUser, Wand2, PlusCircle, ArrowRight } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { collection, query, where, getDocs, orderBy, Timestamp, getDoc, doc } from 'firebase/firestore';
@@ -14,6 +14,7 @@ import type { User } from 'firebase/auth';
 import { format } from 'date-fns';
 import { useAuth, useFirestore } from '@/firebase';
 import Link from 'next/link';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ReportHistoryItem {
   id: string;
@@ -31,7 +32,7 @@ export default function MyReportsPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [reports, setReports] = useState<ReportHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasPaid, setHasPaid] = useState(false);
+  const [hasPaidButNoReport, setHasPaidButNoReport] = useState(false);
 
   useEffect(() => {
     if (!auth) return;
@@ -45,7 +46,8 @@ export default function MyReportsPage() {
       }
     });
     return () => unsubscribe();
-  }, [router, toast, auth, db]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth, db]);
 
   const fetchUserData = async (user: User) => {
     if (!db) return;
@@ -53,9 +55,6 @@ export default function MyReportsPage() {
     try {
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists() && userDoc.data().paymentSuccessful) {
-        setHasPaid(true);
-      }
       
       const reportsQuery = query(
         collection(db, 'generatedReports'),
@@ -75,6 +74,14 @@ export default function MyReportsPage() {
         };
       });
       setReports(fetchedReports);
+
+      // Check for the specific scenario: paid but no reports generated
+      if (userDoc.exists() && userDoc.data().paymentSuccessful && fetchedReports.length === 0) {
+        setHasPaidButNoReport(true);
+      } else {
+        setHasPaidButNoReport(false);
+      }
+
     } catch (error) {
       console.error("Error fetching reports:", error);
       toast({ title: 'Error Fetching Data', description: 'Could not load your report history. Please try again later.', variant: 'destructive' });
@@ -87,19 +94,12 @@ export default function MyReportsPage() {
     // This function sets all necessary local storage items to bypass the journey checks
     // and take the user directly to the roadmap page.
 
-    // 1. Set flags for previous steps to prevent redirects
+    // 1. Mock flags for previous steps to prevent redirects
     localStorage.setItem('margdarshak_birth_details_completed', 'true');
     localStorage.setItem('margdarshak_test_completed', 'true');
-    // We assume if a report exists, these were filled. A simple 'true' string is enough.
-    localStorage.setItem('margdarshak_personalized_answers', '{"q1":"...","q2":"...","q3":"...","q4":"...","q5":"..."}');
-    localStorage.setItem('margdarshak_user_traits', '{"s1":{"s1q1":1,"s1q2":1},"s2":{"s2q1":"a","s2q2":"a","s2q3":"a"},"s3":{"s3q1":1,"s3q2":1},"s4":{"s4q1":"a"},"s5":{"s5q1":1,"s5q2":"a"}}');
+    localStorage.setItem('margdarshak_personalized_answers_completed', 'true');
+    localStorage.setItem('margdarshak_payment_successful', 'true');
     
-    // 2. The selected careers list (can be mocked with just the one)
-    localStorage.setItem('margdarshak_selected_careers_list', JSON.stringify([report.careerName]));
-    localStorage.setItem('margdarshak_selected_career', report.careerName);
-
-
-    // 3. All career suggestions (find or mock the one for this report)
     const mockSuggestion = {
         name: report.careerName,
         matchScore: 'N/A',
@@ -107,12 +107,10 @@ export default function MyReportsPage() {
         rationale: 'This report was loaded from your saved history.'
     };
     localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify([mockSuggestion]));
+    localStorage.setItem('margdarshak_selected_career', report.careerName);
 
-    // 4. Set the payment status to true for viewing
-    localStorage.setItem('margdarshak_payment_successful', 'true');
-
-    // 5. Set the specific report markdown in its own cache item so roadmap page can pick it up
-    const cachedReportKey = `margdarshak_roadmap_${report.careerName.replace(/\s+/g, '_')}_${report.language}`;
+    // 2. Set the specific report markdown in its own cache item so roadmap page can pick it up
+    const cachedReportKey = `margdarshak_roadmap_${report.careerName.replace(/\s+/g, '_')}_view_mode`;
     const cachedReportData = {
         markdown: report.reportMarkdown,
         generatedAt: Date.now(),
@@ -120,7 +118,7 @@ export default function MyReportsPage() {
     };
     localStorage.setItem(cachedReportKey, JSON.stringify(cachedReportData));
     
-    // 6. Navigate
+    // 3. Navigate
     toast({ title: `Loading Report: ${report.careerName}`, description: 'Redirecting you to the report view.' });
     router.push('/roadmap');
   };
@@ -135,6 +133,22 @@ export default function MyReportsPage() {
   }
 
   const renderContent = () => {
+    if (hasPaidButNoReport) {
+      return (
+        <Alert>
+          <AlertTitle className="text-xl font-bold">Payment Complete!</AlertTitle>
+          <AlertDescription className="mt-2">
+            Your payment was successful. You can now proceed to your career suggestions to generate your first detailed report.
+          </AlertDescription>
+          <div className="mt-4">
+            <Button onClick={() => router.push('/career-suggestions')}>
+              Generate Your Paid Report <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </Alert>
+      );
+    }
+
     if (reports.length > 0) {
       return (
         <>
@@ -169,7 +183,7 @@ export default function MyReportsPage() {
               </div>
               <div>
                 <CardTitle>Explore More Options</CardTitle>
-                <CardDescription>Curious about another career? Get on-demand insights.</CardDescription>
+                <CardDescription>Curious about another career? Get on-demand insights for a small fee.</CardDescription>
               </div>
             </CardHeader>
             <CardContent>
@@ -184,21 +198,6 @@ export default function MyReportsPage() {
         </>
       );
     }
-
-    if (hasPaid) {
-        return (
-            <div className="text-center py-12">
-              <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold">You have no saved reports yet</h3>
-              <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                Your payment was successful! You can now proceed to your career suggestions to generate your first detailed report.
-              </p>
-              <Button onClick={() => router.push('/career-suggestions')} className="mt-6">
-                Generate Your Report <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-        );
-    }
     
     // Default: Not paid, no reports
     return (
@@ -209,12 +208,11 @@ export default function MyReportsPage() {
             You haven't generated any career reports yet.
             </p>
             <Button onClick={() => router.push('/welcome-guest')} className="mt-6">
-            Start AI Councel Career Guide
+              Start AI Councel Career Guide
             </Button>
         </div>
     );
   }
-
 
   return (
     <div className="py-8">
@@ -225,7 +223,7 @@ export default function MyReportsPage() {
                 <div>
                     <CardTitle className="text-3xl font-bold">My Reports</CardTitle>
                     <CardDescription className="text-lg">
-                        View and download your previously generated career reports.
+                        View, download, or resume generation of your career reports.
                     </CardDescription>
                 </div>
             </div>
@@ -237,5 +235,3 @@ export default function MyReportsPage() {
     </div>
   );
 }
-
-    

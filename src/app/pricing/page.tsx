@@ -7,6 +7,10 @@ import { Ticket, ArrowRight, CheckCircle, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
+import { useAuth, useFirestore } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const plans = [
     {
@@ -59,6 +63,10 @@ const plans = [
 export default function PricingPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+  const db = useFirestore();
+
+  const [pageLoading, setPageLoading] = useState(true);
   const [timer, setTimer] = useState('05:00');
   const [offerExpired, setOfferExpired] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -66,6 +74,31 @@ export default function PricingPage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (!auth || !db || !isClient) return;
+
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists() && userDoc.data().paymentSuccessful) {
+          toast({
+            title: 'Payment Already Made',
+            description: 'Redirecting you to your reports dashboard.',
+          });
+          router.replace('/my-reports');
+        } else {
+          setPageLoading(false);
+        }
+      } else {
+        toast({ title: 'Not Authenticated', variant: 'destructive'});
+        router.replace('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth, db, router, toast, isClient]);
 
   useEffect(() => {
     if (!isClient) return;
@@ -93,7 +126,6 @@ export default function PricingPage() {
   }, [isClient]);
 
   const handleSelectPlan = (planId: string, price: number) => {
-    // The price is now always the special offer price, regardless of the timer.
     const selectedPlan = { id: planId, price: price };
     localStorage.setItem('margdarshak_selected_plan', JSON.stringify(selectedPlan));
     toast({
@@ -103,6 +135,9 @@ export default function PricingPage() {
     router.push('/payment');
   };
 
+  if (pageLoading) {
+    return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
+  }
 
   return (
     <div className="py-12">
@@ -139,9 +174,7 @@ export default function PricingPage() {
                         <CardTitle className="text-2xl font-bold">{plan.title}</CardTitle>
                         <CardDescription>{plan.description}</CardDescription>
                         <div className="flex items-baseline justify-center gap-2 mt-4">
-                            {/* The displayed price is now always the offer price. */}
                             <span className="text-4xl font-extrabold">₹{plan.price}</span>
-                            {/* The original price is always shown as crossed out. */}
                             <span className="text-xl font-medium text-muted-foreground line-through">₹{plan.mrp}</span>
                         </div>
                     </CardHeader>
