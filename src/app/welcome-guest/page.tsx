@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,6 +13,7 @@ import { User } from 'firebase/auth';
  * This page now acts as a Smart Linear Router.
  * Its only job is to ensure the user is authenticated and then
  * redirect them to the correct next step in their journey based on
+
  * their progress stored in Firestore.
  */
 export default function WelcomeGuestPage() {
@@ -46,16 +48,17 @@ export default function WelcomeGuestPage() {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           
-          if (userData.paymentSuccessful) {
-            router.replace('/roadmap');
-          } else if (!userData.birthDetailsCompleted) {
+          if (!userData.birthDetailsCompleted) {
             router.replace('/birth-details');
           } else if (!userData.testCompleted) {
             router.replace('/psychometric-test');
           } else if (!userData.personalizedAnswersCompleted) {
             router.replace('/personalized-questions');
+          } else if (!userData.paymentSuccessful) {
+            // All steps before payment are done, send to pricing.
+            router.replace('/pricing');
           } else {
-            // Default to plans page if all steps are complete but payment isn't.
+            // Payment is done, this is where the journey continues to suggestions.
             router.replace('/career-suggestions');
           }
         } else {

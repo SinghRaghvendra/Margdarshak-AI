@@ -36,44 +36,58 @@ export default function CareerSuggestionsPage() {
   useEffect(() => {
     if (!user || !db) return;
 
-    const checkPaymentAndGenerate = async () => {
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
+    const checkPaymentAndGenerate = async (currentUser: User) => {
+      try {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
 
-      if (!userDoc.exists() || !userDoc.data()?.paymentSuccessful) {
-        toast({ title: 'Payment Required', description: 'Please select a plan to continue.', variant: 'destructive'});
-        router.replace('/career-suggestions'); // This is the plans page
-        return;
+        if (!userDoc.exists() || !userDoc.data()?.paymentSuccessful) {
+          toast({ title: 'Payment Required', description: 'Please select a plan to generate career suggestions.', variant: 'destructive'});
+          router.replace('/pricing');
+          return;
+        }
+        
+        // Payment is confirmed. Now, safely get data and generate suggestions.
+        const userData = userDoc.data();
+        let userTraits = userData.userTraits;
+        let personalizedAnswers = userData.personalizedAnswers;
+
+        // Fallback to local storage only if DB data is somehow missing (which it shouldn't be)
+        if (!userTraits || !personalizedAnswers) {
+            const userTraitsString = localStorage.getItem('margdarshak_user_traits');
+            const personalizedAnswersString = localStorage.getItem('margdarshak_personalized_answers');
+            if (isValidJSONObject(userTraitsString) && isValidJSONObject(personalizedAnswersString)) {
+                userTraits = JSON.parse(userTraitsString);
+                personalizedAnswers = JSON.parse(personalizedAnswersString);
+            } else {
+                 throw new Error("Critical user data for suggestions is missing from both database and local storage.");
+            }
+        }
+        
+        const input: CareerSuggestionInput = {
+            traits: userTraits,
+            personalizedAnswers: personalizedAnswers,
+        };
+        
+        await fetchTopCareers(currentUser, input);
+
+      } catch (error: any) {
+        toast({ title: 'Error Loading Page', description: error.message, variant: 'destructive' });
+        setGenerationError(`An error occurred: ${error.message}`);
+        setIsLoading(false);
       }
-      
-      // Payment is confirmed, now generate suggestions.
-      fetchTopCareers(user);
     };
 
-    checkPaymentAndGenerate();
+    checkPaymentAndGenerate(user);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, db]);
+  }, [user, db, router, toast]);
 
 
-  const fetchTopCareers = async (currentUser: User) => {
+  const fetchTopCareers = async (currentUser: User, input: CareerSuggestionInput) => {
     setIsLoading(true);
     setGenerationError(null);
     
     try {
-        const userTraitsString = localStorage.getItem('margdarshak_user_traits');
-        const personalizedAnswersString = localStorage.getItem('margdarshak_personalized_answers');
-  
-        if (!isValidJSONObject(userTraitsString) || !isValidJSONObject(personalizedAnswersString)) {
-            toast({ title: 'Incomplete Journey', description: 'Some of your data is missing. Redirecting...', variant: 'destructive' });
-            router.push('/personalized-questions');
-            return;
-        }
-        
-        const input: CareerSuggestionInput = {
-          traits: JSON.parse(userTraitsString),
-          personalizedAnswers: JSON.parse(personalizedAnswersString),
-        };
-  
         const suggestionsOutput: CareerSuggestionOutput = await suggestCareers(input);
   
         if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length > 0) {
@@ -83,6 +97,9 @@ export default function CareerSuggestionsPage() {
           const journeyId = localStorage.getItem('margdarshak_current_journey_id') || `journey_${Date.now()}`;
           const journeyDocRef = doc(db, 'users', currentUser.uid, 'journeys', journeyId);
           await setDoc(journeyDocRef, { allCareerSuggestions: sortedSuggestions, lastUpdated: new Date() }, { merge: true });
+
+          // Also save to local storage for the next step.
+          localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(sortedSuggestions));
 
         } else {
           setGenerationError('The AI could not generate any career suggestions. Please try again.');
@@ -98,10 +115,8 @@ export default function CareerSuggestionsPage() {
   const handleSelectCareer = (careerName: string) => {
     if (!suggestions.length) return;
     
-    const selectedCareerDetails = suggestions.find(c => c.name === careerName);
-    
+    // We already saved all suggestions to local storage when they were fetched.
     localStorage.setItem('margdarshak_selected_career', careerName);
-    localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestions)); // Save all for the report
     
     toast({ title: 'Career Selected!', description: `Generating report for ${careerName}...` });
     router.push('/roadmap');
