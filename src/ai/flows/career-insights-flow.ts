@@ -28,28 +28,31 @@ const CareerInsightsOutputSchema = z.object({
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
 /**
- * Extracts a JSON object from a string that might contain Markdown code fences.
+ * Extracts a JSON object from a string that might contain other text or markdown.
+ * It finds the first '{' and the last '}' to isolate the JSON content.
  * @param text The text from the AI response.
  * @returns The parsed JSON object.
  */
 function extractJsonFromText(text: string): any {
-  const jsonRegex = /```json\s*([\s\S]*?)\s*```/;
-  const match = text.match(jsonRegex);
-
-  let jsonString;
-  if (match && match[1]) {
-    // If markdown with "json" is found, use its content
-    jsonString = match[1];
-  } else if (text.trim().startsWith('{')) {
-    // Otherwise, assume the whole string is the JSON
-    jsonString = text;
-  } else {
-     throw new Error("Could not find a valid JSON object in the AI response.");
+  // Find the first occurrence of '{' which marks the beginning of the JSON object
+  const start = text.indexOf('{');
+  // Find the last occurrence of '}' which marks the end of the JSON object
+  const end = text.lastIndexOf('}');
+  
+  if (start === -1 || end === -1 || end < start) {
+    // If we can't find a valid JSON structure, throw an error.
+    console.error("RAW AI RESPONSE (invalid structure):", text);
+    throw new Error("Could not find a valid JSON object in the AI response.");
   }
-
+  
+  // Extract the substring that is likely the JSON object
+  const jsonString = text.substring(start, end + 1);
+  
   try {
+    // Attempt to parse the extracted string
     return JSON.parse(jsonString);
-  } catch (parseError: any) {
+  } catch (parseError) {
+    // If parsing fails, log the details and throw a specific error
     console.error("JSON Parsing failed after extraction:", parseError, "--- Extracted String:", jsonString);
     throw new Error('The extracted text was not valid JSON.');
   }
