@@ -28,25 +28,22 @@ const CareerInsightsOutputSchema = z.object({
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
 /**
- * Extracts a JSON object from a string that might contain other text or markdown.
+ * Defensively extracts a JSON object from a string that might contain other text or markdown.
  * It finds the first '{' and the last '}' to isolate the JSON content.
  * @param text The text from the AI response.
  * @returns The parsed JSON object.
  */
-function extractJsonFromText(text: string): any {
-  // Find the first occurrence of '{' which marks the beginning of the JSON object
-  const start = text.indexOf('{');
-  // Find the last occurrence of '}' which marks the end of the JSON object
-  const end = text.lastIndexOf('}');
-  
-  if (start === -1 || end === -1 || end < start) {
+function extractJSON(text: string): any {
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
     // If we can't find a valid JSON structure, throw an error.
-    console.error("RAW AI RESPONSE (invalid structure):", text);
-    throw new Error("Could not find a valid JSON object in the AI response.");
+    console.error("RAW AI RESPONSE (no JSON object found):", text);
+    throw new Error('Could not find a valid JSON object in the AI response.');
   }
-  
-  // Extract the substring that is likely the JSON object
-  const jsonString = text.substring(start, end + 1);
+
+  const jsonString = text.slice(firstBrace, lastBrace + 1);
   
   try {
     // Attempt to parse the extracted string
@@ -60,24 +57,34 @@ function extractJsonFromText(text: string): any {
 
 // Export a simple async function to be called from the frontend.
 export async function generateCareerInsights(input: CareerInsightsInput): Promise<CareerInsightsOutput> {
-  const prompt = `You are an AI assistant providing astrological and numerological insights for career guidance.
-    Based on the user's birth details and selected career, provide:
+  const prompt = `
+    You are an AI assistant functioning as a JSON API.
+    RULES:
+    - Respond ONLY with a valid JSON object.
+    - Do NOT include markdown \`\`\`json wrappers.
+    - Do NOT include any explanations or introductory text.
+    - Do NOT include any text outside of the JSON object.
+    - The final output MUST be a raw JSON object.
+
+    Based on the user's details, provide astrological and numerological insights for their selected career.
     
-    1.  **Astrological Review (approx. 150-200 words):** Discuss potential astrological alignments, strengths, challenges, or general considerations for the selected career: ${input.selectedCareer}.
-        User Details:
-        - Date of Birth: ${input.dateOfBirth}
-        - Time of Birth: ${input.timeOfBirth}
-        - Place of Birth: ${input.placeOfBirth}
-    
-    2.  **Numerological Review (approx. 150-200 words):** Based on the Date of Birth: ${input.dateOfBirth}, discuss how numerology (e.g., Life Path Number, Destiny Number if calculable from DOB alone) might relate to the user's approach, potential success, or challenges in the selected career: ${input.selectedCareer}.
-    
-    Important Guidelines:
-    - Frame these reviews as perspectives for consideration, not as definitive predictions or absolute truths.
+    USER DETAILS:
+    - Selected Career: ${input.selectedCareer}
+    - Date of Birth: ${input.dateOfBirth}
+    - Time of Birth: ${input.timeOfBirth}
+    - Place of Birth: ${input.placeOfBirth}
+
+    RESPONSE JSON SCHEMA:
+    {
+      "astrologicalReview": "string (approx. 150-200 words, markdown is allowed INSIDE this string)",
+      "numerologicalReview": "string (approx. 150-200 words, markdown is allowed INSIDE this string)"
+    }
+
+    Tone and Content Guidelines:
+    - Frame reviews as perspectives for consideration, not definitive predictions.
     - Use a supportive, encouraging, and positive tone.
-    - Avoid making specific, unverifiable claims. Focus on general themes and potentials.
-    - Ensure the output is well-formatted in Markdown.
-    - Do not include any disclaimers like "This is for entertainment purposes only" directly in your response. Your tone and framing should suffice.
-    - Adhere strictly to the requested JSON output format. Respond ONLY with a raw JSON object matching this schema: { "astrologicalReview": "...", "numerologicalReview": "..." }.
+    - Avoid making specific, unverifiable claims. Focus on general themes.
+    - Do not include disclaimers in the response content itself.
     `;
     
     try {
@@ -87,8 +94,16 @@ export async function generateCareerInsights(input: CareerInsightsInput): Promis
              throw new Error("The AI model returned an empty response for career insights.");
         }
         
-        const parsedResponse = extractJsonFromText(text);
+        const parsedResponse = extractJSON(text);
+
+        // Validate the structure of the parsed response
+        if (typeof parsedResponse.astrologicalReview !== 'string' || typeof parsedResponse.numerologicalReview !== 'string') {
+            console.error("Invalid AI response schema:", parsedResponse);
+            throw new Error("AI response was received but did not match the required data structure.");
+        }
+        
         return CareerInsightsOutputSchema.parse(parsedResponse);
+
     } catch (error: any) {
         console.error("Failed to process AI response for career insights:", error);
         throw new Error(`The AI model's response could not be understood for career insights. Details: ${error.message}`);
