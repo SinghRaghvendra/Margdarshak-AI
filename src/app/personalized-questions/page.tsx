@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Edit3, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Edit3, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
@@ -173,12 +173,12 @@ export default function PersonalizedQuestionsPage() {
                <Button type="button" variant="outline" onClick={() => router.push('/psychometric-test')} disabled={isLoading}>
                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Test
                </Button>
-               <Button type="submit" className="text-lg" disabled={isLoading}>
+               <Button type="submit" className="text-lg bg-green-500 hover:bg-green-600 text-white" disabled={isLoading}>
                 {isLoading ? (
                   <LoadingSpinner />
                 ) : (
                   <>
-                    Unlock My Career Blueprint <ArrowRight className="ml-2 h-5 w-5" />
+                    Submit Assessment <CheckCircle className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>
