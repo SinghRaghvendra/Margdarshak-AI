@@ -127,7 +127,6 @@ export default function PaymentPage() {
                 }, { merge: true });
 
                 toast({ title: 'Payment Successful!', description: 'Proceeding to your career suggestions...' });
-                // CORRECTED: Redirect to career-suggestions page AFTER payment.
                 router.push('/career-suggestions');
             } else {
                 throw new Error(verificationData.error || 'Payment verification failed.');
