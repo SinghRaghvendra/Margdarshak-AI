@@ -27,6 +27,34 @@ const CareerInsightsOutputSchema = z.object({
 });
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
+/**
+ * Extracts a JSON object from a string that might contain Markdown code fences.
+ * @param text The text from the AI response.
+ * @returns The parsed JSON object.
+ */
+function extractJsonFromText(text: string): any {
+  const jsonRegex = /```json\s*([\s\S]*?)\s*```/;
+  const match = text.match(jsonRegex);
+
+  let jsonString;
+  if (match && match[1]) {
+    // If markdown with "json" is found, use its content
+    jsonString = match[1];
+  } else if (text.trim().startsWith('{')) {
+    // Otherwise, assume the whole string is the JSON
+    jsonString = text;
+  } else {
+     throw new Error("Could not find a valid JSON object in the AI response.");
+  }
+
+  try {
+    return JSON.parse(jsonString);
+  } catch (parseError: any) {
+    console.error("JSON Parsing failed after extraction:", parseError, "--- Extracted String:", jsonString);
+    throw new Error('The extracted text was not valid JSON.');
+  }
+}
+
 // Export a simple async function to be called from the frontend.
 export async function generateCareerInsights(input: CareerInsightsInput): Promise<CareerInsightsOutput> {
   const prompt = `You are an AI assistant providing astrological and numerological insights for career guidance.
@@ -56,7 +84,7 @@ export async function generateCareerInsights(input: CareerInsightsInput): Promis
              throw new Error("The AI model returned an empty response for career insights.");
         }
         
-        const parsedResponse = JSON.parse(text);
+        const parsedResponse = extractJsonFromText(text);
         return CareerInsightsOutputSchema.parse(parsedResponse);
     } catch (error: any) {
         console.error("Failed to process AI response for career insights:", error);
