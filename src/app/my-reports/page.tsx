@@ -20,8 +20,9 @@ interface ReportHistoryItem {
   id: string;
   careerName: string;
   language: string;
+  plan: string;
   generatedAt: Date;
-  reportMarkdown: string; // Keep the markdown to pass it for viewing
+  reportMarkdown: string; 
 }
 
 export default function MyReportsPage() {
@@ -69,13 +70,13 @@ export default function MyReportsPage() {
           id: doc.id,
           careerName: data.careerName,
           language: data.language,
+          plan: data.plan || 'N/A',
           generatedAt: generatedAtTimestamp ? generatedAtTimestamp.toDate() : new Date(),
           reportMarkdown: data.reportMarkdown,
         };
       });
       setReports(fetchedReports);
 
-      // Check for the specific scenario: paid but no reports generated
       if (userDoc.exists() && userDoc.data().paymentSuccessful && fetchedReports.length === 0) {
         setHasPaidButNoReport(true);
       } else {
@@ -91,37 +92,23 @@ export default function MyReportsPage() {
   };
 
   const handleViewReport = (report: ReportHistoryItem) => {
-    // This function sets all necessary local storage items to bypass the journey checks
-    // and take the user directly to the roadmap page.
-
-    // 1. Mock flags for previous steps to prevent redirects
-    localStorage.setItem('margdarshak_birth_details_completed', 'true');
-    localStorage.setItem('margdarshak_test_completed', 'true');
-    localStorage.setItem('margdarshak_personalized_answers_completed', 'true');
-    localStorage.setItem('margdarshak_payment_successful', 'true');
-    
-    const mockSuggestion = {
-        name: report.careerName,
-        matchScore: 'N/A',
-        personalityProfile: 'From Saved Report',
-        rationale: 'This report was loaded from your saved history.'
-    };
-    localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify([mockSuggestion]));
-    localStorage.setItem('margdarshak_selected_career', report.careerName);
-
-    // 2. Set the specific report markdown in its own cache item so roadmap page can pick it up
-    const cachedReportKey = `margdarshak_roadmap_${report.careerName.replace(/\s+/g, '_')}_view_mode`;
-    const cachedReportData = {
+    // This function stores the entire report object in a special localStorage
+    // item that the roadmap page will look for to enter 'view mode'.
+    const viewModeData = {
         markdown: report.reportMarkdown,
-        generatedAt: Date.now(),
-        language: report.language
+        careerName: report.careerName,
+        plan: report.plan,
+        language: report.language,
+        userName: currentUser?.displayName || 'User',
     };
-    localStorage.setItem(cachedReportKey, JSON.stringify(cachedReportData));
     
-    // 3. Navigate
+    // Use a consistent key for view mode.
+    localStorage.setItem('margdarshak_view_report_data', JSON.stringify(viewModeData));
+    
     toast({ title: `Loading Report: ${report.careerName}`, description: 'Redirecting you to the report view.' });
     router.push('/roadmap');
   };
+
 
   if (isLoading) {
     return (

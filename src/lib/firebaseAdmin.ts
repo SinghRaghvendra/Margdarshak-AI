@@ -1,14 +1,14 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
 
-// This function ensures that Firebase is initialized only once.
+let adminApp: App;
+let db: Firestore;
+
 function initializeFirebaseAdmin(): App {
   if (getApps().length > 0) {
     return getApps()[0];
   }
 
-  // Important: The private key needs to have its newlines properly escaped
-  // when stored in an environment variable.
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
   if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
@@ -26,5 +26,15 @@ function initializeFirebaseAdmin(): App {
   });
 }
 
-const adminApp = initializeFirebaseAdmin();
-export const db = getFirestore(adminApp);
+/**
+ * Gets the initialized Firestore instance, initializing Firebase Admin if necessary.
+ * This "lazy" approach prevents the SDK from initializing during the build process.
+ * @returns The Firestore database instance.
+ */
+export function getDb(): Firestore {
+  if (!db) {
+    adminApp = initializeFirebaseAdmin();
+    db = getFirestore(adminApp);
+  }
+  return db;
+}

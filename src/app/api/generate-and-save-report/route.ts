@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebaseAdmin'; // <-- CORRECT: Import pre-initialized db
+import { getDb } from '@/lib/firebaseAdmin'; // <-- CORRECT: Import the getter function
 import { callGeminiApi } from '@/app/api/gemini/route';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
@@ -203,6 +203,7 @@ function getClarityPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
+    const db = getDb(); // <-- Lazily get the DB instance at runtime
     const { userId, plan, language, career, allSuggestions } = await req.json();
 
     if (!userId || !plan || !language || !career || !allSuggestions) {

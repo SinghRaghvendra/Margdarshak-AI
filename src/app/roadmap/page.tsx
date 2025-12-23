@@ -11,7 +11,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import type { User } from 'firebase/auth';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 
@@ -20,6 +20,14 @@ interface StoredRoadmapData {
   generatedAt: number; // Timestamp
   language: string;
   plan: string;
+}
+
+interface ViewModeData {
+    markdown: string;
+    careerName: string;
+    plan: string;
+    language: string;
+    userName: string;
 }
 
 const REPORT_CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
@@ -31,7 +39,7 @@ export default function RoadmapPage() {
   const db = useFirestore();
   
   const [currentRoadmapMarkdown, setCurrentRoadmapMarkdown] = useState<string | null>(null);
-  const [isGeneratingReport, setIsGeneratingReport] = useState(true);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false); // Default to false
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   
@@ -41,56 +49,82 @@ export default function RoadmapPage() {
     language: string;
     userName: string;
     selectedCareer: string;
-    allSuggestions: any[];
+    allSuggestions?: any[]; // Optional for view mode
   } | null>(null);
 
   const roadmapContentRef = useRef<HTMLDivElement>(null);
+  const hasInitialized = useRef(false); // Add a ref to track initialization.
 
 
   useEffect(() => {
-    if (!user || !db) return;
-    initializePage(user);
+    // Ensure this effect runs only once on mount, once user and db are available.
+    if (user && db && !hasInitialized.current) {
+      hasInitialized.current = true; // Mark as initialized
+      initializePage(user);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, db]);
 
   const initializePage = async (currentUser: User) => {
     try {
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      const userDoc = await getDoc(userDocRef);
+        // PRIORITY 1: Check for "View Mode" from My Reports page.
+        const viewModeDataString = localStorage.getItem('margdarshak_view_report_data');
+        if (viewModeDataString) {
+            const viewData: ViewModeData = JSON.parse(viewModeDataString);
+            
+            setPageData({
+                purchasedPlan: viewData.plan,
+                language: viewData.language,
+                userName: viewData.userName,
+                selectedCareer: viewData.careerName,
+            });
+            setCurrentRoadmapMarkdown(viewData.markdown);
+            setIsGeneratingReport(false);
+            setPageLoading(false);
+            
+            // Important: Clear the item after use so it doesn't persist.
+            localStorage.removeItem('margdarshak_view_report_data');
+            toast({ title: "Viewing Saved Report", description: `Displaying your report for ${viewData.careerName}.`});
+            return;
+        }
 
-      if (!userDoc.exists() || !userDoc.data().paymentSuccessful) {
-        toast({ title: 'Payment Required', description: 'Please purchase a plan to generate a report.', variant: 'destructive' });
-        router.replace('/pricing');
-        return;
-      }
-      
-      const selectedCareer = localStorage.getItem('margdarshak_selected_career');
-      const allSuggestionsString = localStorage.getItem('margdarshak_all_career_suggestions');
+        // PRIORITY 2: Proceed with the "Generate New Report" flow.
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
 
-      if (!selectedCareer || !allSuggestionsString) {
-        toast({ title: 'Data Missing', description: 'Career selection is missing. Please select a career first.', variant: 'destructive' });
-        router.replace('/career-suggestions');
-        return;
-      }
+        if (!userDoc.exists() || !userDoc.data().paymentSuccessful) {
+            toast({ title: 'Payment Required', description: 'Please purchase a plan to generate a report.', variant: 'destructive' });
+            router.replace('/pricing');
+            return;
+        }
+        
+        const selectedCareer = localStorage.getItem('margdarshak_selected_career');
+        const allSuggestionsString = localStorage.getItem('margdarshak_all_career_suggestions');
 
-      const userData = userDoc.data();
-      const plan = userData.purchasedPlan;
-      if (!plan) {
-        toast({ title: 'No Plan Purchased', description: 'Please purchase a plan first.', variant: 'destructive' });
-        router.replace('/pricing');
-        return;
-      }
+        if (!selectedCareer || !allSuggestionsString) {
+            toast({ title: 'Data Missing', description: 'Career selection is missing. Please select a career first.', variant: 'destructive' });
+            router.replace('/career-suggestions');
+            return;
+        }
+
+        const userData = userDoc.data();
+        const plan = userData.purchasedPlan;
+        if (!plan) {
+            toast({ title: 'No Plan Purchased', description: 'Please purchase a plan first.', variant: 'destructive' });
+            router.replace('/pricing');
+            return;
+        }
       
-      const pageInfo = {
-        purchasedPlan: plan,
-        language: userData.language || 'English',
-        userName: userData.name || 'User',
-        selectedCareer: selectedCareer,
-        allSuggestions: JSON.parse(allSuggestionsString),
-      };
+        const pageInfo = {
+            purchasedPlan: plan,
+            language: userData.language || 'English',
+            userName: userData.name || 'User',
+            selectedCareer: selectedCareer,
+            allSuggestions: JSON.parse(allSuggestionsString),
+        };
       
-      setPageData(pageInfo);
-      await fetchAndSetRoadmap(currentUser, pageInfo);
+        setPageData(pageInfo);
+        await fetchAndSetRoadmap(currentUser, pageInfo);
 
     } catch (error: any) {
        toast({ title: 'Error loading page', description: error.message || 'An unexpected error occurred.', variant: 'destructive'});

@@ -50,3 +50,11 @@ next-env.d.ts
 .firebase/
 functions/.next/
 functions/node_modules/
+
+
+secret.txt
+
+service-account.json
+.env
+.env.local
+.env.production
