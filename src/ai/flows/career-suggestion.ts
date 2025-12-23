@@ -43,49 +43,31 @@ const CareerSuggestionOutputSchema = z.object({
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
 
 /**
- * Extracts a JSON object from a string that might contain other text.
- * This version is stricter and looks for the specific structure of the careers object.
+ * Extracts a JSON object from a string that might contain other text or markdown.
+ * It finds the first '{' and the last '}' to isolate the JSON content.
  * @param text The text from the AI response.
  * @returns The parsed JSON object.
  */
 function extractJsonFromText(text: string): any {
-  // Look for the start of the 'careers' JSON structure.
-  const start = text.indexOf('{"careers":[');
-  if (start === -1) {
-    throw new Error("Could not find a valid 'careers' JSON object in the AI response.");
+  // Find the first occurrence of '{' which marks the beginning of the JSON object
+  const start = text.indexOf('{');
+  // Find the last occurrence of '}' which marks the end of the JSON object
+  const end = text.lastIndexOf('}');
+  
+  if (start === -1 || end === -1 || end < start) {
+    // If we can't find a valid JSON structure, throw an error.
+    console.error("RAW AI RESPONSE (invalid structure):", text);
+    throw new Error("Could not find a valid JSON object in the AI response.");
   }
-
-  // Find the corresponding closing bracket for the array and then the object.
-  let openBrackets = 0;
-  let end = -1;
-  for (let i = start + '{"careers":['.length; i < text.length; i++) {
-    if (text[i] === '[') openBrackets++;
-    if (text[i] === ']') openBrackets--;
-    if (openBrackets < 0) {
-      // We found the closing bracket of the careers array. Now find the final '}'.
-      const finalBrace = text.indexOf('}', i);
-      if (finalBrace !== -1) {
-        end = finalBrace;
-        break;
-      }
-    }
-  }
-
-  if (end === -1) {
-    // Fallback to simpler method if bracket matching fails
-    const simpleEnd = text.lastIndexOf('}');
-    if (simpleEnd > start) {
-        end = simpleEnd;
-    } else {
-        throw new Error('Could not find the end of the JSON object in the AI response.');
-    }
-  }
-
+  
+  // Extract the substring that is likely the JSON object
   const jsonString = text.substring(start, end + 1);
-
+  
   try {
+    // Attempt to parse the extracted string
     return JSON.parse(jsonString);
   } catch (parseError) {
+    // If parsing fails, log the details and throw a specific error
     console.error("JSON Parsing failed after extraction:", parseError, "--- Extracted String:", jsonString);
     throw new Error('The extracted text was not valid JSON.');
   }
