@@ -178,7 +178,7 @@ export default function PersonalizedQuestionsPage() {
                   <LoadingSpinner />
                 ) : (
                   <>
-                    See My Plans <ArrowRight className="ml-2 h-5 w-5" />
+                    Unlock My Career Blueprint <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>
