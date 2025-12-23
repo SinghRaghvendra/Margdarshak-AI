@@ -7,27 +7,26 @@ import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
 
-// Corrected the path to point to the root directory
-let adminApp: App;
+// --- Firebase Admin SDK Initialization ---
 let db: ReturnType<typeof getFirestore>;
 
-function initializeFirebaseAdmin() {
+try {
   if (!getApps().length) {
-    try {
-      const serviceAccount = require('../../../../service-account.json');
-      adminApp = initializeApp({
-        credential: cert(serviceAccount),
-      });
-      db = getFirestore(adminApp);
-    } catch (e: any) {
-      console.error("Failed to initialize Firebase Admin SDK:", e);
-      // This will prevent the app from crashing if service-account.json is missing or invalid during development,
-      // but the API route will fail if called.
+    // This environment variable check is crucial for Vercel/production environments
+    const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (!serviceAccountString) {
+      throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set.");
     }
-  } else {
-    adminApp = getApps()[0];
-    db = getFirestore(adminApp);
+    const serviceAccount = JSON.parse(serviceAccountString);
+    initializeApp({
+      credential: cert(serviceAccount),
+    });
   }
+  db = getFirestore();
+} catch (e: any) {
+  console.error("Fatal: Firebase Admin SDK initialization failed.", e);
+  // If the admin SDK fails to initialize, the API cannot function.
+  // The 'db' variable will be undefined, and subsequent calls will fail.
 }
 
 
@@ -228,10 +227,9 @@ function getClarityPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
-    initializeFirebaseAdmin();
-    // Ensure db is initialized before proceeding
+    // Ensure db is initialized before proceeding. This is the critical check.
     if (!db) {
-        throw new Error("Firebase Admin SDK is not initialized. Check your service account credentials.");
+        throw new Error("Firebase Admin SDK is not initialized. Check server logs for details.");
     }
 
     const { userId, plan, language, career, allSuggestions } = await req.json();
