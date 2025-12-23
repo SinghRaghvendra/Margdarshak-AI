@@ -1,36 +1,12 @@
 
 import { NextResponse } from 'next/server';
-import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { db } from '@/lib/firebaseAdmin'; // <-- CORRECT: Import pre-initialized db
 import { callGeminiApi } from '@/app/api/gemini/route';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
 
-// --- Firebase Admin SDK Initialization ---
-let db: ReturnType<typeof getFirestore>;
-
-try {
-  if (!getApps().length) {
-    // This environment variable check is crucial for Vercel/production environments
-    const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-    if (!serviceAccountString) {
-      throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set.");
-    }
-    const serviceAccount = JSON.parse(serviceAccountString);
-    initializeApp({
-      credential: cert(serviceAccount),
-    });
-  }
-  db = getFirestore();
-} catch (e: any) {
-  console.error("Fatal: Firebase Admin SDK initialization failed.", e);
-  // If the admin SDK fails to initialize, the API cannot function.
-  // The 'db' variable will be undefined, and subsequent calls will fail.
-}
-
-
-// --- PROMPT GENERATION FUNCTIONS FOR EACH TIER ---
+// --- PROMPT GENERATION FUNCTIONS FOR EACH TIER (No change here) ---
 
 function getVerdictPrompt(input: any) {
   return `
@@ -227,11 +203,6 @@ function getClarityPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
-    // Ensure db is initialized before proceeding. This is the critical check.
-    if (!db) {
-        throw new Error("Firebase Admin SDK is not initialized. Check server logs for details.");
-    }
-
     const { userId, plan, language, career, allSuggestions } = await req.json();
 
     if (!userId || !plan || !language || !career || !allSuggestions) {
@@ -246,8 +217,6 @@ export async function POST(req: Request) {
     }
     const userData = userDoc.data()!;
 
-    // This check can be simplified or removed if we trust the client flow
-    // but it's good for server-side validation.
     if (!userData.paymentSuccessful || userData.purchasedPlan !== plan) {
         return NextResponse.json({ error: `Payment required for the '${plan}' plan.` }, { status: 402 });
     }
@@ -330,8 +299,6 @@ export async function POST(req: Request) {
     
     await saveReport(db, reportData);
 
-    // After saving, invalidate the payment status to prevent re-generation
-    // without a new payment.
     await userDocRef.update({ paymentSuccessful: false });
 
     return NextResponse.json({ roadmapMarkdown: reportMarkdown });
