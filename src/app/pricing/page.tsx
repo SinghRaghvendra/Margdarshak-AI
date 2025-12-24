@@ -7,7 +7,7 @@ import { Ticket, ArrowRight, CheckCircle, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import type { User } from 'firebase/auth';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
@@ -62,9 +62,9 @@ const plans = [
 export default function PricingPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const auth = useAuth();
+  const { user, loading: authLoading } = useUser();
 
-  const [pageLoading, setPageLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [timer, setTimer] = useState('05:00');
   const [offerExpired, setOfferExpired] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -74,7 +74,24 @@ export default function PricingPage() {
   }, []);
 
   useEffect(() => {
-    if (!isClient) return;
+    if (authLoading) {
+      return; // Wait until auth state is determined
+    }
+    if (!user) {
+      toast({
+        title: "Signup Required",
+        description: "Please sign up or log in to view our pricing.",
+        variant: "destructive",
+      });
+      router.replace('/signup');
+    } else {
+      setPageLoading(false);
+    }
+  }, [user, authLoading, router, toast]);
+
+
+  useEffect(() => {
+    if (!isClient || pageLoading) return;
 
     let offerEndTime = localStorage.getItem('margdarshak_offer_end_time');
     if (!offerEndTime) {
@@ -96,14 +113,14 @@ export default function PricingPage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isClient]);
+  }, [isClient, pageLoading]);
 
   const handleSelectPlan = (planId: string, price: number) => {
-    if (!auth?.currentUser) {
+    if (!user) {
         toast({
             title: "Authentication Required",
-            description: "Please sign up or log in to purchase a plan.",
-            action: <Button onClick={() => router.push('/signup')}>Sign Up</Button>
+            description: "An error occurred. Please try logging in again.",
+            action: <Button onClick={() => router.push('/login')}>Login</Button>
         });
         return;
     }
@@ -117,7 +134,7 @@ export default function PricingPage() {
     router.push('/payment');
   };
 
-  if (pageLoading) {
+  if (pageLoading || authLoading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
