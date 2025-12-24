@@ -16,6 +16,7 @@ const staticRoutes = [
 ];
 
 const blogPosts = [
+  '/blog/passion-vs-salary',
   '/blog/career-counselling-in-india-guide',
   '/blog/is-career-counselling-worth-it',
   '/blog/ai-vs-human-career-counselling',

@@ -14,6 +14,12 @@ export const metadata: Metadata = {
 
 const allBlogPosts = [
     {
+      title: 'Passion or Salary? The Truth About Dream Careers in India',
+      excerpt: 'Is it better to follow your passion or chase a high salary? Discover why the most successful careers in 2026 are the ones that combine both.',
+      href: '/blog/passion-vs-salary',
+      date: '2026-01-01',
+    },
+    {
       title: 'Career Counselling in India: Complete Guide for Students & Parents (2026)',
       excerpt: 'A complete guide to understanding the importance and process of career counselling in India for students and parents in 2026.',
       href: '/blog/career-counselling-in-india-guide',
