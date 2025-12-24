@@ -11,7 +11,7 @@ import { callGeminiApi } from '@/app/api/gemini/route';
 const PersonalizedAnswersSchema = z.object({
   q1: z.string().describe("Answer to: Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?"),
   q2: z.string().describe("Answer to: What are some of your hobbies or activities you genuinely enjoy outside of work or study? What do you like about them?"),
-  q3: z.string().describe("Imagine yourself 5 years from now. What achievements, big or small, would make you feel proud and fulfilled in your professional life?"),
+  q3: z.string().describe("Answer to: Imagine yourself 5 years from now. What achievements, big or small, would make you feel proud and fulfilled in your professional life?"),
   q4: z.string().describe("Are there any specific industries or types of companies that particularly interest you or you feel drawn to? Why?"),
   q5: z.string().describe("What are your primary motivations when thinking about a career? (e.g., financial security, making an impact, continuous learning, work-life balance, creativity, leadership, etc.). Please elaborate."),
 });
@@ -140,7 +140,7 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     `;
     
     try {
-        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 4096);
+        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 10000);
         
         if (!text) {
              throw new Error("The AI model returned an empty response for career suggestions.");
@@ -160,3 +160,5 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
         throw new Error(`The AI model's response could not be understood. Details: ${error.message}`);
     }
 }
+
+    
