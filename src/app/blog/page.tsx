@@ -56,6 +56,12 @@ const allBlogPosts = [
       date: '2024-08-05',
     },
     {
+      title: 'Why Most People Never Find Their Dream Career',
+      excerpt: 'Discover the psychological traps like Analysis Paralysis and the Sunk Cost Fallacy that prevent you from finding your dream job.',
+      href: '/blog/why-most-people-never-find-their-dream-career',
+      date: '2024-08-06',
+    },
+    {
       title: 'How to Choose the Right Career in 2025',
       excerpt: 'A modern guide to choosing the right career. Learn how to balance your passions, skills, and market demand to find a fulfilling and future-proof job path with the help of AI.',
       href: '/blog/how-to-choose-the-right-career',

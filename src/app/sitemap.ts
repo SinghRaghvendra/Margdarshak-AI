@@ -29,6 +29,7 @@ const blogPosts = [
   '/blog/which-career-is-best-for-me',
   '/blog/find-your-dream-career',
   '/blog/dream-career-vs-reality',
+  '/blog/why-most-people-never-find-their-dream-career',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
