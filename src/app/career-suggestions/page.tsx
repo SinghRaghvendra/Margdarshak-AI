@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Lightbulb, CheckCircle, ShieldCheck, Star, Sparkles } from 'lucide-react';
+import { ArrowRight, Lightbulb, CheckCircle, ShieldCheck, Star, Sparkles, Award } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { suggestCareers, type CareerSuggestionInput, type CareerSuggestionOutput } from '@/ai/flows/career-suggestion';
@@ -13,16 +13,19 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { User } from 'firebase/auth';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
-function isValidJSONObject(str: string): boolean {
-  if (!str) return false;
-  try {
-    const obj = JSON.parse(str);
-    return obj && typeof obj === 'object' && !Array.isArray(obj);
-  } catch (e) {
-    return false;
-  }
+interface CareerSuggestion extends CareerSuggestionOutput['careers'][0] {
+    score: number;
 }
+
+const getMatchTier = (score: number): { label: string; color: string; } => {
+    if (score >= 90) return { label: 'Excellent Fit', color: 'bg-green-500' };
+    if (score >= 80) return { label: 'Strong Fit', color: 'bg-yellow-500' };
+    return { label: 'Moderate Fit', color: 'bg-blue-500' };
+};
+
 
 export default function CareerSuggestionsPage() {
   const router = useRouter();
@@ -31,7 +34,7 @@ export default function CareerSuggestionsPage() {
   const db = useFirestore();
   const [isLoading, setIsLoading] = useState(true);
   const [generationError, setGenerationError] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<CareerSuggestionOutput['careers']>([]);
+  const [suggestions, setSuggestions] = useState<CareerSuggestion[]>([]);
 
   useEffect(() => {
     if (!user || !db) return;
@@ -47,21 +50,12 @@ export default function CareerSuggestionsPage() {
           return;
         }
         
-        // Payment is confirmed. Now, safely get data and generate suggestions.
         const userData = userDoc.data();
         let userTraits = userData.userTraits;
         let personalizedAnswers = userData.personalizedAnswers;
 
-        // Fallback to local storage only if DB data is somehow missing (which it shouldn't be)
         if (!userTraits || !personalizedAnswers) {
-            const userTraitsString = localStorage.getItem('margdarshak_user_traits');
-            const personalizedAnswersString = localStorage.getItem('margdarshak_personalized_answers');
-            if (isValidJSONObject(userTraitsString) && isValidJSONObject(personalizedAnswersString)) {
-                userTraits = JSON.parse(userTraitsString);
-                personalizedAnswers = JSON.parse(personalizedAnswersString);
-            } else {
-                 throw new Error("Critical user data for suggestions is missing from both database and local storage.");
-            }
+            throw new Error("Critical user data for suggestions is missing from the database.");
         }
         
         const input: CareerSuggestionInput = {
@@ -91,15 +85,18 @@ export default function CareerSuggestionsPage() {
         const suggestionsOutput: CareerSuggestionOutput = await suggestCareers(input);
   
         if (suggestionsOutput && suggestionsOutput.careers && suggestionsOutput.careers.length > 0) {
-          const sortedSuggestions = suggestionsOutput.careers.sort((a, b) => parseFloat(b.matchScore) - parseFloat(a.matchScore));
-          setSuggestions(sortedSuggestions);
+          const suggestionsWithScore = suggestionsOutput.careers.map(c => ({
+              ...c,
+              score: parseFloat(c.matchScore),
+          })).sort((a, b) => b.score - a.score);
+
+          setSuggestions(suggestionsWithScore);
           
           const journeyId = localStorage.getItem('margdarshak_current_journey_id') || `journey_${Date.now()}`;
           const journeyDocRef = doc(db, 'users', currentUser.uid, 'journeys', journeyId);
-          await setDoc(journeyDocRef, { allCareerSuggestions: sortedSuggestions, lastUpdated: new Date() }, { merge: true });
+          await setDoc(journeyDocRef, { allCareerSuggestions: suggestionsWithScore, lastUpdated: new Date() }, { merge: true });
 
-          // Also save to local storage for the next step.
-          localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(sortedSuggestions));
+          localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsWithScore));
 
         } else {
           setGenerationError('The AI could not generate any career suggestions. Please try again.');
@@ -115,10 +112,9 @@ export default function CareerSuggestionsPage() {
   const handleSelectCareer = (careerName: string) => {
     if (!suggestions.length) return;
     
-    // We already saved all suggestions to local storage when they were fetched.
     localStorage.setItem('margdarshak_selected_career', careerName);
     
-    toast({ title: 'Career Selected!', description: `Generating report for ${careerName}...` });
+    toast({ title: 'Career Selected!', description: `Generating your personalized roadmap for ${careerName}...` });
     router.push('/roadmap');
   };
 
@@ -126,57 +122,82 @@ export default function CareerSuggestionsPage() {
     return (
         <div className="flex flex-col justify-center items-center min-h-[calc(100vh-10rem)]">
           <LoadingSpinner size={48} />
-          <p className="ml-4 mt-4 text-lg text-muted-foreground">Finalizing your top career matches...</p>
+          <p className="ml-4 mt-4 text-lg text-muted-foreground">Analyzing your profile to find your top career matches...</p>
         </div>
     );
   }
 
   return (
-    <div className="py-8">
-        <div className="text-center mb-8">
-            <Sparkles className="h-16 w-16 text-primary mx-auto mb-4" />
-            <h1 className="text-4xl font-bold mb-3">Your Top Career Matches</h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Based on your unique profile, here are the top 3 careers where you have the highest potential to succeed. Select one to generate your detailed report.
-            </p>
-        </div>
-
-        {generationError && (
-             <div className="max-w-2xl mx-auto">
-                <Alert variant="destructive">
-                    <AlertTitle>Suggestion Generation Failed</AlertTitle>
-                    <AlertDescription>{generationError}</AlertDescription>
-                </Alert>
-             </div>
-        )}
-      
-        {!generationError && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {suggestions.map((career) => (
-                <Card 
-                  key={career.name} 
-                  className="flex flex-col shadow-lg hover:shadow-2xl hover:border-primary transition-all duration-300 cursor-pointer group"
-                  onClick={() => handleSelectCareer(career.name)}
-                >
-                    <CardHeader className="text-center">
-                        <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors">{career.name}</CardTitle>
-                        <CardDescription className="font-semibold text-primary">{career.matchScore} Match</CardDescription>
-                         <p className="text-sm text-muted-foreground pt-2">{career.personalityProfile}</p>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                        <p className="text-sm text-muted-foreground text-center italic">"{career.rationale}"</p>
-                    </CardContent>
-                    <CardFooter>
-                        <Button 
-                            className="w-full text-lg py-6"
-                        >
-                          Select & Generate Report
-                        </Button>
-                    </CardFooter>
-                </Card>
-              ))}
+    <div className="py-12 bg-secondary/30">
+        <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+                <Sparkles className="h-16 w-16 text-primary mx-auto mb-4" />
+                <h1 className="text-4xl font-bold mb-3">Your Top Career Matches</h1>
+                <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                    Backed by your unique personality, motivations, and working style, these careers offer the highest likelihood of long-term success and satisfaction.
+                </p>
             </div>
-        )}
+
+            {generationError && (
+                <div className="max-w-2xl mx-auto">
+                    <Alert variant="destructive">
+                        <AlertTitle>Suggestion Generation Failed</AlertTitle>
+                        <AlertDescription>{generationError}</AlertDescription>
+                    </Alert>
+                </div>
+            )}
+        
+            {!generationError && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                  {suggestions.map((career, index) => {
+                      const matchTier = getMatchTier(career.score);
+                      return (
+                        <Card 
+                          key={career.name} 
+                          className={cn(
+                              "flex flex-col shadow-lg hover:shadow-2xl transition-all duration-300 group rounded-2xl",
+                              index === 0 ? "border-primary ring-2 ring-primary scale-105" : "border-border"
+                          )}
+                        >
+                            {index === 0 && (
+                                <div className="bg-primary text-primary-foreground text-sm font-bold text-center py-2 rounded-t-xl flex items-center justify-center gap-2">
+                                    <Award className="h-5 w-5" /> Best Match
+                                </div>
+                            )}
+                            <CardHeader className="text-center pt-6">
+                                <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors">{career.name}</CardTitle>
+                                <CardDescription className="font-semibold text-lg text-muted-foreground pt-2">{career.personalityProfile}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-grow space-y-6">
+                                <div>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-sm font-medium text-muted-foreground">{matchTier.label}</span>
+                                        <span className="text-lg font-bold">{career.matchScore}</span>
+                                    </div>
+                                    <Progress value={career.score} className={cn("h-3", matchTier.color)} />
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-md mb-1">Why this fits you:</h4>
+                                    <p className="text-sm text-muted-foreground text-left">Your {career.rationale.charAt(0).toLowerCase() + career.rationale.slice(1)}</p>
+                                </div>
+                            </CardContent>
+                            <CardFooter className="flex-col items-stretch p-6">
+                                <Button 
+                                    className="w-full text-lg py-6"
+                                    onClick={() => handleSelectCareer(career.name)}
+                                >
+                                  Unlock Full Report
+                                </Button>
+                                <p className="text-xs text-muted-foreground text-center mt-2">
+                                  Includes skills, salary outlook & a 10-year roadmap.
+                                </p>
+                            </CardFooter>
+                        </Card>
+                      );
+                  })}
+                </div>
+            )}
+        </div>
     </div>
   );
 }
