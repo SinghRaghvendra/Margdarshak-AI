@@ -11,9 +11,9 @@ import { callGeminiApi } from '@/app/api/gemini/route';
 const PersonalizedAnswersSchema = z.object({
   q1: z.string().describe("Answer to: Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?"),
   q2: z.string().describe("Answer to: What are some of your hobbies or activities you genuinely enjoy outside of work or study? What do you like about them?"),
-  q3: z.string().describe("Answer to: Imagine yourself 5 years from now. What achievements, big or small, would make you feel proud and fulfilled in your professional life?"),
-  q4: z.string().describe("Answer to: Are there any specific industries or types of companies that particularly interest you or you feel drawn to? Why?"),
-  q5: z.string().describe("Answer to: What are your primary motivations when thinking about a career? (e.g., financial security, making an impact, continuous learning, work-life balance, creativity, leadership, etc.). Please elaborate."),
+  q3: z.string().describe("Imagine yourself 5 years from now. What achievements, big or small, would make you feel proud and fulfilled in your professional life?"),
+  q4: z.string().describe("Are there any specific industries or types of companies that particularly interest you or you feel drawn to? Why?"),
+  q5: z.string().describe("What are your primary motivations when thinking about a career? (e.g., financial security, making an impact, continuous learning, work-life balance, creativity, leadership, etc.). Please elaborate."),
 });
 
 const CareerSuggestionInputSchema = z.object({
@@ -44,26 +44,16 @@ export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema
 
 /**
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
+ * It finds the first '{' and the last '}' to isolate the JSON content.
  * @param text The text from the AI response.
  * @returns The parsed JSON object.
  */
 function extractJSON(text: string): any {
-  // First, try to find a markdown-wrapped JSON block
-  const markdownMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
-  if (markdownMatch && markdownMatch[1]) {
-    try {
-      return JSON.parse(markdownMatch[1]);
-    } catch (e) {
-      console.error("JSON parsing failed within markdown block, falling back.", e);
-      // Fallback to searching the raw text if markdown parsing fails
-    }
-  }
-
-  // If no markdown, or if parsing failed, find the first '{' and last '}'
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
 
   if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+    // If we can't find a valid JSON structure, throw an error.
     console.error("RAW AI RESPONSE (no JSON object found):", text);
     throw new Error('Could not find a valid JSON object in the AI response.');
   }
@@ -71,8 +61,10 @@ function extractJSON(text: string): any {
   const jsonString = text.slice(firstBrace, lastBrace + 1);
   
   try {
+    // Attempt to parse the extracted string
     return JSON.parse(jsonString);
   } catch (parseError) {
+    // If parsing fails, log the details and throw a specific error
     console.error("JSON Parsing failed after extraction:", parseError, "--- Extracted String:", jsonString);
     throw new Error('The extracted text was not valid JSON.');
   }
@@ -149,6 +141,11 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     
     try {
         const text = await callGeminiApi(prompt, "gemini-2.5-flash", 4096);
+        
+        if (!text) {
+             throw new Error("The AI model returned an empty response for career suggestions.");
+        }
+
         const parsedResponse = extractJSON(text);
         
         // Validate the structure of the parsed response
