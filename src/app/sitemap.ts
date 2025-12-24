@@ -27,6 +27,7 @@ const blogPosts = [
   '/blog/best-career-move-for-working-professionals',
   '/blog/best-career-options-for-2026',
   '/blog/which-career-is-best-for-me',
+  '/blog/find-your-dream-career',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

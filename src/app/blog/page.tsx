@@ -44,6 +44,12 @@ const allBlogPosts = [
       date: '2026-01-01',
     },
     {
+      title: 'How to Find Your Dream Career (Without Ruining Your Life)',
+      excerpt: 'Stop gambling with your future. Learn how to find a career you love using AI-driven data without risking your financial stability.',
+      href: '/blog/find-your-dream-career',
+      date: '2024-08-04',
+    },
+    {
       title: 'How to Choose the Right Career in 2025',
       excerpt: 'A modern guide to choosing the right career. Learn how to balance your passions, skills, and market demand to find a fulfilling and future-proof job path with the help of AI.',
       href: '/blog/how-to-choose-the-right-career',
