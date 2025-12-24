@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,7 +17,7 @@ import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, 
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { useAuth, useUser } from '@/firebase';
-import AuthStatus from './AuthStatus';
+import AuthStatus from '@/components/AuthStatus';
 
 export default function Header() {
   const { user } = useUser();
