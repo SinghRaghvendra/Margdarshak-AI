@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export default function BlogLayout({
@@ -7,10 +6,8 @@ export default function BlogLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 lg:px-8">
       {children}
     </div>
   );
 }
-
-    
