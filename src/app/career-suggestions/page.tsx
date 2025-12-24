@@ -16,9 +16,10 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
-interface CareerSuggestion extends CareerSuggestionOutput['careers'][0] {
+// Corrected type definition
+type CareerSuggestion = CareerSuggestionOutput['careers'][number] & {
     score: number;
-}
+};
 
 const getMatchTier = (score: number): { label: string; color: string; } => {
     if (score >= 90) return { label: 'Excellent Fit', color: 'bg-green-500' };
@@ -178,7 +179,7 @@ export default function CareerSuggestionsPage() {
                                 </div>
                                 <div>
                                     <h4 className="font-semibold text-md mb-1">Why this fits you:</h4>
-                                    <p className="text-sm text-muted-foreground text-left">Your {career.rationale.charAt(0).toLowerCase() + career.rationale.slice(1)}</p>
+                                    <p className="text-sm text-muted-foreground text-left">{career.rationale}</p>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex-col items-stretch p-6">
