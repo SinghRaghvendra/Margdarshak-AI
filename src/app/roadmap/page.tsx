@@ -100,13 +100,15 @@ export default function RoadmapPage() {
         
         const selectedCareer = localStorage.getItem('margdarshak_selected_career');
         const allSuggestionsString = localStorage.getItem('margdarshak_all_career_suggestions');
+        const userInfoString = localStorage.getItem('margdarshak_user_info');
 
-        if (!selectedCareer || !allSuggestionsString) {
-            toast({ title: 'Data Missing', description: 'Career selection is missing. Please select a career first.', variant: 'destructive' });
-            router.replace('/career-suggestions');
+        if (!selectedCareer || !allSuggestionsString || !userInfoString) {
+            toast({ title: 'Data Missing', description: 'Essential journey data is missing. Please start a new journey.', variant: 'destructive' });
+            router.replace('/welcome-guest');
             return;
         }
-
+        
+        const userInfo = JSON.parse(userInfoString);
         const userData = userDoc.data();
         const plan = userData.purchasedPlan;
         if (!plan) {
@@ -118,7 +120,7 @@ export default function RoadmapPage() {
         const pageInfo = {
             purchasedPlan: plan,
             language: userData.language || 'English',
-            userName: userData.name || 'User',
+            userName: userInfo.name || 'User',
             selectedCareer: selectedCareer,
             allSuggestions: JSON.parse(allSuggestionsString),
         };
@@ -136,16 +138,23 @@ export default function RoadmapPage() {
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (isGeneratingReport && generationProgress < 99) {
+    if (isGeneratingReport) {
+      // Simulate loading for about 25 seconds (100 * 250ms)
       timer = setInterval(() => {
-        setGenerationProgress(prev => Math.min(prev + 1, 99));
-      }, 250);
+        setGenerationProgress(prev => {
+          if (prev >= 99) {
+            clearInterval(timer);
+            return 99;
+          }
+          return prev + 1;
+        });
+      }, 250); 
     }
     return () => clearInterval(timer);
-  }, [isGeneratingReport, generationProgress]);
+  }, [isGeneratingReport]);
 
   const fetchAndSetRoadmap = async (currentUser: User, pageInfo: NonNullable<typeof pageData>) => {
-    const { purchasedPlan, language, selectedCareer, allSuggestions } = pageInfo;
+    const { purchasedPlan, language, selectedCareer, allSuggestions, userName } = pageInfo;
     const cachedReportKey = `margdarshak_roadmap_${selectedCareer.replace(/\s/g, '_')}_${purchasedPlan}_${language}`;
     const cachedDataString = localStorage.getItem(cachedReportKey);
 
@@ -166,7 +175,7 @@ export default function RoadmapPage() {
     setIsGeneratingReport(true);
     setCurrentRoadmapMarkdown(null);
     setGenerationProgress(0);
-    toast({ title: `Generating ${language} Report`, description: 'This may take a moment...' });
+    toast({ title: `Generating ${language} Report`, description: 'This may take up to 30 seconds...' });
 
     try {
       const response = await fetch('/api/generate-and-save-report', {
@@ -251,6 +260,7 @@ export default function RoadmapPage() {
                 <p className="text-muted-foreground">Generating detailed {pageData.language} report...</p>
                 <Progress value={generationProgress} className="w-full max-w-md" />
                 <p className="text-sm text-primary font-semibold">{Math.round(generationProgress)}%</p>
+                <p className="text-xs text-muted-foreground">Estimated time: 20-30 seconds</p>
               </div>
             ) : currentRoadmapMarkdown ? (
               <div ref={roadmapContentRef} className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-foreground">

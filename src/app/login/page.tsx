@@ -68,13 +68,33 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      const userProfileForLocal = {
+      // Fetch the user's document from Firestore to get their real name
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      let userProfileForLocal = {
         uid: user.uid,
         email: user.email,
-        name: user.displayName || 'Welcome Back',
+        name: 'Welcome Back', // Default name
+        contact: '',
+        country: '',
+        language: 'English',
       };
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        userProfileForLocal = {
+            ...userProfileForLocal,
+            name: userData.name || 'Welcome Back',
+            contact: userData.contact || '',
+            country: userData.country || '',
+            language: userData.language || 'English',
+        };
+      }
+      
       localStorage.setItem('margdarshak_user_info', JSON.stringify(userProfileForLocal));
 
+      // Clear any stale journey data from previous sessions
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
           localStorage.removeItem(key);
@@ -83,7 +103,7 @@ export default function LoginPage() {
       
       toast({
           title: 'Login Successful',
-          description: 'Welcome back! Redirecting...',
+          description: `Welcome back, ${userProfileForLocal.name}! Redirecting...`,
       });
       router.push('/welcome-guest');
 
