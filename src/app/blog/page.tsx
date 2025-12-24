@@ -14,6 +14,12 @@ export const metadata: Metadata = {
 
 const allBlogPosts = [
     {
+      title: 'Will AI Take My Job? How to Choose a Career That’s "Robot-Proof"',
+      excerpt: 'Worried about AI taking your job? Discover the most stable, high-paying careers for the future and how to build a robot-proof career path.',
+      href: '/blog/will-ai-take-my-job',
+      date: '2026-01-01',
+    },
+    {
       title: 'Passion or Salary? The Truth About Dream Careers in India',
       excerpt: 'Is it better to follow your passion or chase a high salary? Discover why the most successful careers in 2026 are the ones that combine both.',
       href: '/blog/passion-vs-salary',
