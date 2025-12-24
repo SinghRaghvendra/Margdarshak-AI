@@ -16,6 +16,7 @@ const staticRoutes = [
 ];
 
 const blogPosts = [
+  '/blog/reskilling-vs-upskilling',
   '/blog/will-ai-take-my-job',
   '/blog/passion-vs-salary',
   '/blog/career-counselling-in-india-guide',
