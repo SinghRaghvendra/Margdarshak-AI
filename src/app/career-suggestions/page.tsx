@@ -187,7 +187,7 @@ export default function CareerSuggestionsPage() {
                                     className="w-full text-lg py-6"
                                     onClick={() => handleSelectCareer(career.name)}
                                 >
-                                  Unlock Full Report
+                                  Generate Report Now!
                                 </Button>
                                 <p className="text-xs text-muted-foreground text-center mt-2">
                                   Includes skills, salary outlook & a 10-year roadmap.

@@ -12,13 +12,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Cake, ArrowRight, MapPinIcon } from 'lucide-react';
+import { Cake, ArrowRight, MapPinIcon, User as UserIcon, Globe } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 
 const birthDetailsFormSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  country: z.string().min(2, { message: 'Country must be at least 2 characters.' }),
   birthDay: z.string()
     .min(1, "Day is required")
     .regex(/^(0?[1-9]|[12][0-9]|3[01])$/, { message: "Day (1-31)" }),
@@ -69,12 +71,13 @@ export default function BirthDetailsPage() {
   const auth = useAuth();
   const db = useFirestore();
   const [pageLoading, setPageLoading] = useState(true);
-  const [userName, setUserName] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
   const form = useForm<BirthDetailsFormValues>({
     resolver: zodResolver(birthDetailsFormSchema),
     defaultValues: {
+      name: '',
+      country: '',
       birthDay: '',
       birthMonth: '',
       birthYear: '',
@@ -128,34 +131,40 @@ export default function BirthDetailsPage() {
       try {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const docSnap = await getDoc(userDocRef);
+        let userData = docSnap.exists() ? docSnap.data() : {};
 
-        if (docSnap.exists()) {
-          const userData = docSnap.data();
-          setUserName(userData.name || 'Guest');
-          
-          if (userData.birthDetails) {
-            const { dateOfBirth, placeOfBirth, timeOfBirth } = userData.birthDetails;
-            const [year, month, day] = dateOfBirth.split('-').map((s: string) => s.padStart(2, '0'));
-            const [hour, minute] = timeOfBirth.split(':').map((s: string) => s.padStart(2, '0'));
-            form.reset({
-              birthDay: day,
-              birthMonth: month,
-              birthYear: year,
-              placeOfBirth,
-              birthHour: hour,
-              birthMinute: minute,
-            });
-            toast({ title: 'Welcome Back!', description: 'Your previous details have been loaded.' });
-          }
-        } else {
-          const localUserString = localStorage.getItem('margdarshak_user_info');
-          if (localUserString) {
-            const localUser = JSON.parse(localUserString);
-            setUserName(localUser.name || 'Guest');
-          } else {
-            setUserName('Guest');
-          }
+        // Also check localStorage for info from signup flow, in case Firestore is slow
+        const localUserString = localStorage.getItem('margdarshak_user_info');
+        if (localUserString) {
+          const localUser = JSON.parse(localUserString);
+          // Prioritize fresh DB data, but fall back to local data
+          userData = { ...localUser, ...userData };
         }
+
+        const defaultValues: Partial<BirthDetailsFormValues> = {
+          name: userData.name || '',
+          country: userData.country || '',
+        };
+
+        if (userData.birthDetails) {
+          const { dateOfBirth, placeOfBirth, timeOfBirth } = userData.birthDetails;
+          const [year, month, day] = dateOfBirth.split('-').map((s: string) => s.padStart(2, '0'));
+          const [hour, minute] = timeOfBirth.split(':').map((s: string) => s.padStart(2, '0'));
+          
+          defaultValues.birthDay = day;
+          defaultValues.birthMonth = month;
+          defaultValues.birthYear = year;
+          defaultValues.placeOfBirth = placeOfBirth;
+          defaultValues.birthHour = hour;
+          defaultValues.birthMinute = minute;
+        }
+
+        form.reset(defaultValues as BirthDetailsFormValues);
+        
+        if (Object.keys(userData).length > 2) { // more than just uid/email
+           toast({ title: 'Welcome Back!', description: 'Your previous details have been loaded.' });
+        }
+
         await ensureJourneyExists(currentUser);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -187,19 +196,25 @@ export default function BirthDetailsPage() {
     const localUserString = localStorage.getItem('margdarshak_user_info');
     const localUserInfo = localUserString ? JSON.parse(localUserString) : {};
 
+    const completeUserData = {
+      ...localUserInfo,
+      uid: user.uid,
+      email: user.email, // ensure email is always fresh from auth state
+      name: data.name,
+      country: data.country,
+      birthDetails: birthDetailsToStore,
+      birthDetailsCompleted: true,
+    };
+
     try {
       const userDocRef = doc(db, 'users', user.uid);
-      
-      await setDoc(userDocRef, {
-        ...localUserInfo,
-        uid: user.uid,
-        birthDetails: birthDetailsToStore,
-        birthDetailsCompleted: true,
-      }, { merge: true });
+      await setDoc(userDocRef, completeUserData, { merge: true });
 
+      // Update local storage with the new complete data
+      localStorage.setItem('margdarshak_user_info', JSON.stringify(completeUserData));
       localStorage.setItem('margdarshak_birth_details', JSON.stringify(birthDetailsToStore));
       
-      toast({ title: 'Birth Details Saved', description: 'Your information has been securely saved.' });
+      toast({ title: 'Details Saved', description: 'Your information has been securely saved.' });
       router.push('/psychometric-test');
     } catch (error: any) {
       console.error('🚨 Firestore write failed:', error);
@@ -216,14 +231,43 @@ export default function BirthDetailsPage() {
       <Card className="w-full max-w-lg mx-auto shadow-xl">
         <CardHeader className="text-center">
           <Cake className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="text-3xl font-bold">Your Birth Details</CardTitle>
+          <CardTitle className="text-3xl font-bold">Your Personal & Birth Details</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Hi {userName || 'there'}! Please provide your birth information for personalized insights.
+            Hi there! Please provide this information for personalized insights.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center"><UserIcon className="mr-2 h-4 w-4 text-muted-foreground" />Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Jane Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center"><Globe className="mr-2 h-4 w-4 text-muted-foreground" />Country</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., India" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div>
                 <FormLabel>Date of Birth</FormLabel>
                 <div className="grid grid-cols-3 gap-3 mt-1">
