@@ -50,6 +50,12 @@ const allBlogPosts = [
       date: '2024-08-04',
     },
     {
+      title: 'Dream Career vs. Reality: The Honest Truth',
+      excerpt: 'What is the reality of following your passion? Learn the 80/20 rule of dream jobs and how to find a path that actually works in the real world.',
+      href: '/blog/dream-career-vs-reality',
+      date: '2024-08-05',
+    },
+    {
       title: 'How to Choose the Right Career in 2025',
       excerpt: 'A modern guide to choosing the right career. Learn how to balance your passions, skills, and market demand to find a fulfilling and future-proof job path with the help of AI.',
       href: '/blog/how-to-choose-the-right-career',
@@ -100,7 +106,7 @@ export default function BlogPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allBlogPosts.map((post) => (
+            {allBlogPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((post) => (
                 <Card key={post.href} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
                     <CardHeader>
                         <CardTitle className="text-xl leading-snug">
