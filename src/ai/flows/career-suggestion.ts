@@ -43,31 +43,36 @@ const CareerSuggestionOutputSchema = z.object({
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
 
 /**
- * Extracts a JSON object from a string that might contain other text or markdown.
- * It finds the first '{' and the last '}' to isolate the JSON content.
+ * Defensively extracts a JSON object from a string that might contain other text or markdown.
  * @param text The text from the AI response.
  * @returns The parsed JSON object.
  */
-function extractJsonFromText(text: string): any {
-  // Find the first occurrence of '{' which marks the beginning of the JSON object
-  const start = text.indexOf('{');
-  // Find the last occurrence of '}' which marks the end of the JSON object
-  const end = text.lastIndexOf('}');
-  
-  if (start === -1 || end === -1 || end < start) {
-    // If we can't find a valid JSON structure, throw an error.
-    console.error("RAW AI RESPONSE (invalid structure):", text);
-    throw new Error("Could not find a valid JSON object in the AI response.");
+function extractJSON(text: string): any {
+  // First, try to find a markdown-wrapped JSON block
+  const markdownMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+  if (markdownMatch && markdownMatch[1]) {
+    try {
+      return JSON.parse(markdownMatch[1]);
+    } catch (e) {
+      console.error("JSON parsing failed within markdown block, falling back.", e);
+      // Fallback to searching the raw text if markdown parsing fails
+    }
   }
-  
-  // Extract the substring that is likely the JSON object
-  const jsonString = text.substring(start, end + 1);
+
+  // If no markdown, or if parsing failed, find the first '{' and last '}'
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+    console.error("RAW AI RESPONSE (no JSON object found):", text);
+    throw new Error('Could not find a valid JSON object in the AI response.');
+  }
+
+  const jsonString = text.slice(firstBrace, lastBrace + 1);
   
   try {
-    // Attempt to parse the extracted string
     return JSON.parse(jsonString);
   } catch (parseError) {
-    // If parsing fails, log the details and throw a specific error
     console.error("JSON Parsing failed after extraction:", parseError, "--- Extracted String:", jsonString);
     throw new Error('The extracted text was not valid JSON.');
   }
@@ -76,7 +81,13 @@ function extractJsonFromText(text: string): any {
 
 const getDecoderKeyPrompt = () => {
     return `
-      You are an expert career counselor AI. Return ONLY a valid JSON object. NO markdown. NO explanation. NO extra text. NO backticks. Only a raw JSON object.
+      You are an expert career counselor AI functioning as a JSON API.
+      RULES:
+      - Respond ONLY with a valid JSON object.
+      - Do NOT include markdown \`\`\`json wrappers.
+      - Do NOT include any explanations or introductory text.
+      - Do NOT include any text outside of the JSON object.
+      - The final output MUST be a raw JSON object.
 
       Your response must strictly follow this exact schema, providing exactly 3 career suggestions:
       {"careers":[{"name":"string","matchScore":"string (e.g., '87.26%')","personalityProfile":"string","rationale":"very short 1-sentence string"}, ...2 more objects]}
@@ -136,11 +147,16 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     5. Career Motivations: ${input.personalizedAnswers.q5}
     `;
     
-    console.log("📝 FINAL PROMPT FOR CAREER SUGGESTION:\n", prompt);
-
     try {
         const text = await callGeminiApi(prompt, "gemini-2.5-flash", 4096);
-        const parsedResponse = extractJsonFromText(text);
+        const parsedResponse = extractJSON(text);
+        
+        // Validate the structure of the parsed response
+        if (!parsedResponse.careers || !Array.isArray(parsedResponse.careers) || parsedResponse.careers.length === 0) {
+            console.error("Invalid AI response schema:", parsedResponse);
+            throw new Error("AI response was received but did not contain a valid 'careers' array.");
+        }
+        
         return CareerSuggestionOutputSchema.parse(parsedResponse);
     } catch (error: any) {
         console.error("Failed to process AI response for career suggestions:", error);
