@@ -51,13 +51,10 @@ export default function Header() {
     { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" />, isExternal: false },
   ];
   
-  const loggedInNavItems = [
-      ...mainNavItems,
+  const userNavItems = [
       { label: 'My Reports', href: '/my-reports', icon: <BookUser className="mr-2 h-5 w-5" />, isExternal: false },
       { label: 'My Profile', href: '/profile', icon: <UserIcon className="mr-2 h-5 w-5" />, isExternal: false },
   ];
-
-  const navItems = user ? loggedInNavItems : mainNavItems;
 
   return (
     <header className="bg-background/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
@@ -66,14 +63,21 @@ export default function Header() {
             <Logo />
         </div>
         <nav className="hidden md:flex items-center space-x-1">
-          {navItems.map((item) => (
+          {mainNavItems.map((item) => (
             <Link key={item.label} href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''}>
                 <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
                   {item.label}
                 </Button>
             </Link>
           ))}
-          {auth && ( // Only render auth buttons if auth is initialized
+          {user && userNavItems.map((item) => (
+            <Link key={item.label} href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''}>
+                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
+                  {item.label}
+                </Button>
+            </Link>
+          ))}
+          {auth && (
             user ? (
               <Button onClick={handleLogout} variant="outline" className="text-sm ml-2 px-4 py-2">
                 <LogOut className="mr-2 h-4 w-4" /> Logout
@@ -120,7 +124,16 @@ export default function Header() {
                       </Button>
                     </Link>
                   </SheetClose>
-                  {navItems.map((item) => (
+                  {mainNavItems.map((item) => (
+                    <SheetClose asChild key={item.label}>
+                      <Link href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''} className="w-full">
+                           <Button variant="ghost" className="w-full justify-start text-base py-3">
+                             {item.icon} {item.label}
+                           </Button>
+                      </Link>
+                    </SheetClose>
+                  ))}
+                  {user && userNavItems.map((item) => (
                     <SheetClose asChild key={item.label}>
                       <Link href={item.href} target={item.isExternal ? '_blank' : '_self'} rel={item.isExternal ? 'noopener noreferrer' : ''} className="w-full">
                            <Button variant="ghost" className="w-full justify-start text-base py-3">
@@ -130,7 +143,7 @@ export default function Header() {
                     </SheetClose>
                   ))}
                   <div className="pt-4 border-t">
-                    {auth && ( // Only render auth buttons if auth is initialized
+                    {auth && (
                       user ? (
                          <SheetClose asChild>
                             <Button onClick={handleLogout} variant="default" className="w-full text-base py-3 mt-2">
