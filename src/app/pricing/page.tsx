@@ -81,7 +81,6 @@ export default function PricingPage() {
       toast({
         title: "Signup Required",
         description: "Please sign up or log in to view our pricing.",
-        variant: "destructive",
       });
       router.replace('/signup');
     } else {

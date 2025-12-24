@@ -121,7 +121,7 @@ export default function BirthDetailsPage() {
     if (!auth || !db) return;
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
-        toast({ title: 'Not Authenticated', description: 'Redirecting to login.', variant: 'destructive' });
+        toast({ title: 'Not Authenticated', description: 'Redirecting to login.' });
         router.replace('/login');
         return;
       }

@@ -36,7 +36,6 @@ export default function WelcomeGuestPage() {
       toast({
         title: 'Authentication Required',
         description: 'Please log in to continue your journey.',
-        variant: 'destructive',
       });
       router.replace('/login');
     }
