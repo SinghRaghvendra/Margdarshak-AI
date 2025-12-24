@@ -1,3 +1,4 @@
+'use client';
 
 import HomePageClient from '@/components/HomePageClient';
 
