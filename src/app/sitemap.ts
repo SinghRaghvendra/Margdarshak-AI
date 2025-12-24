@@ -16,6 +16,11 @@ const staticRoutes = [
 ];
 
 const blogPosts = [
+  '/blog/career-counselling-in-india-guide',
+  '/blog/is-career-counselling-worth-it',
+  '/blog/ai-vs-human-career-counselling',
+  '/blog/career-counselling-after-10th-mistakes',
+  '/blog/career-counselling-after-12th-streams',
   '/blog/how-to-choose-the-right-career',
   '/blog/are-career-tests-accurate',
   '/blog/which-career-is-best-for-students',

@@ -14,6 +14,36 @@ export const metadata: Metadata = {
 
 const allBlogPosts = [
     {
+      title: 'Career Counselling in India: Complete Guide for Students & Parents (2026)',
+      excerpt: 'A complete guide to understanding the importance and process of career counselling in India for students and parents in 2026.',
+      href: '/blog/career-counselling-in-india-guide',
+      date: '2026-01-01',
+    },
+    {
+      title: 'Is Career Counselling Worth It? An Honest, Data-Backed Answer',
+      excerpt: 'Explore the real value of career counselling. Is it just motivational talk, or a crucial investment? We look at the data to find out.',
+      href: '/blog/is-career-counselling-worth-it',
+      date: '2026-01-01',
+    },
+    {
+      title: 'AI Career Counselling vs. Human Counsellors: What Actually Works?',
+      excerpt: 'AI is transforming career guidance. We compare AI-powered counselling with traditional human counsellors to see what works best in 2026.',
+      href: '/blog/ai-vs-human-career-counselling',
+      date: '2026-01-01',
+    },
+    {
+      title: 'Career Counselling After 10th: 5 Mistakes 90% of Students Make',
+      excerpt: 'Class 10 is a critical stage for career decisions. Learn about the common mistakes students make when choosing a stream and how to avoid them.',
+      href: '/blog/career-counselling-after-10th-mistakes',
+      date: '2026-01-01',
+    },
+    {
+      title: 'Career Counselling After 12th: A Guide for Science, Commerce, and Arts Students',
+      excerpt: 'The decision after 12th grade can define your career. This guide covers the options and confusion for students from all streams.',
+      href: '/blog/career-counselling-after-12th-streams',
+      date: '2026-01-01',
+    },
+    {
       title: 'How to Choose the Right Career in 2025',
       excerpt: 'A modern guide to choosing the right career. Learn how to balance your passions, skills, and market demand to find a fulfilling and future-proof job path with the help of AI.',
       href: '/blog/how-to-choose-the-right-career',
