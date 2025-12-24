@@ -1,23 +1,23 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, BookOpen, Search, Tag, Calendar } from 'lucide-react';
+import { ArrowRight, BookOpen, Search, Tag, Calendar, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { allBlogPosts } from '@/lib/blog-data';
 
 
-const metadata: Metadata = {
-    title: 'AI Councel Blog – Career Advice, Guidance & Insights',
-    description: 'Explore articles on career guidance, AI-powered career matching, personality-based career tests, and how to choose the right career path in the modern job market.',
-};
-
 const sortedPosts = allBlogPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+const featuredPostTitle = "Career Counselling in India: Complete Guide for Students & Parents (2026)";
+const featuredPost = sortedPosts.find(p => p.title === featuredPostTitle);
+const regularPosts = sortedPosts.filter(p => p.title !== featuredPostTitle);
+
 
 export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,7 +46,8 @@ export default function BlogPage() {
   }, []);
 
   const filteredPosts = useMemo(() => {
-    return sortedPosts.filter(post => {
+    const postsToFilter = featuredPost ? regularPosts.concat(featuredPost) : regularPosts;
+    return postsToFilter.filter(post => {
       const searchLower = searchTerm.toLowerCase();
       const postDate = new Date(post.date);
       
@@ -62,6 +63,11 @@ export default function BlogPage() {
       return matchesSearch && matchesTag && matchesYear && matchesMonth;
     });
   }, [searchTerm, selectedTag, selectedYear, selectedMonth]);
+  
+  // Separate filtered posts into featured and regular again
+  const finalFeaturedPost = filteredPosts.find(p => p.title === featuredPostTitle);
+  const finalRegularPosts = filteredPosts.filter(p => p.title !== featuredPostTitle);
+
 
   const handleMonthSelect = (year: number, month: number) => {
     setSelectedYear(year);
@@ -92,9 +98,46 @@ export default function BlogPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             {/* Blog Posts Column */}
             <div className="lg:col-span-3">
-                {filteredPosts.length > 0 ? (
+
+                {/* Featured Post */}
+                {finalFeaturedPost && (
+                    <Card className="mb-12 col-span-1 md:col-span-2 shadow-xl hover:shadow-2xl transition-all duration-300 border-2 border-primary/50 bg-secondary/30">
+                         <CardHeader>
+                            <div className="flex items-center gap-2 text-primary font-semibold">
+                                <Star className="h-5 w-5"/>
+                                <span>Featured Post</span>
+                            </div>
+                            <CardTitle className="text-3xl leading-tight mt-2">
+                                <Link href={finalFeaturedPost.href} className="hover:text-primary transition-colors">{finalFeaturedPost.title}</Link>
+                            </CardTitle>
+                            <CardDescription className="text-base">{new Date(finalFeaturedPost.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-md text-muted-foreground mb-4">{finalFeaturedPost.excerpt}</p>
+                            <div className="flex flex-wrap gap-2">
+                                {finalFeaturedPost.tags.map(tag => (
+                                    <Badge 
+                                      key={tag} 
+                                      variant={selectedTag === tag ? "default" : "secondary"}
+                                      onClick={() => setSelectedTag(tag)}
+                                      className="cursor-pointer"
+                                    >
+                                      {tag}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <Link href={finalFeaturedPost.href}>
+                                <Button>Read Full Article <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                            </Link>
+                        </CardFooter>
+                    </Card>
+                )}
+                
+                {finalRegularPosts.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {filteredPosts.map((post) => (
+                        {finalRegularPosts.map((post) => (
                             <Card key={post.href} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
                                 <CardHeader>
                                     <CardTitle className="text-xl leading-snug">
@@ -117,23 +160,25 @@ export default function BlogPage() {
                                         ))}
                                     </div>
                                 </CardContent>
-                                <CardContent>
+                                <CardFooter>
                                     <Link href={post.href}>
                                         <Button variant="link" className="p-0">Read More <ArrowRight className="ml-2 h-4 w-4" /></Button>
                                     </Link>
-                                </CardContent>
+                                </CardFooter>
                             </Card>
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-16 col-span-full">
-                        <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold">No Posts Found</h3>
-                        <p className="text-muted-foreground mt-2 mb-6">
-                            Your search or filter criteria did not match any posts. Try clearing the filters.
-                        </p>
-                        <Button onClick={clearFilters}>Clear All Filters</Button>
-                    </div>
+                    !finalFeaturedPost && (
+                        <div className="text-center py-16 col-span-full">
+                            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold">No Posts Found</h3>
+                            <p className="text-muted-foreground mt-2 mb-6">
+                                Your search or filter criteria did not match any posts. Try clearing the filters.
+                            </p>
+                            <Button onClick={clearFilters}>Clear All Filters</Button>
+                        </div>
+                    )
                 )}
             </div>
 
