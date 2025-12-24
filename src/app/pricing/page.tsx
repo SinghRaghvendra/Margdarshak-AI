@@ -7,8 +7,7 @@ import { Ticket, ArrowRight, CheckCircle, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
-import { useAuth, useFirestore } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useAuth } from '@/firebase';
 import type { User } from 'firebase/auth';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
@@ -64,9 +63,8 @@ export default function PricingPage() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
-  const db = useFirestore();
 
-  const [pageLoading, setPageLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
   const [timer, setTimer] = useState('05:00');
   const [offerExpired, setOfferExpired] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -74,31 +72,6 @@ export default function PricingPage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (!auth || !db || !isClient) return;
-
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists() && userDoc.data().paymentSuccessful) {
-          toast({
-            title: 'Payment Already Made',
-            description: 'Redirecting you to your reports dashboard.',
-          });
-          router.replace('/my-reports');
-        } else {
-          setPageLoading(false);
-        }
-      } else {
-        toast({ title: 'Not Authenticated', variant: 'destructive'});
-        router.replace('/login');
-      }
-    });
-
-    return () => unsubscribe();
-  }, [auth, db, router, toast, isClient]);
 
   useEffect(() => {
     if (!isClient) return;
@@ -126,6 +99,15 @@ export default function PricingPage() {
   }, [isClient]);
 
   const handleSelectPlan = (planId: string, price: number) => {
+    if (!auth?.currentUser) {
+        toast({
+            title: "Authentication Required",
+            description: "Please sign up or log in to purchase a plan.",
+            action: <Button onClick={() => router.push('/signup')}>Sign Up</Button>
+        });
+        return;
+    }
+      
     const selectedPlan = { id: planId, price: price };
     localStorage.setItem('margdarshak_selected_plan', JSON.stringify(selectedPlan));
     toast({
