@@ -31,10 +31,10 @@ export default function BlogPostAreCareerTestsAccurate() {
                 <h2 className="text-2xl font-semibold mt-8 mb-4">The Limitations of Traditional Career Tests</h2>
                 <p>Most traditional career tests, like the Myers-Briggs Type Indicator (MBTI) or Holland Codes, are based on psychological theories from the mid-20th century. They have several inherent limitations:</p>
                 <ul>
-                    <li><strong>Oversimplification:</strong> They often place individuals into a few rigid categories, failing to capture the complexity of human personality and skill sets.</li>
-                    <li><strong>Lack of Real-World Data:</strong> These tests rarely connect personality types to actual career success data. The link between being an "Architect (INTJ)" and thriving as a software developer is often theoretical, not empirical.</li>
-                    <li><strong>Static Results:</strong> They provide a snapshot in time and don't account for personal growth, skill development, or shifts in the job market.</li>
-                    <li><strong>Self-Reporting Bias:</strong> Results depend entirely on how you see yourself at that moment, which can be influenced by your mood, recent experiences, or what you *think* you should be.</li>
+                    <li>Oversimplification: They often place individuals into a few rigid categories, failing to capture the complexity of human personality and skill sets.</li>
+                    <li>Lack of Real-World Data: These tests rarely connect personality types to actual career success data. The link between being an "Architect (INTJ)" and thriving as a software developer is often theoretical, not empirical.</li>
+                    <li>Static Results: They provide a snapshot in time and don't account for personal growth, skill development, or shifts in the job market.</li>
+                    <li>Self-Reporting Bias: Results depend entirely on how you see yourself at that moment, which can be influenced by your mood, recent experiences, or what you *think* you should be.</li>
                 </ul>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">How AI-Powered Assessments Increase Accuracy</h2>

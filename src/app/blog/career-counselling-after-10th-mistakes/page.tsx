@@ -32,7 +32,7 @@ export default function BlogPostCareerCounsellingAfter10th() {
                             <CardTitle className="flex items-center"><AlertTriangle className="h-5 w-5 text-destructive mr-2"/>Mistake #1: Choosing Science "Because It’s Safe"</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p>This is the most common trap. Parents believe Science keeps all options open. The truth? A forced Science stream closes the door to a student's happiness and true potential. **Science is not safe if it doesn’t fit the student's aptitude.**</p>
+                            <p>This is the most common trap. Parents believe Science keeps all options open. The truth? A forced Science stream closes the door to a student's happiness and true potential. Science is not safe if it doesn’t fit the student's aptitude.</p>
                         </CardContent>
                     </Card>
                      <Card className="bg-secondary/30">
@@ -40,7 +40,7 @@ export default function BlogPostCareerCounsellingAfter10th() {
                             <CardTitle className="flex items-center"><AlertTriangle className="h-5 w-5 text-destructive mr-2"/>Mistake #2: Marks-Based Stream Selection</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p>Getting 95 in Math does not mean you will be a great engineer. High marks indicate good memory and discipline, but **marks do not measure aptitude or interest.** Many high-scoring students end up in careers they hate.</p>
+                            <p>Getting 95 in Math does not mean you will be a great engineer. High marks indicate good memory and discipline, but marks do not measure aptitude or interest. Many high-scoring students end up in careers they hate.</p>
                         </CardContent>
                     </Card>
                      <Card className="bg-secondary/30">
@@ -71,12 +71,12 @@ export default function BlogPostCareerCounsellingAfter10th() {
 
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">What Good Career Counselling After 10th Should Do</h2>
-                <p>Effective counselling at this stage isn't about choosing a career for life. It's about choosing the right **direction**. It must include:</p>
+                <p>Effective counselling at this stage isn't about choosing a career for life. It's about choosing the right direction. It must include:</p>
                 <ul>
-                    <li>**Personality & Aptitude Assessment:** To understand the student's core nature.</li>
-                    <li>**Interest Mapping:** To see what fields genuinely excite them.</li>
-                    <li>**Career Exploration:** To show them the vast range of modern careers available.</li>
-                    <li>**Stream-to-Career Pathing:** To connect a stream choice to a long-term vision.</li>
+                    <li>Personality & Aptitude Assessment: To understand the student's core nature.</li>
+                    <li>Interest Mapping: To see what fields genuinely excite them.</li>
+                    <li>Career Exploration: To show them the vast range of modern careers available.</li>
+                    <li>Stream-to-Career Pathing: To connect a stream choice to a long-term vision.</li>
                 </ul>
 
                 <Card className="mt-12 bg-primary/10 border-primary/50 border-l-4">

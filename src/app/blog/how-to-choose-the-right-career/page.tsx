@@ -66,18 +66,18 @@ export default function BlogPostHowToChooseCareer() {
                 <h2 className="text-2xl font-semibold mt-8 mb-4">A Step-by-Step Action Plan</h2>
                 
                 <ol className="space-y-4">
-                    <li><strong>1. Structured Self-Assessment:</strong> Don't just guess. Use a structured tool to understand your profile. A comprehensive <Link href="/career-assessment">AI career assessment</Link> is designed to analyze your personality, cognitive style, motivations, and interests in a systematic way. This gives you a data-driven foundation to build on.</li>
-                    <li><strong>2. Explore the Overlap:</strong> Once you have your assessment results, look for the overlap. Your report should provide a "match score" for various careers. Pay close attention to the top 5-10 suggestions. These are the roles where your natural profile has the highest statistical alignment with real-world success.</li>
-                    <li><strong>3. Research and Reality-Check:</strong> Pick your top 3-5 matched careers and do a "day in the life" research. Read job descriptions, watch YouTube videos of people in those roles, and conduct informational interviews. Does the daily reality of the job align with your ideal workday?</li>
-                    <li><strong>4. Identify Skill Gaps:</strong> No match is ever 100% perfect. For your top choice, identify the key skills you need to develop. The best career paths have a clear learning roadmap. Your AI-generated report should outline suggested courses, certifications, and activities for the first few years.</li>
+                    <li>1. Structured Self-Assessment: Don't just guess. Use a structured tool to understand your profile. A comprehensive <Link href="/career-assessment">AI career assessment</Link> is designed to analyze your personality, cognitive style, motivations, and interests in a systematic way. This gives you a data-driven foundation to build on.</li>
+                    <li>2. Explore the Overlap: Once you have your assessment results, look for the overlap. Your report should provide a "match score" for various careers. Pay close attention to the top 5-10 suggestions. These are the roles where your natural profile has the highest statistical alignment with real-world success.</li>
+                    <li>3. Research and Reality-Check: Pick your top 3-5 matched careers and do a "day in the life" research. Read job descriptions, watch YouTube videos of people in those roles, and conduct informational interviews. Does the daily reality of the job align with your ideal workday?</li>
+                    <li>4. Identify Skill Gaps: No match is ever 100% perfect. For your top choice, identify the key skills you need to develop. The best career paths have a clear learning roadmap. Your AI-generated report should outline suggested courses, certifications, and activities for the first few years.</li>
                 </ol>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">Why AI Is Your Most Powerful Ally</h2>
                 <p>In the past, this process was manual and filled with guesswork. AI changes the game by:</p>
                 <ul>
-                    <li><strong>Eliminating Bias:</strong> It objectively analyzes your profile without preconceived notions.</li>
-                    <li><strong>Processing Massive Data:</strong> AI can see patterns across thousands of careers and millions of data points that a human counselor could never process.</li>
-                    <li><strong>Identifying Future Trends:</strong> It can analyze labor market data to suggest careers that are not just viable today, but are projected to grow in the future.</li>
+                    <li>Eliminating Bias: It objectively analyzes your profile without preconceived notions.</li>
+                    <li>Processing Massive Data: AI can see patterns across thousands of careers and millions of data points that a human counselor could never process.</li>
+                    <li>Identifying Future Trends: It can analyze labor market data to suggest careers that are not just viable today, but are projected to grow in the future.</li>
                 </ul>
 
                 <Card className="mt-12 bg-secondary/50 border-primary/50 border-l-4">

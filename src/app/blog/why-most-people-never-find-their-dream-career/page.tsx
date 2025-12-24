@@ -22,7 +22,7 @@ export default function BlogPostWhyStuck() {
 
             <div className="prose max-w-none text-foreground/90">
                 <p>Every year, millions of students graduate, and millions of professionals sit at their desks wishing they were somewhere else. They have the talent. They have the ambition. So, why do they stay stuck in careers that drain them?</p>
-                <p>The truth isn't that dream careers are rare; it’s that the human brain is hardwired to make mistakes when choosing one. At <strong>AI Counsel Lab</strong>, we’ve studied the psychology of decision-making. Here are the three psychological traps that are likely keeping you from your dream path.</p>
+                <p>The truth isn't that dream careers are rare; it’s that the human brain is hardwired to make mistakes when choosing one. At AI Counsel Lab, we’ve studied the psychology of decision-making. Here are the three psychological traps that are likely keeping you from your dream path.</p>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">1. The "Shadow Career" Trap</h3>
                 <p>The term "Shadow Career" (coined by author Steven Pressfield) refers to a job that *looks* like your dream but lacks the risk.</p>
@@ -31,22 +31,22 @@ export default function BlogPostWhyStuck() {
                     <li>A natural-born healer becomes a pharmaceutical salesperson.</li>
                     <li>A visionary entrepreneur stays as a middle manager in a tech firm.</li>
                 </ul>
-                <p>We choose shadow careers because they are "safe." They allow us to stay close to our passion without the vulnerability of actually pursuing it. <strong>AI Counsel Lab</strong> identifies your true core drivers so you can stop settling for the "shadow" and start building the substance.</p>
+                <p>We choose shadow careers because they are "safe." They allow us to stay close to our passion without the vulnerability of actually pursuing it. AI Counsel Lab identifies your true core drivers so you can stop settling for the "shadow" and start building the substance.</p>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">2. The Noise of "Social Proof" (The Sharma-Ji-Ka-Beta Effect)</h3>
-                <p>In India, career choices are often a family project. We are influenced by what "Sharma Ji’s son" did or what the latest LinkedIn trend suggests. This is called <strong>Social Proof</strong>, and it’s the enemy of individuality.</p>
-                <p>When you follow the crowd, you are competing in a saturated market where you have no natural advantage. Finding your dream career requires <strong>tuning out the noise.</strong> Our AI provides a "Clean Room" for your thoughts—it doesn’t care about society’s expectations; it only cares about your unique psychological data.</p>
+                <p>In India, career choices are often a family project. We are influenced by what "Sharma Ji’s son" did or what the latest LinkedIn trend suggests. This is called Social Proof, and it’s the enemy of individuality.</p>
+                <p>When you follow the crowd, you are competing in a saturated market where you have no natural advantage. Finding your dream career requires tuning out the noise. Our AI provides a "Clean Room" for your thoughts—it doesn’t care about society’s expectations; it only cares about your unique psychological data.</p>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">3. Analysis Paralysis and the "Paradox of Choice"</h3>
-                <p>In 2026, there are more career paths than ever before. You could be a Prompt Engineer, a Sustainability Consultant, or a Bio-Hacker. Paradoxically, having <strong>too many choices</strong> makes us more likely to choose nothing at all.</p>
+                <p>In 2026, there are more career paths than ever before. You could be a Prompt Engineer, a Sustainability Consultant, or a Bio-Hacker. Paradoxically, having too many choices makes us more likely to choose nothing at all.</p>
                 <p>When faced with infinite options, the brain freezes. We stay in a job we hate simply because we are terrified of picking the *wrong* alternative.</p>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">4. Why You Can’t "Think" Your Way Out</h3>
                 <p>You cannot solve a career crisis with the same logic that got you into it. Most people try to "think" their way to a dream job, but thinking is limited by your current knowledge.</p>
-                <p><strong>AI Counsel Lab</strong> uses <strong>Predictive Modeling</strong>. We don't just ask you what you know; we analyze how you process information, your risk appetite, and your emotional resilience. We see the career paths you didn't even know existed.</p>
+                <p>AI Counsel Lab uses Predictive Modeling. We don't just ask you what you know; we analyze how you process information, your risk appetite, and your emotional resilience. We see the career paths you didn't even know existed.</p>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">5. The Fear of Starting Over</h3>
-                <p>The most common phrase we hear is: *"But I’ve already spent five years in this field!"* This is the <strong>Sunk Cost Fallacy</strong>. It’s the idea that you should keep going down a wrong path just because you’ve already walked a long way. But your dream career doesn't care about your past; it only cares about your next move. Our AI helps you realize that your "wasted" years were actually "data-gathering" years, and it shows you how to transfer those skills into a role you actually love.</p>
+                <p>The most common phrase we hear is: *"But I’ve already spent five years in this field!"* This is the Sunk Cost Fallacy. It’s the idea that you should keep going down a wrong path just because you’ve already walked a long way. But your dream career doesn't care about your past; it only cares about your next move. Our AI helps you realize that your "wasted" years were actually "data-gathering" years, and it shows you how to transfer those skills into a role you actually love.</p>
                 
                 <Card className="mt-12 bg-primary/10 border-primary/50 border-l-4">
                     <CardHeader>

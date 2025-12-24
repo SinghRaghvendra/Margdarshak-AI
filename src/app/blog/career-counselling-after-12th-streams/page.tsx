@@ -39,12 +39,12 @@ export default function BlogPostCareerCounsellingAfter12th() {
                             <CardContent>
                                 <p className="mb-2">The common confusion is a binary choice: Engineering or Medicine. But this ignores a world of high-growth careers:</p>
                                 <ul className="list-disc pl-5 space-y-1">
-                                    <li>**Data Science & AI/ML:** For those with strong analytical skills.</li>
-                                    <li>**Product Management:** For those who blend technical understanding with user empathy.</li>
-                                    <li>**Biotechnology:** For those interested in research beyond an MBBS.</li>
-                                    <li>**UX Research:** For science students with an interest in human psychology.</li>
+                                    <li>Data Science & AI/ML: For those with strong analytical skills.</li>
+                                    <li>Product Management: For those who blend technical understanding with user empathy.</li>
+                                    <li>Biotechnology: For those interested in research beyond an MBBS.</li>
+                                    <li>UX Research: For science students with an interest in human psychology.</li>
                                 </ul>
-                                <p className="mt-4 font-semibold">Career counselling for science students should reveal **fit beyond marks** and open doors to these modern roles.</p>
+                                <p className="mt-4 font-semibold">Career counselling for science students should reveal fit beyond marks and open doors to these modern roles.</p>
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -56,10 +56,10 @@ export default function BlogPostCareerCounsellingAfter12th() {
                             <CardContent>
                                 <p className="mb-2">The default path is often B.Com or CA. But the most exciting commerce careers today are in tech-driven fields:</p>
                                 <ul className="list-disc pl-5 space-y-1">
-                                    <li>**Fintech (Financial Technology):** Combining finance knowledge with tech skills.</li>
-                                    <li>**Business Analytics:** Using data to drive business decisions.</li>
-                                    <li>**Product Management:** Leading the development of digital products.</li>
-                                    <li>**Digital Marketing & Growth Hacking:** For those with a knack for numbers and strategy.</li>
+                                    <li>Fintech (Financial Technology): Combining finance knowledge with tech skills.</li>
+                                    <li>Business Analytics: Using data to drive business decisions.</li>
+                                    <li>Product Management: Leading the development of digital products.</li>
+                                    <li>Digital Marketing & Growth Hacking: For those with a knack for numbers and strategy.</li>
                                 </ul>
                                 <p className="mt-4 font-semibold">Counselling helps commerce students see beyond the traditional and into these high-demand specializations.</p>
                             </CardContent>
@@ -73,10 +73,10 @@ export default function BlogPostCareerCounsellingAfter12th() {
                             <CardContent>
                                 <p className="mb-2">Often seen as the "backup" option, Arts students possess skills desperately needed in the modern economy: creativity, communication, and critical thinking. High-growth careers include:</p>
                                 <ul className="list-disc pl-5 space-y-1">
-                                    <li>**UX/UI Design:** The architects of the digital world.</li>
-                                    <li>**Content Strategy & Marketing:** The storytellers for major brands.</li>
-                                    <li>**Applied Psychology:** In fields like HR, market research, and user behavior analysis.</li>
-                                    <li>**Public Policy & Research:** For those who want to drive large-scale change.</li>
+                                    <li>UX/UI Design: The architects of the digital world.</li>
+                                    <li>Content Strategy & Marketing: The storytellers for major brands.</li>
+                                    <li>Applied Psychology: In fields like HR, market research, and user behavior analysis.</li>
+                                    <li>Public Policy & Research: For those who want to drive large-scale change.</li>
                                 </ul>
                                 <p className="mt-4 font-semibold">Counselling for Arts students is about removing the stigma and building a clear, confident path to a successful career.</p>
                             </CardContent>
@@ -87,7 +87,7 @@ export default function BlogPostCareerCounsellingAfter12th() {
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">The Right Question to Ask</h2>
                 <p>After 12th, don’t just ask, “Which course is best?”</p>
-                <p>Ask, **“Which career fits me long-term, and what course is the first step?”**</p>
+                <p>Ask, “Which career fits me long-term, and what course is the first step?”</p>
                 <p>A good career counselling process helps you answer this by providing:</p>
                 <ul>
                     <li>A deep psychometric assessment of your personality and aptitude.</li>

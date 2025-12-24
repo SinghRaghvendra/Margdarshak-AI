@@ -22,33 +22,33 @@ export default function BlogPostFindYourDreamCareer() {
 
             <div className="prose max-w-none text-foreground/90">
                 <p>We’ve all seen the "hustle culture" influencers on Instagram. They tell you to <em>“quit your job today,” “follow your heart,”</em> and <em>“burn the boats.”</em> It sounds romantic, doesn't it? But for most of us in India—balancing student loans, family expectations, and the rising cost of living—that advice isn't just bad; it’s dangerous.</p>
-                <p>At <strong>AI Counsel Lab</strong>, we believe that finding your dream career shouldn't be a gamble. It should be a science. Here is how to pivot toward a life you love without losing your financial security.</p>
+                <p>At AI Counsel Lab, we believe that finding your dream career shouldn't be a gamble. It should be a science. Here is how to pivot toward a life you love without losing your financial security.</p>
                 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">1. The Myth of the "One True Passion"</h3>
                 <p>The biggest hurdle to finding a dream career is the belief that you only have one. In reality, humans are multi-faceted. You might love storytelling, technology, and psychology all at once.</p>
-                <p>The secret isn’t finding one thing you love; it’s finding the <strong>intersection</strong>. A dream career isn't a destination; it's the "sweet spot" where your natural skills meet a market that is willing to pay for them.</p>
+                <p>The secret isn’t finding one thing you love; it’s finding the intersection. A dream career isn't a destination; it's the "sweet spot" where your natural skills meet a market that is willing to pay for them.</p>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">2. Don’t Quit—Iterate</h3>
-                <p>The "Ruining Your Life" part happens when people make massive shifts based on a whim. Instead, use the <strong>Micro-Pivot Strategy</strong>:</p>
+                <p>The "Ruining Your Life" part happens when people make massive shifts based on a whim. Instead, use the Micro-Pivot Strategy:</p>
                 <ul>
-                    <li><strong>The 10% Rule:</strong> Spend 10% of your week (about 4-5 hours) exploring your interest. Take a certification, do a freelance project, or use an AI career simulator.</li>
-                    <li><strong>Data-Driven Decisions:</strong> Don’t guess if you’d be a good UX Designer. Our <Link href="/career-assessment" className="text-primary hover:underline">AI assessment</Link> analyzes your cognitive patterns to see if your brain actually enjoys the problem-solving style required for that role.</li>
+                    <li>The 10% Rule: Spend 10% of your week (about 4-5 hours) exploring your interest. Take a certification, do a freelance project, or use an AI career simulator.</li>
+                    <li>Data-Driven Decisions: Don’t guess if you’d be a good UX Designer. Our <Link href="/career-assessment" className="text-primary hover:underline">AI assessment</Link> analyzes your cognitive patterns to see if your brain actually enjoys the problem-solving style required for that role.</li>
                 </ul>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">3. The Indian "Stability" Trap</h3>
-                <p>In India, we are often pushed toward "safe" careers (Engineering, Medicine, Government Jobs). But in 2026, the definition of "safe" has changed. With the rise of Automation and AI, the "safest" job is no longer the one with the most job security—it’s the one that aligns most closely with your <strong>unique human edge.</strong></p>
+                <p>In India, we are often pushed toward "safe" careers (Engineering, Medicine, Government Jobs). But in 2026, the definition of "safe" has changed. With the rise of Automation and AI, the "safest" job is no longer the one with the most job security—it’s the one that aligns most closely with your unique human edge.</p>
                 <p>If you are a natural "Empathizer," a desk job in accounting is actually a high-risk career for you because you will burn out. Alignment <em>is</em> stability.</p>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">4. How AI Counsel Lab Maps Your Future</h3>
                 <p>Why trust a gut feeling when you can trust data? Our platform uses three layers of analysis to find your dream path:</p>
                 <ol className="list-decimal pl-5 space-y-2">
-                    <li><strong>Psychometric Mapping:</strong> We go beyond "What do you like?" to "How do you think?"</li>
-                    <li><strong>Market Intelligence:</strong> We sync your profile with high-growth industries in the current economy.</li>
-                    <li><strong>The Roadmap:</strong> We don't just tell you *what* to be; we give you the step-by-step "Bridge Plan" to get there.</li>
+                    <li>Psychometric Mapping: We go beyond "What do you like?" to "How do you think?"</li>
+                    <li>Market Intelligence: We sync your profile with high-growth industries in the current economy.</li>
+                    <li>The Roadmap: We don't just tell you *what* to be; we give you the step-by-step "Bridge Plan" to get there.</li>
                 </ol>
 
                 <h3 className="text-2xl font-semibold mt-8 mb-4">5. Transitioning Without the Terror</h3>
-                <p>If you’re a mid-career professional or a student at a crossroads, remember: <strong>You don't have to see the whole staircase to take the first step.</strong> Start by validating your dream. Use a tool that doesn't have a bias—unlike your friends or parents, our AI doesn't want you to be a doctor just because it "sounds good." It wants you to be successful because you are *positioned* to be.</p>
+                <p>If you’re a mid-career professional or a student at a crossroads, remember: You don't have to see the whole staircase to take the first step. Start by validating your dream. Use a tool that doesn't have a bias—unlike your friends or parents, our AI doesn't want you to be a doctor just because it "sounds good." It wants you to be successful because you are *positioned* to be.</p>
                 
                  <Card className="mt-12 bg-primary/10 border-primary/50 border-l-4">
                     <CardHeader>
