@@ -69,7 +69,7 @@ export default function BlogPostCareerCounsellingAfter12th() {
                          <Card>
                             <CardHeader>
                                 <CardTitle>Arts/Humanities Students: The Most Underrated Group</CardTitle>
-                            </Header>
+                            </CardHeader>
                             <CardContent>
                                 <p className="mb-2">Often seen as the "backup" option, Arts students possess skills desperately needed in the modern economy: creativity, communication, and critical thinking. High-growth careers include:</p>
                                 <ul className="list-disc pl-5 space-y-1">
