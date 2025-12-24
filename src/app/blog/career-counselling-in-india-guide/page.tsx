@@ -24,38 +24,38 @@ export default function BlogPostCareerCounsellingIndiaGuide() {
             </header>
 
             <div className="prose max-w-none text-foreground/90">
-                <p>India has more career options today than at any point in history—yet career confusion is at an all-time high. Students are asked to choose streams at 14, degrees at 17, and careers at 21, often with **no structured guidance**.</p>
-                <p>Career counselling in India has evolved from simple "uncle advice" to a **data-driven decision science**. In 2026, choosing a career without proper guidance is a costly mistake in terms of time, money, and satisfaction.</p>
+                <p>India has more career options today than at any point in history—yet career confusion is at an all-time high. Students are asked to choose streams at 14, degrees at 17, and careers at 21, often with no structured guidance.</p>
+                <p>Career counselling in India has evolved from simple "uncle advice" to a data-driven decision science. In 2026, choosing a career without proper guidance is a costly mistake in terms of time, money, and satisfaction.</p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">What Is Career Counselling? (The 2026 Definition)</h2>
-                <p>Career counselling is a **structured process** that helps individuals:</p>
+                <p>Career counselling is a structured process that helps individuals:</p>
                 <ul className="space-y-2">
-                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" /><span>Understand their core **personality** and work style.</span></li>
-                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" /><span>Identify their natural **aptitudes and hidden interests**.</span></li>
-                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" /><span>Match their unique profile with **future-proof careers**.</span></li>
-                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" /><span>Create a **clear, step-by-step action roadmap** to achieve their goals.</span></li>
+                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" /><span>Understand their core personality and work style.</span></li>
+                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" /><span>Identify their natural aptitudes and hidden interests.</span></li>
+                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" /><span>Match their unique profile with future-proof careers.</span></li>
+                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" /><span>Create a clear, step-by-step action roadmap to achieve their goals.</span></li>
                 </ul>
-                <p>Modern career counselling is no longer opinion-based—it is **assessment-based** and data-driven.</p>
+                <p>Modern career counselling is no longer opinion-based—it is assessment-based and data-driven.</p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">Why Students & Parents Struggle With Career Decisions</h2>
                 <p>The common challenges include:</p>
                 <ul>
-                    <li>**Peer Pressure & Herd Mentality:** Choosing engineering, medicine, or government jobs just because everyone else is.</li>
-                    <li>**Marks-Based Decisions:** Believing high scores in one subject automatically mean a career in that field.</li>
-                    <li>**Outdated Career Knowledge:** Parents suggesting careers that were safe 20 years ago but may not be relevant today.</li>
-                    <li>**Fear of Unconventional Paths:** Sticking to "safe" options while ignoring high-growth fields like AI, design, and analytics.</li>
+                    <li>Peer Pressure & Herd Mentality: Choosing engineering, medicine, or government jobs just because everyone else is.</li>
+                    <li>Marks-Based Decisions: Believing high scores in one subject automatically mean a career in that field.</li>
+                    <li>Outdated Career Knowledge: Parents suggesting careers that were safe 20 years ago but may not be relevant today.</li>
+                    <li>Fear of Unconventional Paths: Sticking to "safe" options while ignoring high-growth fields like AI, design, and analytics.</li>
                 </ul>
-                <p>Parents often ask, “Is this career safe?” Students ask, “Will I regret this later?” Proper career counselling answers **both** questions with data.</p>
+                <p>Parents often ask, “Is this career safe?” Students ask, “Will I regret this later?” Proper career counselling answers both questions with data.</p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">How AI Is Transforming Career Counselling in India</h2>
                 <p>Artificial Intelligence brings capabilities that were previously impossible at scale:</p>
                 <ul>
-                    <li>**Deep Psychometric Accuracy:** AI analyzes dozens of personality and cognitive traits for a more accurate profile.</li>
-                    <li>**Bias-Free Suggestions:** AI recommendations are based on data, not a counsellor's personal biases or limited knowledge.</li>
-                    <li>**Personalized, Instantaneous Reports:** AI can generate a detailed, actionable career roadmap in minutes.</li>
-                    <li>**Scalable Affordability:** AI makes high-quality, data-driven counselling accessible to everyone, not just a privileged few.</li>
+                    <li>Deep Psychometric Accuracy: AI analyzes dozens of personality and cognitive traits for a more accurate profile.</li>
+                    <li>Bias-Free Suggestions: AI recommendations are based on data, not a counsellor's personal biases or limited knowledge.</li>
+                    <li>Personalized, Instantaneous Reports: AI can generate a detailed, actionable career roadmap in minutes.</li>
+                    <li>Scalable Affordability: AI makes high-quality, data-driven counselling accessible to everyone, not just a privileged few.</li>
                 </ul>
-                <p>This is where **AI career platforms like AI Councel Lab** outperform traditional models, by combining the best of data science with proven psychological frameworks.</p>
+                <p>This is where AI career platforms like AI Councel Lab outperform traditional models, by combining the best of data science with proven psychological frameworks.</p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">FAQs on Career Counselling in India</h2>
                  <div className="space-y-4 my-6">
