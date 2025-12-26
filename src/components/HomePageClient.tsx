@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen } from 'lucide-react';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
@@ -69,14 +69,35 @@ export default function HomePageClient() {
       isExternal: false,
     },
   ];
-
-  const painPoints = [
-      { point: "Overwhelmed by countless career options with no clear direction." },
-      { point: "Anxious about making a wrong choice that will impact your future." },
-      { point: "Unsure how your skills and interests translate into a real-world job." },
-      { point: "Lacking a concrete plan to achieve your long-term career goals." },
-      { point: "Getting rejected by automated systems before a human sees your resume." },
+  
+  const problemsAndSolutions = [
+      {
+        icon: <Search className="h-8 w-8 text-destructive" />,
+        problem: 'Too many career options to choose from?',
+        solution: 'AI-powered career matching narrows thousands of possibilities into paths that align with your personality, strengths, and interests.'
+      },
+      {
+        icon: <AlertTriangle className="h-8 w-8 text-destructive" />,
+        problem: 'Afraid of making the wrong career decision?',
+        solution: 'Future-path analysis shows how different choices can play out over time, so you understand the long-term impact before committing.'
+      },
+      {
+        icon: <Cpu className="h-8 w-8 text-destructive" />,
+        problem: 'Unsure how your abilities translate into real careers?',
+        solution: 'Skill and trait mapping connects who you are today with real-world roles that fit you naturally, removing the guesswork.'
+      },
+      {
+        icon: <Milestone className="h-8 w-8 text-destructive" />,
+        problem: 'Lacking a clear long-term direction?',
+        solution: 'Get a personalized, step-by-step career roadmap that shows you what to focus on now, next, and in the years to come.'
+      },
+      {
+        icon: <TrendingUp className="h-8 w-8 text-destructive" />,
+        problem: 'Worried if a career is future-proof?',
+        solution: 'Our AI analyzes market trends and demand signals to highlight roles with strong long-term growth potential.'
+      },
   ];
+
 
   const homeFaqs = [
       {
@@ -268,23 +289,33 @@ export default function HomePageClient() {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12 md:mb-16">
               <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? Turn Uncertainty into a Clear Career Plan.</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                The modern job market is confusing. Do any of these sound familiar?
+                The modern job market is complex — but your career decisions don’t have to be. AI Councel replaces confusion with clarity using data-driven guidance, not opinions or guesswork.
               </p>
             </div>
-            <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-x-12 gap-y-6">
-              {painPoints.map((item, index) => (
-                  <div key={index} className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
-                      <p className="text-foreground/80">{item.point}</p>
-                  </div>
+            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+              {problemsAndSolutions.map((item, index) => (
+                <Card key={index} className="bg-card shadow-md hover:shadow-lg transition-shadow">
+                  <CardHeader className="flex flex-row items-center gap-4">
+                    {item.icon}
+                    <CardTitle className="text-lg font-semibold">{item.problem}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        <span className="font-bold text-primary mr-1">Solution:</span> 
+                        {item.solution}
+                    </p>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-            <div className="text-center mt-12">
-              <p className="text-lg text-foreground max-w-3xl mx-auto">
-                  <span className="font-semibold text-primary">AI Councel</span> replaces confusion with data-driven, personalized action plans, so you can move forward with confidence and purpose.
-              </p>
+             <div className="text-center mt-16">
+                 <Link href={careerGuidanceHref}>
+                   <Button size="lg" className="text-lg" suppressHydrationWarning={true}>
+                     Find Your Clarity <ArrowRight className="ml-2 h-5 w-5" />
+                   </Button>
+                 </Link>
             </div>
           </div>
         </section>
