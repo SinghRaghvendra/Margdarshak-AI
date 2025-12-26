@@ -69,7 +69,6 @@ export const psychometricTestSections: Section[] = [
     focusArea: 'Identifying what activities you are naturally drawn to.',
     questionTypeDescription: 'Choose the option that appeals to you most.',
     questions: [
-<<<<<<< HEAD
         { id: 's2q1', type: 'choice', text: 'If you had a free afternoon, which activity would you choose?', options: [{id:'a', text:'Build or fix something (like furniture or a gadget).'}, {id:'b', text:'Read a book or watch a documentary.'}, {id:'c', text:'Doodle, paint, or write a story.'}, {id:'d', text:'Organize your closet or plan your week.'}] },
         { id: 's2q2', type: 'choice', text: 'Which of these job descriptions sounds most appealing?', options: [{id:'a', text:'Lead a team to launch a new product.'}, {id:'b', text:'Analyze data to uncover hidden market trends.'}, {id:'c',text:'Help people navigate their personal challenges.'}, {id:'d', text:'Design the user interface for a new mobile app.'}] },
         { id: 's2q3', type: 'choice', text: 'Which section of a bookstore would you go to first?', options: [{id:'a', text:'Science & Technology'}, {id:'b', text:'Arts & Photography'}, {id:'c', text:'Self-Help & Psychology'}, {id:'d', text:'Business & Finance'}] },
@@ -90,13 +89,6 @@ export const psychometricTestSections: Section[] = [
         { id: 's2q18', text: 'Which work environment sounds best?', type: 'choice', options: [{id:'a', text:'A busy, bustling hospital or clinic.'}, {id:'b', text:'A quiet, focused research lab.'}, {id:'c', text:'A collaborative and creative design studio.'}, {id:'d', text:'A high-energy, competitive sales floor.'}] },
         { id: 's2q19', type: 'choice', text: 'If you had to choose a superpower, it would be:', options: [{id:'a', text:'The ability to talk to animals.'}, {id:'b', text:'The ability to solve any puzzle instantly.'}, {id:'c', text:'The ability to create anything you can imagine.'}, {id:'d', text:'The ability to persuade anyone of your viewpoint.'}] },
         { id: 's2q20', type: 'slider', text: 'I\'m more interested in...', poles: [{ label: 'How things are made', emoji: '🔧' }, { label: 'Why people do things', emoji: '🧐' }] },
-=======
-      { id: 's2q1', type: 'choice', text: 'On a free afternoon, I\'d rather:', options: [{id:'a', text:'Build or fix something tangible'}, {id:'b', text:'Analyze data or solve a complex puzzle'}, {id:'c', text:'Create art or write a story'}] },
-      { id: 's2q2', type: 'choice', text: 'Which job appeals most?', options: [{id:'a', text:'Managing a project and leading a team'}, {id:'b', text:'Conducting detailed research'}, {id:'c', text:'Helping or advising people directly'}] },
-      { id: 's2q3', type: 'choice', text: 'I enjoy tasks that are...', options: [{id:'a', text:'Practical and hands-on'}, {id:'b', text:'Creative and unstructured'}, {id:'c', text:'Organized and detail-oriented'}] },
-      { id: 's2q4', type: 'choice', text: 'A documentary I would watch is about...', options: [{id:'a', text:'Technological innovations'}, {id:'b', text:'Historical events and patterns'}, {id:'c', text:'Human psychology and behavior'}] },
-      { id: 's2q5', type: 'choice', text: 'I feel most satisfied when I...', options: [{id:'a', text:'Achieve a measurable goal'}, {id:'b', text:'Express myself creatively'}, {id:'c', text:'Make a positive impact on others'}] },
->>>>>>> parent of 41b8faa (I think there should be 4 options in psychometric test some questions ca)
     ],
   },
     {
@@ -105,7 +97,6 @@ export const psychometricTestSections: Section[] = [
     focusArea: 'What drives you in a professional environment.',
     questionTypeDescription: 'Choose the option that is most important to you.',
     questions: [
-<<<<<<< HEAD
         { id: 's3q1', type: 'slider', text: 'My main career driver is...', poles: [{ label: 'Financial security', emoji: '💰' }, { label: 'Making a positive impact', emoji: '🌍' }] },
         { id: 's3q2', type: 'slider', text: 'I prefer a job that is...', poles: [{ label: 'Stable and predictable', emoji: '🔒' }, { label: 'Dynamic and ever-changing', emoji: '🔥' }] },
         { id: 's3q3', type: 'choice', text: 'Which of these is the most important factor in a job for you?', options: [{id:'a', text:'A high salary and generous bonuses.'}, {id:'b', text:'A healthy work-life balance and flexibility.'}, {id:'c', text:'A strong sense of purpose in my work.'}, {id:'d', text:'Continuous learning and skill development.'}] },
@@ -126,13 +117,6 @@ export const psychometricTestSections: Section[] = [
         { id: 's3q18', type: 'choice', text: 'In 10 years, I would rather be:', options: [{id:'a', text:'Wealthy, but working long hours.'}, {id:'b', text:'Making a moderate income, but with a lot of free time.'}, {id:'c', text:'Famous in my industry, but with a lot of stress.'}, {id:'d', text:'Making a real difference, even if not well-known.'}] },
         { id: 's3q19', type: 'slider', text: 'It\'s more important for my work to be...', poles: [{ label: 'Interesting to me', emoji: '💡' }, { label: 'Valued by others', emoji: '🌟' }] },
         { id: 's3q20', type: 'choice', text: 'I prefer a company culture that feels like:', options: [{id:'a', text:'A professional sports team (high performance, competitive).'}, {id:'b', text:'A family (supportive, close-knit).'}, {id:'c', text:'A university lab (innovative, experimental).'}, {id:'d', text:'A well-oiled machine (efficient, predictable).'}] },
-=======
-      { id: 's3q1', type: 'slider', text: 'My main career driver is...', poles: [{ label: 'Financial security', emoji: '💰' }, { label: 'Making an impact', emoji: '🌍' }] },
-      { id: 's3q2', type: 'slider', text: 'I prefer a job that is...', poles: [{ label: 'Stable and predictable', emoji: '🔒' }, { label: 'Dynamic and full of change', emoji: '🔥' }] },
-      { id: 's3q3', type: 'choice', text: 'I value a workplace that prioritizes...', options: [{id:'a', text:'Innovation and risk-taking'}, {id:'b', text:'Team harmony and collaboration'}, {id:'c', text:'Individual achievement and autonomy'}] },
-      { id: 's3q4', type: 'slider', text: 'I am more motivated by...', poles: [{ label: 'Internal validation', emoji: '😊' }, { label: 'External recognition', emoji: '🏆' }] },
-      { id: 's3q5', type: 'choice', text: 'Which company benefit is most appealing?', options: [{id:'a', text:'A high salary and bonus'}, {id:'b', text:'A flexible work schedule'}, {id:'c', text:'Opportunities for professional development'}] },
->>>>>>> parent of 41b8faa (I think there should be 4 options in psychometric test some questions ca)
     ],
   },
   {
@@ -141,7 +125,6 @@ export const psychometricTestSections: Section[] = [
     focusArea: 'How you process information and solve problems.',
     questionTypeDescription: 'Choose your typical approach.',
     questions: [
-<<<<<<< HEAD
         { id: 's4q1', type: 'choice', text: 'When facing a complex problem, my first step is to:', options: [{id:'a', text:'Break it down into smaller, logical steps.'}, {id:'b', text:'Brainstorm as many creative solutions as possible.'}, {id:'c', text:'Try to find a similar problem I\'ve solved before.'}, {id:'d', text:'Visualize the problem and its components.'}] },
         { id: 's4q2', type: 'choice', text: 'How do you prefer to learn a new software?', options: [{id:'a', text:'Read the user manual from start to finish.'}, {id:'b', text:'Watch a video tutorial that walks through it.'}, {id:'c', text:'Click around and figure it out through trial and error.'}, {id:'d', text:'Take a structured online course.'}] },
         { id: 's4q3', type: 'slider', text: 'When working on a project, I am better at...', poles: [{ label: 'Generating initial ideas', emoji: '💡' }, { label: 'Executing the fine details', emoji: '✍️' }] },
@@ -162,13 +145,6 @@ export const psychometricTestSections: Section[] = [
         { id: 's4q18', type: 'scenario', scenario: 'You have to memorize a list of items.', questionText: 'What technique do you use?', options: [{id:'a', text:'Repeat the list over and over.'}, {id:'b', text:'Create a story connecting the items.'}, {id:'c', text:'Group the items into categories.'}, {id:'d', text:'Visualize the items in a specific location.'}] },
         { id: 's4q19', type: 'slider', text: 'When problem-solving, I focus more on...', poles: [{ label: 'Finding the correct answer', emoji: '✔️' }, { label: 'Exploring different possibilities', emoji: '❓' }] },
         { id: 's4q20', type: 'choice', text: 'Which task sounds more appealing?', options: [{id:'a', text:'Optimizing an existing system for better performance.'}, {id:'b', text:'Inventing a completely new system from scratch.'}, {id:'c', text:'Documenting how a system works for others.'}, {id:'d', text:'Testing a system to find all its weaknesses.'}] },
-=======
-      { id: 's4q1', type: 'choice', text: 'When facing a problem, I first...', options: [{id:'a', text:'Break it down into smaller steps'}, {id:'b', text:'Brainstorm many different ideas'}, {id:'c', text:'Go with my gut feeling'}] },
-      { id: 's4q2', type: 'choice', text: 'When learning something new, I prefer...', options: [{id:'a', text:'A structured, step-by-step course'}, {id:'b', text:'To experiment and learn by doing'}, {id:'c', text:'To read and absorb a lot of information first'}] },
-      { id: 's4q3', type: 'slider', text: 'I am better at...', poles: [{ label: 'Seeing the big picture', emoji: '🔭' }, { label: 'Focusing on the details', emoji: '🔬' }] },
-      { id: 's4q4', type: 'scenario', scenario: 'You are given a large, complex dataset.', questionText: 'What is your first instinct?', options: [{id:'a', text:'Look for overall trends and patterns'}, {id:'b', text:'Check the data for accuracy and clean it up'}, {id:'c', text:'Visualize the data to see what stands out'}] },
-      { id: 's4q5', type: 'choice', text: 'I prefer my work to be...', options: [{id:'a', text:'Clearly defined with specific instructions'}, {id:'b', text:'Open-ended, allowing for my own interpretation'}, {id:'c', text:'A mix of both clear tasks and creative freedom'}] },
->>>>>>> parent of 41b8faa (I think there should be 4 options in psychometric test some questions ca)
     ],
   },
   {
@@ -177,7 +153,6 @@ export const psychometricTestSections: Section[] = [
     focusArea: 'Your preferred style of interaction and work environment.',
     questionTypeDescription: 'Select your preference.',
     questions: [
-<<<<<<< HEAD
         { id: 's5q1', type: 'slider', text: 'My ideal work environment is...', poles: [{ label: 'Quiet and allows deep focus', emoji: '🤫' }, { label: 'Social and full of interaction', emoji: '🗣️' }] },
         { id: 's5q2', type: 'choice', text: 'I prefer to communicate important information:', options: [{id:'a', text:'In a detailed email or document.'}, {id:'b', text:'In a face-to-face meeting.'}, {id:'c', text:'Over a quick chat or instant message.'}, {id:'d', text:'Through a formal presentation.'}] },
         { id: 's5q3', type: 'scenario', scenario: 'A conflict arises between two team members.', questionText: 'Your typical response is to:', options: [{id:'a', text:'Try to mediate and help them find a middle ground.'}, {id:'b', text:'Stay out of it unless it directly affects your work.'}, {id:'c', text:'Report it to a manager or HR.'}, {id:'d', text:'Propose a logical solution based on facts.'}] },
@@ -198,13 +173,6 @@ export const psychometricTestSections: Section[] = [
         { id: 's5q18', type: 'choice', text: 'A "good meeting" is one that:', options: [{id:'a', text:'Is short and has a clear agenda.'}, {id:'b', text:'Generates a lot of new ideas.'}, {id:'c', text:'Strengthens team bonds and relationships.'}, {id:'d', text:'Results in a firm decision being made.'}] },
         { id: 's5q19', type: 'scenario', scenario: 'The team has to work late.', questionText: 'Your thought is:', options: [{id:'a', text:'"Great! I love the energy of working under pressure together."' }, {id:'b', text:'"Annoying, but I\'ll do my part to get it done."' }, {id:'c', text:'"This is a sign of poor planning."' }, {id:'d', text:'"I hope there\'s free pizza."' }] },
         { id: 's5q20', type: 'slider', text: 'When it comes to my career, I prefer...', poles: [{ label: 'Competition with others', emoji: '🏆' }, { label: 'Collaboration with others', emoji: '🤝' }] },
-=======
-      { id: 's5q1', type: 'slider', text: 'My ideal work environment is...', poles: [{ label: 'Quiet and focused', emoji: '🧘' }, { label: 'Social and collaborative', emoji: '🔊' }] },
-      { id: 's5q2', type: 'choice', text: 'I prefer to communicate...', options: [{id:'a', text:'In writing (email, docs)'}, {id:'b', text:'Face-to-face or in meetings'}, {id:'c', text:'A mix of both'}] },
-      { id: 's5q3', type: 'scenario', scenario: 'A conflict arises within your team.', questionText: 'How do you typically respond?', options: [{id:'a', text:'Try to mediate and find a compromise'}, {id:'b', text:'Stay out of it unless directly involved'}, {id:'c', text:'Analyze the situation and propose a logical solution'}] },
-      { id: 's5q4', type: 'slider', text: 'When it comes to leadership, I prefer to...', poles: [{ label: 'Lead the group', emoji: '👑' }, { label: 'Be a contributor', emoji: '🙋' }] },
-      { id: 's5q5', type: 'choice', text: 'Receiving feedback is best when it is...', options: [{id:'a', text:'Direct and to the point'}, {id:'b', text:'Gentle and encouraging'}, {id:'c', text:'Data-driven and objective'}] },
->>>>>>> parent of 41b8faa (I think there should be 4 options in psychometric test some questions ca)
     ],
   }
 ];
