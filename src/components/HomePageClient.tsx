@@ -130,17 +130,17 @@ export default function HomePageClient() {
 
   const researchPoints = [
     {
-      icon: <XCircle className="h-10 w-10 text-primary mb-3" />,
+      icon: <XCircle className="h-10 w-10 text-primary mb-3 mx-auto" />,
       title: 'The Awareness Gap',
       description: 'A staggering 93% of Indian students know about only seven career options, while hundreds of high-growth fields remain hidden.'
     },
     {
-      icon: <Users className="h-10 w-10 text-primary mb-3" />,
+      icon: <Users className="h-10 w-10 text-primary mb-3 mx-auto" />,
       title: 'The Guidance Gap',
       description: 'With less than 10,000 trained counsellors for over 400 million students and professionals, getting personalized, unbiased advice is nearly impossible.'
     },
     {
-      icon: <BarChart className="h-10 w-10 text-primary mb-3" />,
+      icon: <BarChart className="h-10 w-10 text-primary mb-3 mx-auto" />,
       title: 'The Skill Gap',
       description: 'The half-life of a professional skill has dropped to just a few years. What was valuable yesterday may be obsolete tomorrow, making the right guidance more critical than ever.'
     }
@@ -376,7 +376,7 @@ export default function HomePageClient() {
                 </div>
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
                     {researchPoints.map((point, index) => (
-                        <Card key={index} className="bg-card/50 border-l-4 border-primary text-center p-6">
+                        <Card key={index} className="bg-card/50 border-l-4 border-primary p-6 text-center">
                            {point.icon}
                            <h3 className="text-xl font-bold mt-2">{point.title}</h3>
                            <p className="text-muted-foreground mt-2">{point.description}</p>
