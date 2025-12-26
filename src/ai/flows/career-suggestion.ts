@@ -48,7 +48,7 @@ export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema
 async function callGeminiWithApiKey(
   prompt: string,
   model = "gemini-2.5-flash",
-  maxTokens = 10000
+  maxTokens = 8192
 ) {
   const apiKey = process.env.GEMINI_API_KEY;
 
@@ -120,7 +120,7 @@ function extractJSON(text: string): any {
   }
 }
 
-const getDecoderKeyPrompt = () => {
+const getBasePrompt = () => {
     return `
       You are an expert career counselor AI functioning as a JSON API.
       RULES:
@@ -133,49 +133,13 @@ const getDecoderKeyPrompt = () => {
       Your response must strictly follow this exact schema, providing exactly 3 career suggestions:
       {"careers":[{"name":"string","matchScore":"string (e.g., '87.26%')","personalityProfile":"string","rationale":"very short 1-sentence string"}, ...2 more objects]}
       
-      **Trait Data Interpretation Key (25 Question Test):**
-      The user's psychometric data is provided in a compressed JSON format. Here is how to interpret it:
-  
-      **1. Personality & Temperament (s1, Sliders):**
-      - s1q1: 1 (Alone) to 5 (In a team)
-      - s1q2: 1 (Logic) to 5 (Intuition)
-      - s1q3: 1 (Spontaneous) to 5 (Organized)
-      - s1q4: 1 (Introverted) to 5 (Extroverted)
-      - s1q5: 1 (Calm under stress) to 5 (Feels pressured)
-
-      **2. Interests & Enjoyment (s2, Choice-based):**
-      - s2q1: Free afternoon? (a: Build/fix, b: Analyze/solve, c: Create/write)
-      - s2q2: Job appeal? (a: Manage/lead, b: Research, c: Help/advise)
-      - s2q3: Task type? (a: Practical/hands-on, b: Creative/unstructured, c: Organized/detailed)
-      - s2q4: Documentary choice? (a: Tech, b: History, c: Psychology)
-      - s2q5: Satisfaction source? (a: Achieve goal, b: Creative expression, c: Help others)
-
-      **3. Motivation & Values (s3, Slider & Choice):**
-      - s3q1: Career driver? 1 (Financial security) to 5 (Making an impact)
-      - s3q2: Job type? 1 (Stable/predictable) to 5 (Dynamic/changing)
-      - s3q3: Workplace values? (a: Innovation, b: Team harmony, c: Autonomy)
-      - s3q4: Motivation source? 1 (Internal validation) to 5 (External recognition)
-      - s3q5: Benefit appeal? (a: High salary, b: Flexibility, c: Professional development)
-
-      **4. Cognitive Style (s4, Choice & Slider):**
-      - s4q1: Problem approach? (a: Step-by-step, b: Brainstorm, c: Gut feeling)
-      - s4q2: Learning style? (a: Structured course, b: Experimenting, c: Reading/absorbing)
-      - s4q3: Focus? 1 (Big picture) to 5 (Details)
-      - s4q4: Dataset instinct? (a: Find trends, b: Clean data, c: Visualize)
-      - s4q5: Work preference? (a: Clearly defined, b: Open-ended, c: Mix of both)
-
-      **5. Social & Work Environment Style (s5, Slider & Choice):**
-      - s5q1: Work environment? 1 (Quiet/focused) to 5 (Social/collaborative)
-      - s5q2: Communication preference? (a: Written, b: Face-to-face, c: Mix of both)
-      - s5q3: Team conflict response? (a: Mediate, b: Stay out of it, c: Propose logical solution)
-      - s5q4: Leadership preference? 1 (Lead) to 5 (Contribute)
-      - s5q5: Feedback preference? (a: Direct, b: Gentle, c: Objective/data-driven)
+      Analyze the user's trait data and their personalized answers to generate three highly relevant career suggestions. The trait data comes from a detailed psychometric test covering personality, interests, values, cognitive style, and social preferences.
     `;
 };
 
 export async function suggestCareers(input: CareerSuggestionInput): Promise<CareerSuggestionOutput> {
     const prompt = `
-    ${getDecoderKeyPrompt()}
+    ${getBasePrompt()}
 
     User_Traits_JSON:
     ${JSON.stringify(input.traits)}
@@ -189,7 +153,7 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     `;
     
     try {
-        const text = await callGeminiWithApiKey(prompt, "gemini-2.5-flash", 10000);
+        const text = await callGeminiWithApiKey(prompt, "gemini-2.5-flash");
         
         if (!text) {
              throw new Error("The AI model returned an empty response for career suggestions.");
