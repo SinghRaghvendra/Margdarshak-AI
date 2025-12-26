@@ -362,6 +362,18 @@ export default function HomePageClient() {
                 </Card>
               ))}
             </div>
+             <div className="text-center mt-16 flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href={careerGuidanceHref}>
+                    <Button size="lg" className="text-lg py-6 px-8 shadow-md" suppressHydrationWarning>
+                        Take Assessment Now!
+                    </Button>
+                </Link>
+                <Link href="/pricing">
+                    <Button size="lg" variant="outline" className="text-lg py-6 px-8 shadow-md">
+                        View Pricing
+                    </Button>
+                </Link>
+            </div>
           </div>
         </section>
         
