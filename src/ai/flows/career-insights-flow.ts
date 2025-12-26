@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview Provides astrological and numerological insights for a selected career.
- * This file has been refactored to use a direct, self-contained API call for stability.
+ * This file uses a direct, self-contained API call for stability and to avoid auth conflicts.
  */
 
 import { z } from 'zod';
@@ -26,6 +26,10 @@ const CareerInsightsOutputSchema = z.object({
 });
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
+/**
+ * Performs a direct REST API call to the Gemini API using a standard API key.
+ * This is isolated from Genkit or other SDKs to ensure simple, predictable authentication.
+ */
 async function callGeminiWithApiKey(
   prompt: string,
   model = "gemini-2.5-flash",
@@ -78,19 +82,15 @@ async function callGeminiWithApiKey(
   return text;
 }
 
-
 /**
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
  * It finds the first '{' and the last '}' to isolate the JSON content.
- * @param text The text from the AI response.
- * @returns The parsed JSON object.
  */
 function extractJSON(text: string): any {
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
 
   if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-    // If we can't find a valid JSON structure, throw an error.
     console.error("RAW AI RESPONSE (no JSON object found):", text);
     throw new Error('Could not find a valid JSON object in the AI response.');
   }
@@ -98,10 +98,8 @@ function extractJSON(text: string): any {
   const jsonString = text.slice(firstBrace, lastBrace + 1);
   
   try {
-    // Attempt to parse the extracted string
     return JSON.parse(jsonString);
   } catch (parseError) {
-    // If parsing fails, log the details and throw a specific error
     console.error("JSON Parsing failed after extraction:", parseError, "--- Extracted String:", jsonString);
     throw new Error('The extracted text was not valid JSON.');
   }

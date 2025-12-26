@@ -1,10 +1,9 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebaseAdmin'; // <-- CORRECT: Import the getter function
+import { getDb } from '@/lib/firebaseAdmin'; // Firestore Admin for DB operations
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
-
 
 /**
  * Performs a direct REST API call to the Gemini API using a standard API key.
@@ -57,7 +56,6 @@ async function callGeminiWithApiKey(
     throw new Error(data.error?.message || `The AI model failed to respond. Status: ${response.status}`);
   }
 
-  // Safely extract the text from the response
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!text) {
@@ -69,7 +67,7 @@ async function callGeminiWithApiKey(
 }
 
 
-// --- PROMPT GENERATION FUNCTIONS FOR EACH TIER (No change here) ---
+// --- PROMPT GENERATION FUNCTIONS ---
 
 function getVerdictPrompt(input: any) {
   return `
@@ -160,7 +158,6 @@ function getClarityPrompt(input: any) {
   
 
   function getBlueprintPrompt(input: any) {
-    // This is the original, full-length prompt
     return `You are an expert career counselor preparing a comprehensive, personalized career report.
     The report MUST be in Markdown format and STRICTLY follow the structure and content guidelines below.
     The ENTIRE textual content of the report (headings, descriptions, predictions, advice, etc.) MUST be in the following language: **${input.preferredLanguage}**.
@@ -266,7 +263,7 @@ function getClarityPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
-    const db = getDb(); // <-- Lazily get the DB instance at runtime
+    const db = getDb(); // Lazily get the DB instance for server-side operations
     const { userId, plan, language, career, allSuggestions } = await req.json();
 
     if (!userId || !plan || !language || !career || !allSuggestions) {
@@ -340,6 +337,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid plan specified.' }, { status: 400 });
     }
 
+    // Use the self-contained, direct API call method
     const reportMarkdown = await callGeminiWithApiKey(prompt, "gemini-2.5-flash", maxTokens);
 
     if (!reportMarkdown) {
@@ -369,8 +367,7 @@ export async function POST(req: Request) {
 
   } catch (err: any) {
     console.error("API Route Error in /generate-and-save-report:", err);
+    // Forward the specific, user-friendly error message from the AI call
     return NextResponse.json({ error: err.message || 'An unknown server error occurred.' }, { status: 500 });
   }
 }
-
-    

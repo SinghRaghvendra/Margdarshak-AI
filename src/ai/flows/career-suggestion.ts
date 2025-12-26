@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview Provides AI-powered career suggestions based on user traits and personalized answers.
- * This file has been refactored to use a direct, self-contained API call for stability.
+ * This file uses a direct, self-contained API call for stability and to avoid auth conflicts.
  */
 
 import {z} from 'zod';
@@ -41,7 +41,10 @@ const CareerSuggestionOutputSchema = z.object({
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
 
-
+/**
+ * Performs a direct REST API call to the Gemini API using a standard API key.
+ * This is isolated from Genkit or other SDKs to ensure simple, predictable authentication.
+ */
 async function callGeminiWithApiKey(
   prompt: string,
   model = "gemini-2.5-flash",
@@ -97,8 +100,6 @@ async function callGeminiWithApiKey(
 /**
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
  * It finds the first '{' and the last '}' to isolate the JSON content.
- * @param text The text from the AI response.
- * @returns The parsed JSON object.
  */
 function extractJSON(text: string): any {
   const firstBrace = text.indexOf('{');
@@ -118,7 +119,6 @@ function extractJSON(text: string): any {
     throw new Error('The extracted text was not valid JSON.');
   }
 }
-
 
 const getDecoderKeyPrompt = () => {
     return `
