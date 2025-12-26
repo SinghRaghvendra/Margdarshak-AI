@@ -26,6 +26,7 @@ interface ViewModeData {
     markdown: string;
     careerName: string;
     plan: string;
+
     language: string;
     userName: string;
 }
@@ -154,7 +155,7 @@ export default function RoadmapPage() {
   }, [isGeneratingReport]);
 
   const fetchAndSetRoadmap = async (currentUser: User, pageInfo: NonNullable<typeof pageData>) => {
-    const { purchasedPlan, language, selectedCareer, allSuggestions, userName } = pageInfo;
+    const { purchasedPlan, language, selectedCareer, allSuggestions } = pageInfo;
     const cachedReportKey = `margdarshak_roadmap_${selectedCareer.replace(/\s/g, '_')}_${purchasedPlan}_${language}`;
     const cachedDataString = localStorage.getItem(cachedReportKey);
 
@@ -178,15 +179,19 @@ export default function RoadmapPage() {
     toast({ title: `Generating ${language} Report`, description: 'This may take up to 30 seconds...' });
 
     try {
+      const idToken = await currentUser.getIdToken(true);
+
       const response = await fetch('/api/generate-and-save-report', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
         body: JSON.stringify({ 
-            userId: currentUser.uid, 
             plan: purchasedPlan, 
             language, 
             career: selectedCareer,
-            allSuggestions // Pass all suggestions to the API
+            allSuggestions
         }),
       });
 

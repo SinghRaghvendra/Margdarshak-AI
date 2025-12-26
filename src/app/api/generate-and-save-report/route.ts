@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebaseAdmin'; // Firestore Admin for DB operations
+import { getDb } from '@/lib/firebaseAdmin';
+import { getAuth } from 'firebase-admin/auth';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
@@ -263,40 +264,78 @@ function getClarityPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, plan, language, career, allSuggestions } = await req.json();
+    /* ---------------- AUTH ---------------- */
+    const authHeader = req.headers.get('authorization');
 
-    if (!userId || !plan || !language || !career || !allSuggestions) {
-      return NextResponse.json({ error: 'Missing required parameters.' }, { status: 400 });
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'UNAUTHENTICATED: Missing token' },
+        { status: 401 }
+      );
     }
 
-    // STEP 1: Generate the report using the isolated Gemini call first.
-    // This avoids initializing Firebase Admin if the AI call fails.
+    const idToken = authHeader.replace('Bearer ', '');
+    // Initialize admin to verify token
+    getDb(); 
+    const decoded = await getAuth().verifyIdToken(idToken);
+    const userId = decoded.uid; // ✅ trusted source
 
-    const dbForInitialCheck = getDb(); // Get DB instance once for user data fetching
-    const userDocRef = dbForInitialCheck.collection('users').doc(userId);
+    /* ---------------- INPUT ---------------- */
+    const { plan, language, career, allSuggestions } = await req.json();
+
+    if (!plan || !language || !career || !allSuggestions) {
+      return NextResponse.json(
+        { error: 'Missing required parameters.' },
+        { status: 400 }
+      );
+    }
+
+    /* ---------------- FIRESTORE ---------------- */
+    const db = getDb();
+    const userDocRef = db.collection('users').doc(userId);
     const userDoc = await userDocRef.get();
-    
+
     if (!userDoc.exists) {
       return NextResponse.json({ error: 'User not found.' }, { status: 404 });
     }
+
     const userData = userDoc.data()!;
 
     if (!userData.paymentSuccessful || userData.purchasedPlan !== plan) {
-        return NextResponse.json({ error: `Payment required for the '${plan}' plan.` }, { status: 402 });
+      return NextResponse.json(
+        { error: `Payment required for '${plan}' plan.` },
+        { status: 402 }
+      );
     }
 
-    const { name, country, birthDetails, userTraits, personalizedAnswers, lastPaymentId } = userData;
+    const {
+      name,
+      country,
+      birthDetails,
+      userTraits,
+      personalizedAnswers,
+      lastPaymentId,
+    } = userData;
 
     if (!name || !birthDetails || !userTraits || !personalizedAnswers) {
-        return NextResponse.json({ error: 'User profile is incomplete. Cannot generate report.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'User profile incomplete.' },
+        { status: 400 }
+      );
     }
-    
-    const selectedCareerDetails = allSuggestions.find((s: any) => s.name === career);
+
+    /* ---------------- CAREER ---------------- */
+    const selectedCareerDetails = allSuggestions.find(
+      (s: any) => s.name === career
+    );
 
     if (!selectedCareerDetails) {
-       return NextResponse.json({ error: 'Selected career details not found in the provided suggestions.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Career not found.' },
+        { status: 400 }
+      );
     }
-    
+
     const age = differenceInYears(new Date(), parseISO(birthDetails.dateOfBirth));
     const lifePathNumber = calculateLifePathNumber(birthDetails.dateOfBirth);
 
@@ -316,38 +355,46 @@ export async function POST(req: Request) {
       preferredLanguage: language,
     };
 
-    let prompt;
-    let maxTokens;
+    let prompt: string;
+    let maxTokens: number;
 
     switch (plan) {
-        case 'verdict':
-            prompt = getVerdictPrompt(baseInput);
-            maxTokens = 2048;
-            break;
-        case 'clarity':
-            const clarityInput = {
-                ...baseInput,
-                alternativeCareers: allSuggestions.filter((s:any) => s.name !== career).slice(0, 2)
-            };
-            prompt = getClarityPrompt(clarityInput);
-            maxTokens = 4096;
-            break;
-        case 'blueprint':
-            prompt = getBlueprintPrompt(baseInput);
-            maxTokens = 8192;
-            break;
-        default:
-            return NextResponse.json({ error: 'Invalid plan specified.' }, { status: 400 });
+      case 'verdict':
+        prompt = getVerdictPrompt(baseInput);
+        maxTokens = 2048;
+        break;
+
+      case 'clarity':
+        prompt = getClarityPrompt({
+          ...baseInput,
+          alternativeCareers: allSuggestions
+            .filter((s: any) => s.name !== career)
+            .slice(0, 2),
+        });
+        maxTokens = 4096;
+        break;
+
+      case 'blueprint':
+        prompt = getBlueprintPrompt(baseInput);
+        maxTokens = 8192;
+        break;
+
+      default:
+        return NextResponse.json(
+          { error: 'Invalid plan.' },
+          { status: 400 }
+        );
     }
 
-    const reportMarkdown = await callGeminiWithApiKey(prompt, "gemini-2.5-flash", maxTokens);
+    /* ---------------- GEMINI ---------------- */
+    const reportMarkdown = await callGeminiWithApiKey(
+      prompt,
+      'gemini-2.5-flash',
+      maxTokens
+    );
 
-    if (!reportMarkdown) {
-      throw new Error("The AI model returned an empty response.");
-    }
-    
-    // STEP 2: Now that AI call is successful, save the report to Firestore.
-    const reportData = {
+    /* ---------------- SAVE ---------------- */
+    await saveReport(db, {
       userId,
       userName: name,
       careerName: selectedCareerDetails.name,
@@ -358,21 +405,23 @@ export async function POST(req: Request) {
       assessmentData: {
         userTraits,
         matchScore: selectedCareerDetails.matchScore || 'N/A',
-        personalityProfile: selectedCareerDetails.personalityProfile || 'N/A',
+        personalityProfile:
+          selectedCareerDetails.personalityProfile || 'N/A',
       },
-    };
-    
-    const dbForWrite = getDb(); // Re-get DB instance for writing
-    await saveReport(dbForWrite, reportData);
+    });
 
-    // Update user's payment status after successful save
     await userDocRef.update({ paymentSuccessful: false });
 
     return NextResponse.json({ roadmapMarkdown: reportMarkdown });
-
   } catch (err: any) {
-    console.error("API Route Error in /generate-and-save-report:", err);
-    // Forward the specific, user-friendly error message from the AI call
-    return NextResponse.json({ error: err.message || 'An unknown server error occurred.' }, { status: 500 });
+    console.error('generate-and-save-report error:', err);
+    // Ensure a user-friendly message for auth errors
+    if (err.code === 'auth/id-token-expired' || err.code === 'auth/argument-error') {
+       return NextResponse.json({ error: 'Authentication failed. Please log in again.' }, { status: 401 });
+    }
+    return NextResponse.json(
+      { error: err.message || 'An unknown server error occurred.' },
+      { status: 500 }
+    );
   }
 }
