@@ -1,10 +1,73 @@
 
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/firebaseAdmin'; // <-- CORRECT: Import the getter function
-import { callGeminiApi } from '@/app/api/gemini/route';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
+
+
+/**
+ * Performs a direct REST API call to the Gemini API using a standard API key.
+ * This is isolated from Genkit or other SDKs to ensure simple, predictable authentication.
+ * @param prompt The text prompt to send to the model.
+ * @param model The specific model to use (e.g., "gemini-2.5-flash").
+ * @param maxTokens The maximum number of tokens for the output.
+ * @returns The generated text from the model.
+ */
+async function callGeminiWithApiKey(
+  prompt: string,
+  model = "gemini-2.5-flash", // Defaulting to the requested model
+  maxTokens = 4096
+) {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("AI Service Authentication Failed: The GEMINI_API_KEY environment variable is not set on the server.");
+  }
+  
+  // Defensive check for safety settings to prevent accidental blocking
+  const safetySettings = [
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+  ];
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: maxTokens,
+          temperature: 0.7, // A balanced temperature for creative but grounded text
+        },
+        safetySettings,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Gemini API Error:", data.error);
+    // Pass the specific error from Google's API to the client for better debugging
+    throw new Error(data.error?.message || `The AI model failed to respond. Status: ${response.status}`);
+  }
+
+  // Safely extract the text from the response
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!text) {
+    console.warn("Gemini Response Missing Text:", data);
+    throw new Error("The AI model returned an empty or invalid response. Please try again.");
+  }
+
+  return text;
+}
+
 
 // --- PROMPT GENERATION FUNCTIONS FOR EACH TIER (No change here) ---
 
@@ -277,7 +340,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid plan specified.' }, { status: 400 });
     }
 
-    const reportMarkdown = await callGeminiApi(prompt, "gemini-2.5-flash", maxTokens);
+    const reportMarkdown = await callGeminiWithApiKey(prompt, "gemini-2.5-flash", maxTokens);
 
     if (!reportMarkdown) {
       throw new Error("The AI model returned an empty response.");
