@@ -2,11 +2,10 @@
 'use server';
 /**
  * @fileOverview Provides astrological and numerological insights for a selected career.
- * This file has been refactored to use the central /api/gemini route for stability.
+ * This file has been refactored to use a direct, self-contained API call for stability.
  */
 
 import { z } from 'zod';
-import { callGeminiApi } from '@/app/api/gemini/route';
 
 // Define Zod schemas for clear, validated input and output.
 const CareerInsightsInputSchema = z.object({
@@ -26,6 +25,59 @@ const CareerInsightsOutputSchema = z.object({
     .describe('A numerological review (approx. 150-200 words) based on the date of birth, discussing how numerology might relate to success or challenges in the selected career. Formatted in Markdown.'),
 });
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
+
+async function callGeminiWithApiKey(
+  prompt: string,
+  model = "gemini-2.5-flash",
+  maxTokens = 1024
+) {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("AI Service Authentication Failed: The GEMINI_API_KEY environment variable is not set on the server.");
+  }
+  
+  const safetySettings = [
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+  ];
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: maxTokens,
+          temperature: 0.6,
+          responseMimeType: "application/json",
+        },
+        safetySettings,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Gemini API Error:", data.error);
+    throw new Error(data.error?.message || `The AI model failed to respond. Status: ${response.status}`);
+  }
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!text) {
+    console.warn("Gemini Response Missing Text:", data);
+    throw new Error("The AI model returned an empty or invalid response.");
+  }
+
+  return text;
+}
+
 
 /**
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
@@ -88,7 +140,7 @@ export async function generateCareerInsights(input: CareerInsightsInput): Promis
     `;
     
     try {
-        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 1024);
+        const text = await callGeminiWithApiKey(prompt, "gemini-2.5-flash", 1024);
         
         if (!text) {
              throw new Error("The AI model returned an empty response for career insights.");

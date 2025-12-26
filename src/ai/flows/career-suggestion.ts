@@ -2,11 +2,10 @@
 'use server';
 /**
  * @fileOverview Provides AI-powered career suggestions based on user traits and personalized answers.
- * This file has been refactored to use the central /api/gemini route for stability.
+ * This file has been refactored to use a direct, self-contained API call for stability.
  */
 
 import {z} from 'zod';
-import { callGeminiApi } from '@/app/api/gemini/route';
 
 const PersonalizedAnswersSchema = z.object({
   q1: z.string().describe("Answer to: Describe your ideal workday. What kind of tasks energize you, and what kind of tasks drain you?"),
@@ -42,6 +41,59 @@ const CareerSuggestionOutputSchema = z.object({
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
 
+
+async function callGeminiWithApiKey(
+  prompt: string,
+  model = "gemini-2.5-flash",
+  maxTokens = 10000
+) {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("AI Service Authentication Failed: The GEMINI_API_KEY environment variable is not set on the server.");
+  }
+  
+  const safetySettings = [
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+  ];
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: maxTokens,
+          temperature: 0.5,
+          responseMimeType: "application/json",
+        },
+        safetySettings,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Gemini API Error:", data.error);
+    throw new Error(data.error?.message || `The AI model failed to respond. Status: ${response.status}`);
+  }
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!text) {
+    console.warn("Gemini Response Missing Text:", data);
+    throw new Error("The AI model returned an empty or invalid response.");
+  }
+
+  return text;
+}
+
 /**
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
  * It finds the first '{' and the last '}' to isolate the JSON content.
@@ -53,7 +105,6 @@ function extractJSON(text: string): any {
   const lastBrace = text.lastIndexOf('}');
 
   if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-    // If we can't find a valid JSON structure, throw an error.
     console.error("RAW AI RESPONSE (no JSON object found):", text);
     throw new Error('Could not find a valid JSON object in the AI response.');
   }
@@ -61,10 +112,8 @@ function extractJSON(text: string): any {
   const jsonString = text.slice(firstBrace, lastBrace + 1);
   
   try {
-    // Attempt to parse the extracted string
     return JSON.parse(jsonString);
   } catch (parseError) {
-    // If parsing fails, log the details and throw a specific error
     console.error("JSON Parsing failed after extraction:", parseError, "--- Extracted String:", jsonString);
     throw new Error('The extracted text was not valid JSON.');
   }
@@ -140,7 +189,7 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     `;
     
     try {
-        const text = await callGeminiApi(prompt, "gemini-2.5-flash", 10000);
+        const text = await callGeminiWithApiKey(prompt, "gemini-2.5-flash", 10000);
         
         if (!text) {
              throw new Error("The AI model returned an empty response for career suggestions.");
@@ -148,7 +197,6 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
 
         const parsedResponse = extractJSON(text);
         
-        // Validate the structure of the parsed response
         if (!parsedResponse.careers || !Array.isArray(parsedResponse.careers) || parsedResponse.careers.length === 0) {
             console.error("Invalid AI response schema:", parsedResponse);
             throw new Error("AI response was received but did not contain a valid 'careers' array.");
@@ -160,5 +208,3 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
         throw new Error(`The AI model's response could not be understood. Details: ${error.message}`);
     }
 }
-
-    

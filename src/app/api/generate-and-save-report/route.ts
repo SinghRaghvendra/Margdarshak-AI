@@ -16,7 +16,7 @@ import { saveReport } from '@/services/report-service-server';
  */
 async function callGeminiWithApiKey(
   prompt: string,
-  model = "gemini-2.5-flash", // Defaulting to the requested model
+  model = "gemini-2.5-flash",
   maxTokens = 4096
 ) {
   const apiKey = process.env.GEMINI_API_KEY;
