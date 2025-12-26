@@ -48,7 +48,7 @@ function getClarityPrompt(input: any) {
     return `
       You are an expert career counselor preparing a "Career Clarity Report".
       The report MUST be in Markdown format and STRICTLY follow the structure below.
-      The ENTIRE textual content MUST be in: **${input.preferredLanguage}**.
+      The ENTITÉ textual content MUST be in: **${input.preferredLanguage}**.
   
       # Career Clarity Report for: ${input.userName}
       
@@ -309,3 +309,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message || 'An unknown server error occurred.' }, { status: 500 });
   }
 }
+
+    
