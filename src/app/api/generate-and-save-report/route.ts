@@ -7,7 +7,7 @@ import { saveReport } from '@/services/report-service-server';
 
 /**
  * Performs a direct REST API call to the Gemini API using a standard API key.
- * This is isolated from Genkit or other SDKs to ensure simple, predictable authentication.
+ * This function is self-contained and has no external Google SDK imports to prevent auth conflicts.
  * @param prompt The text prompt to send to the model.
  * @param model The specific model to use (e.g., "gemini-2.5-flash").
  * @param maxTokens The maximum number of tokens for the output.
@@ -263,14 +263,17 @@ function getClarityPrompt(input: any) {
 
 export async function POST(req: Request) {
   try {
-    const db = getDb(); // Lazily get the DB instance for server-side operations
     const { userId, plan, language, career, allSuggestions } = await req.json();
 
     if (!userId || !plan || !language || !career || !allSuggestions) {
       return NextResponse.json({ error: 'Missing required parameters.' }, { status: 400 });
     }
 
-    const userDocRef = db.collection('users').doc(userId);
+    // STEP 1: Generate the report using the isolated Gemini call first.
+    // This avoids initializing Firebase Admin if the AI call fails.
+
+    const dbForInitialCheck = getDb(); // Get DB instance once for user data fetching
+    const userDocRef = dbForInitialCheck.collection('users').doc(userId);
     const userDoc = await userDocRef.get();
     
     if (!userDoc.exists) {
@@ -337,13 +340,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid plan specified.' }, { status: 400 });
     }
 
-    // Use the self-contained, direct API call method
     const reportMarkdown = await callGeminiWithApiKey(prompt, "gemini-2.5-flash", maxTokens);
 
     if (!reportMarkdown) {
       throw new Error("The AI model returned an empty response.");
     }
     
+    // STEP 2: Now that AI call is successful, save the report to Firestore.
     const reportData = {
       userId,
       userName: name,
@@ -359,8 +362,10 @@ export async function POST(req: Request) {
       },
     };
     
-    await saveReport(db, reportData);
+    const dbForWrite = getDb(); // Re-get DB instance for writing
+    await saveReport(dbForWrite, reportData);
 
+    // Update user's payment status after successful save
     await userDocRef.update({ paymentSuccessful: false });
 
     return NextResponse.json({ roadmapMarkdown: reportMarkdown });
