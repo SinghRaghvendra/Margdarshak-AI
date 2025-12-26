@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp, Group, XCircle, Users, BarChart } from 'lucide-react';
@@ -11,6 +10,9 @@ import Logo from '@/components/Logo';
 import { useAuth } from '@/firebase';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay";
+import { testimonials } from '@/lib/testimonials';
 
 export default function HomePageClient() {
   const router = useRouter();
@@ -81,7 +83,7 @@ export default function HomePageClient() {
             'Replaces confusion with a clear, ranked list.'
         ]
       },
-      {
+       {
         icon: <Group className="h-8 w-8 text-primary" />,
         painPoint: 'Relying on biased, unsolicited advice?',
         solutionPoints: [
@@ -333,13 +335,13 @@ export default function HomePageClient() {
         </section>
 
         {/* Pain Points Section */}
-        <section id="features" className="py-12 md:py-20 bg-secondary/30">
+        <section id="features" className="py-12 md:py-16 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? Turn Uncertainty into a Clear Career Plan.</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                The modern job market is complex — but your career decisions don’t have to be. AI Councel replaces confusion with clarity using data-driven guidance, not opinions or guesswork.
+                The modern job market is confusing. AI Councel replaces that confusion with a clear, data-driven action plan so you can move forward with confidence.
               </p>
             </div>
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -378,7 +380,7 @@ export default function HomePageClient() {
         </section>
         
         {/* Research Points Section */}
-        <section id="research-points" className="py-12 md:py-20 bg-background">
+        <section id="research-points" className="py-12 md:py-16 bg-background">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Traditional Career Guidance Is Failing</h2>
@@ -398,9 +400,54 @@ export default function HomePageClient() {
             </div>
         </section>
 
+        {/* Testimonials Section */}
+        <section className="py-12 md:py-16 bg-secondary/30">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">What People Are Saying About AI Councel</h2>
+              <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
+                Real stories from students, parents, and professionals who found clarity with us.
+              </p>
+            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              plugins={[
+                Autoplay({
+                  delay: 4000,
+                  stopOnInteraction: true,
+                }),
+              ]}
+              className="w-full max-w-4xl mx-auto"
+            >
+              <CarouselContent>
+                {testimonials.map((testimonial, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1 h-full">
+                      <Card className="flex flex-col h-full justify-between">
+                        <CardContent className="pt-6">
+                          <p className="text-sm md:text-base text-muted-foreground italic">"{testimonial.quote}"</p>
+                        </CardContent>
+                        <CardHeader>
+                          <CardTitle className="text-base font-bold">{testimonial.name}</CardTitle>
+                          <CardDescription className="text-sm">{testimonial.role}</CardDescription>
+                        </CardHeader>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
+          </div>
+        </section>
+
 
         {/* Blog Section */}
-        <section id="blog" className="py-12 md:py-20 bg-secondary/30">
+        <section id="blog" className="py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -439,7 +486,7 @@ export default function HomePageClient() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-12 md:py-20 bg-background">
+        <section id="faq" className="py-12 md:py-16 bg-secondary/30">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
                     <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -475,7 +522,7 @@ export default function HomePageClient() {
         </section>
         
         {/* SEO Questions Section */}
-        <section id="career-questions" className="py-12 md:py-20 bg-secondary/30">
+        <section id="career-questions" className="py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4">
               <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-foreground">Trending Career Questions</h2>
@@ -498,7 +545,7 @@ export default function HomePageClient() {
         </section>
 
         {/* Final Call to Action Section */}
-        <section className="py-12 md:py-20 bg-background">
+        <section className="py-12 md:py-20 bg-secondary/30">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
@@ -515,5 +562,3 @@ export default function HomePageClient() {
     </div>
   );
 }
-
-    
