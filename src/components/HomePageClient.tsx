@@ -1,6 +1,7 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp } from 'lucide-react';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp, Group } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
@@ -73,28 +74,57 @@ export default function HomePageClient() {
   const problemsAndSolutions = [
       {
         icon: <Search className="h-8 w-8 text-destructive" />,
-        problem: 'Too many career options to choose from?',
-        solution: 'AI-powered career matching narrows thousands of possibilities into paths that align with your personality, strengths, and interests.'
+        problem: 'Overwhelmed by countless options?',
+        solutions: [
+            'AI matching narrows thousands of careers to your top 3.',
+            'Analyzes your personality, interests & motivations.',
+            'Replaces confusion with a clear, ranked list.'
+        ]
       },
       {
-        icon: <AlertTriangle className="h-8 w-8 text-destructive" />,
-        problem: 'Afraid of making the wrong career decision?',
-        solution: 'Future-path analysis shows how different choices can play out over time, so you understand the long-term impact before committing.'
+        icon: <Group className="h-8 w-8 text-destructive" />,
+        problem: 'Relying on biased advice from family or herd mentality?',
+        solutions: [
+            'Get objective, data-driven suggestions.',
+            'Based on your unique profile, not popular opinion.',
+            'Make choices with confidence, backed by science.'
+        ]
       },
       {
         icon: <Cpu className="h-8 w-8 text-destructive" />,
-        problem: 'Unsure how your abilities translate into real careers?',
-        solution: 'Skill and trait mapping connects who you are today with real-world roles that fit you naturally, removing the guesswork.'
+        problem: 'Unsure how your skills translate into a real job?',
+        solutions: [
+           'Maps your specific traits to real-world roles.',
+           'Identifies "adjacent skills" for career pivots.',
+           'Shows you where you already have an advantage.'
+        ]
       },
       {
         icon: <Milestone className="h-8 w-8 text-destructive" />,
-        problem: 'Lacking a clear long-term direction?',
-        solution: 'Get a personalized, step-by-step career roadmap that shows you what to focus on now, next, and in the years to come.'
+        problem: 'Lacking a clear, long-term direction?',
+        solutions: [
+            'Receive a step-by-step 10-year career roadmap.',
+            'Outlines skills to learn and salary expectations.',
+            'Turns your career into a manageable project plan.'
+        ]
+      },
+      {
+        icon: <AlertTriangle className="h-8 w-8 text-destructive" />,
+        problem: 'Afraid of making the wrong choice?',
+        solutions: [
+            'Future-path analysis shows long-term career outlook.',
+            'Highlights potential challenges and opportunities.',
+            'Reduces risk by making informed decisions upfront.'
+        ]
       },
       {
         icon: <TrendingUp className="h-8 w-8 text-destructive" />,
         problem: 'Worried if a career is future-proof?',
-        solution: 'Our AI analyzes market trends and demand signals to highlight roles with strong long-term growth potential.'
+        solutions: [
+            'Analyzes market trends and demand signals.',
+            'Prioritizes roles with strong long-term growth.',
+            'Helps you invest time in skills that will last.'
+        ]
       },
   ];
 
@@ -297,20 +327,30 @@ export default function HomePageClient() {
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
               {problemsAndSolutions.map((item, index) => (
                 <Card key={index} className="bg-card shadow-md hover:shadow-lg transition-shadow">
-                  <CardHeader className="flex flex-row items-center gap-4">
+                  <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-3">
                     {item.icon}
                     <CardTitle className="text-lg font-semibold">{item.problem}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                        <span className="font-bold text-primary mr-1">Solution:</span> 
-                        {item.solution}
-                    </p>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                        {item.solutions.map((solution, i) => (
+                            <li key={i} className="flex items-start">
+                                <CheckCircle className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                                <span>{solution}</span>
+                            </li>
+                        ))}
+                    </ul>
                   </CardContent>
                 </Card>
               ))}
             </div>
-             <div className="text-center mt-16">
+            <div className="text-center mt-12 pt-8 border-t border-dashed">
+                <blockquote className="text-lg italic text-muted-foreground max-w-3xl mx-auto">
+                    "A study revealed that 93% of Indian students are aware of only seven career options, despite hundreds being available."
+                </blockquote>
+                <cite className="block text-sm text-muted-foreground/80 mt-2">- India Today</cite>
+            </div>
+             <div className="text-center mt-12">
                  <Link href={careerGuidanceHref}>
                    <Button size="lg" className="text-lg" suppressHydrationWarning={true}>
                      Find Your Clarity <ArrowRight className="ml-2 h-5 w-5" />
