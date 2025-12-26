@@ -73,54 +73,54 @@ export default function HomePageClient() {
   
   const problemsAndSolutions = [
       {
-        icon: <Search className="h-8 w-8 text-destructive" />,
-        problem: 'Overwhelmed by countless options?',
-        solutions: [
+        icon: <Search className="h-8 w-8 text-primary" />,
+        painPoint: 'Overwhelmed by countless options?',
+        solutionPoints: [
             'AI matching narrows thousands of careers to your top 3.',
             'Analyzes your personality, interests & motivations.',
             'Replaces confusion with a clear, ranked list.'
         ]
       },
       {
-        icon: <Group className="h-8 w-8 text-destructive" />,
-        problem: 'Relying on biased, unsolicited advice?',
-        solutions: [
+        icon: <Group className="h-8 w-8 text-primary" />,
+        painPoint: 'Relying on biased, unsolicited advice?',
+        solutionPoints: [
             'Get objective, data-driven suggestions.',
             'Based on your unique profile, not popular opinion.',
             'Make choices with confidence, backed by science.'
         ]
       },
       {
-        icon: <Cpu className="h-8 w-8 text-destructive" />,
-        problem: 'Unsure how your skills translate to a real job?',
-        solutions: [
+        icon: <Cpu className="h-8 w-8 text-primary" />,
+        painPoint: 'Unsure how skills translate to a real job?',
+        solutionPoints: [
            'Maps your specific traits to real-world roles.',
            'Identifies "adjacent skills" for career pivots.',
            'Shows you where you already have an advantage.'
         ]
       },
       {
-        icon: <Milestone className="h-8 w-8 text-destructive" />,
-        problem: 'Lacking a clear, long-term direction?',
-        solutions: [
+        icon: <Milestone className="h-8 w-8 text-primary" />,
+        painPoint: 'Lacking a clear, long-term direction?',
+        solutionPoints: [
             'Receive a step-by-step 10-year career roadmap.',
             'Outlines skills to learn and salary expectations.',
             'Turns your career into a manageable project plan.'
         ]
       },
       {
-        icon: <AlertTriangle className="h-8 w-8 text-destructive" />,
-        problem: 'Afraid of making the wrong choice?',
-        solutions: [
+        icon: <AlertTriangle className="h-8 w-8 text-primary" />,
+        painPoint: 'Afraid of making the wrong choice?',
+        solutionPoints: [
             'Future-path analysis shows long-term career outlook.',
             'Highlights potential challenges and opportunities.',
             'Reduces risk by making informed decisions upfront.'
         ]
       },
       {
-        icon: <TrendingUp className="h-8 w-8 text-destructive" />,
-        problem: 'Worried if a career is future-proof?',
-        solutions: [
+        icon: <TrendingUp className="h-8 w-8 text-primary" />,
+        painPoint: 'Worried if a career is future-proof?',
+        solutionPoints: [
             'Analyzes market trends and demand signals.',
             'Prioritizes roles with strong long-term growth.',
             'Helps you invest time in skills that will last.'
@@ -130,17 +130,17 @@ export default function HomePageClient() {
 
   const researchPoints = [
     {
-      icon: <XCircle className="h-10 w-10 text-destructive mb-3" />,
+      icon: <XCircle className="h-10 w-10 text-primary mb-3" />,
       title: 'The Awareness Gap',
       description: 'A staggering 93% of Indian students know about only seven career options, while hundreds of high-growth fields remain hidden.'
     },
     {
-      icon: <Users className="h-10 w-10 text-destructive mb-3" />,
+      icon: <Users className="h-10 w-10 text-primary mb-3" />,
       title: 'The Guidance Gap',
       description: 'With less than 10,000 trained counsellors for over 400 million students and professionals, getting personalized, unbiased advice is nearly impossible.'
     },
     {
-      icon: <BarChart className="h-10 w-10 text-destructive mb-3" />,
+      icon: <BarChart className="h-10 w-10 text-primary mb-3" />,
       title: 'The Skill Gap',
       description: 'The half-life of a professional skill has dropped to just a few years. What was valuable yesterday may be obsolete tomorrow, making the right guidance more critical than ever.'
     }
@@ -347,11 +347,11 @@ export default function HomePageClient() {
                 <Card key={index} className="bg-card shadow-md hover:shadow-lg transition-shadow">
                   <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-3">
                     {item.icon}
-                    <CardTitle className="text-lg font-semibold">{item.problem}</CardTitle>
+                    <CardTitle className="text-lg font-semibold">{item.painPoint}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2 text-sm text-muted-foreground">
-                        {item.solutions.map((solution, i) => (
+                        {item.solutionPoints.map((solution, i) => (
                             <li key={i} className="flex items-start">
                                 <CheckCircle className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
                                 <span>{solution}</span>
@@ -376,7 +376,7 @@ export default function HomePageClient() {
                 </div>
                 <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
                     {researchPoints.map((point, index) => (
-                        <Card key={index} className="bg-card/50 border-l-4 border-destructive text-center p-6">
+                        <Card key={index} className="bg-card/50 border-l-4 border-primary text-center p-6">
                            {point.icon}
                            <h3 className="text-xl font-bold mt-2">{point.title}</h3>
                            <p className="text-muted-foreground mt-2">{point.description}</p>
