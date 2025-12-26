@@ -1,10 +1,12 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebaseAdmin';
 import { getAuth } from 'firebase-admin/auth';
+import { getDb } from '@/lib/firebaseAdmin';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
+
+export const runtime = 'nodejs';
 
 /**
  * Performs a direct REST API call to the Gemini API using a standard API key.
