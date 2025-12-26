@@ -301,9 +301,9 @@ export default function HomePageClient() {
       {/* All other sections are wrapped in a new div to isolate them */}
       <div id="page-content" className="relative z-10 bg-background">
         {/* Features Section */}
-        <section id="features" className="py-16 md:py-24 bg-background">
+        <section className="py-12 md:py-20 bg-background">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12 md:mb-16">
+            <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">Navigate Your Career with AI-Powered Guidance</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
               Our tools are designed to provide clear, data-driven insights into your professional life. Let AI illuminate your path to a fulfilling career.
@@ -333,13 +333,13 @@ export default function HomePageClient() {
         </section>
 
         {/* Pain Points Section */}
-        <section id="pain-points" className="py-16 md:py-24 bg-secondary/30">
+        <section id="features" className="py-12 md:py-20 bg-secondary/30">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12 md:mb-16">
+            <div className="text-center mb-12">
               <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? Turn Uncertainty into a Clear Career Plan.</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                The modern job market is confusing. AI Councel replaces that confusion with a data-driven, personalized action plan so you can move forward with confidence.
+                The modern job market is complex — but your career decisions don’t have to be. AI Councel replaces confusion with clarity using data-driven guidance, not opinions or guesswork.
               </p>
             </div>
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -362,7 +362,7 @@ export default function HomePageClient() {
                 </Card>
               ))}
             </div>
-             <div className="text-center mt-16 flex flex-col sm:flex-row gap-4 justify-center">
+             <div className="text-center mt-12 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href={careerGuidanceHref}>
                     <Button size="lg" className="text-lg py-6 px-8 shadow-md" suppressHydrationWarning>
                         Take Assessment Now!
@@ -378,9 +378,9 @@ export default function HomePageClient() {
         </section>
         
         {/* Research Points Section */}
-        <section id="research-points" className="py-16 md:py-24 bg-background">
+        <section id="research-points" className="py-12 md:py-20 bg-background">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-12 md:mb-16">
+                <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Traditional Career Guidance Is Failing</h2>
                      <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
                         The world of work has changed, but the methods for choosing a career have not. Here's the reality.
@@ -400,9 +400,9 @@ export default function HomePageClient() {
 
 
         {/* Blog Section */}
-        <section id="blog" className="py-16 md:py-24 bg-secondary/30">
+        <section id="blog" className="py-12 md:py-20 bg-secondary/30">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12 md:mb-16">
+            <div className="text-center mb-12">
               <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">From Our Blog</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
@@ -439,9 +439,9 @@ export default function HomePageClient() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-16 md:py-24 bg-background">
+        <section id="faq" className="py-12 md:py-20 bg-background">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-12 md:mb-16">
+                <div className="text-center mb-12">
                     <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
                     <h2 className="text-3xl md:text-4xl font-bold text-foreground">Frequently Asked Questions</h2>
                     <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
@@ -475,9 +475,9 @@ export default function HomePageClient() {
         </section>
         
         {/* SEO Questions Section */}
-        <section id="career-questions" className="py-16 md:py-24 bg-secondary/30">
+        <section id="career-questions" className="py-12 md:py-20 bg-secondary/30">
           <div className="container mx-auto px-4">
-              <div className="text-center mb-12 md:mb-16">
+              <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-foreground">Trending Career Questions</h2>
                   <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
                       Explore the most common questions people ask when making a career decision. Click any question to get AI-backed guidance.
@@ -498,7 +498,7 @@ export default function HomePageClient() {
         </section>
 
         {/* Final Call to Action Section */}
-        <section className="py-16 md:py-24 bg-background">
+        <section className="py-12 md:py-20 bg-background">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
@@ -515,3 +515,5 @@ export default function HomePageClient() {
     </div>
   );
 }
+
+    
