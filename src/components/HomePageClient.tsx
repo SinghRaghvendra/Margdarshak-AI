@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp, Group } from 'lucide-react';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp, Group, XCircle, Users, BarChart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
@@ -83,7 +83,7 @@ export default function HomePageClient() {
       },
       {
         icon: <Group className="h-8 w-8 text-destructive" />,
-        problem: 'Relying on biased advice from family or herd mentality?',
+        problem: 'Relying on biased, unsolicited advice?',
         solutions: [
             'Get objective, data-driven suggestions.',
             'Based on your unique profile, not popular opinion.',
@@ -92,7 +92,7 @@ export default function HomePageClient() {
       },
       {
         icon: <Cpu className="h-8 w-8 text-destructive" />,
-        problem: 'Unsure how your skills translate into a real job?',
+        problem: 'Unsure how your skills translate to a real job?',
         solutions: [
            'Maps your specific traits to real-world roles.',
            'Identifies "adjacent skills" for career pivots.',
@@ -126,6 +126,24 @@ export default function HomePageClient() {
             'Helps you invest time in skills that will last.'
         ]
       },
+  ];
+
+  const researchPoints = [
+    {
+      icon: <XCircle className="h-10 w-10 text-destructive mb-3" />,
+      title: 'The Awareness Gap',
+      description: 'A staggering 93% of Indian students know about only seven career options, while hundreds of high-growth fields remain hidden.'
+    },
+    {
+      icon: <Users className="h-10 w-10 text-destructive mb-3" />,
+      title: 'The Guidance Gap',
+      description: 'With less than 10,000 trained counsellors for over 400 million students and professionals, getting personalized, unbiased advice is nearly impossible.'
+    },
+    {
+      icon: <BarChart className="h-10 w-10 text-destructive mb-3" />,
+      title: 'The Skill Gap',
+      description: 'The half-life of a professional skill has dropped to just a few years. What was valuable yesterday may be obsolete tomorrow, making the right guidance more critical than ever.'
+    }
   ];
 
 
@@ -319,9 +337,9 @@ export default function HomePageClient() {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12 md:mb-16">
               <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? Turn Uncertainty into a Clear Career Plan.</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                The modern job market is complex — but your career decisions don’t have to be. AI Councel replaces confusion with clarity using data-driven guidance, not opinions or guesswork.
+                The modern job market is confusing. AI Councel replaces that confusion with a data-driven, personalized action plan so you can move forward with confidence.
               </p>
             </div>
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -344,24 +362,33 @@ export default function HomePageClient() {
                 </Card>
               ))}
             </div>
-            <div className="text-center mt-12 pt-8 border-t border-dashed">
-                <blockquote className="text-lg italic text-muted-foreground max-w-3xl mx-auto">
-                    "A study revealed that 93% of Indian students are aware of only seven career options, despite hundreds being available."
-                </blockquote>
-                <cite className="block text-sm text-muted-foreground/80 mt-2">- India Today</cite>
-            </div>
-             <div className="text-center mt-12">
-                 <Link href={careerGuidanceHref}>
-                   <Button size="lg" className="text-lg" suppressHydrationWarning={true}>
-                     Find Your Clarity <ArrowRight className="ml-2 h-5 w-5" />
-                   </Button>
-                 </Link>
-            </div>
           </div>
         </section>
+        
+        {/* Research Points Section */}
+        <section id="research-points" className="py-16 md:py-24 bg-background">
+            <div className="container mx-auto px-4">
+                <div className="text-center mb-12 md:mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Traditional Career Guidance Is Failing</h2>
+                     <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
+                        The world of work has changed, but the methods for choosing a career have not. Here's the reality.
+                    </p>
+                </div>
+                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {researchPoints.map((point, index) => (
+                        <Card key={index} className="bg-card/50 border-l-4 border-destructive text-center p-6">
+                           {point.icon}
+                           <h3 className="text-xl font-bold mt-2">{point.title}</h3>
+                           <p className="text-muted-foreground mt-2">{point.description}</p>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        </section>
+
 
         {/* Blog Section */}
-        <section id="blog" className="py-16 md:py-24 bg-background">
+        <section id="blog" className="py-16 md:py-24 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12 md:mb-16">
               <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -372,7 +399,7 @@ export default function HomePageClient() {
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {blogPosts.map((post, index) => (
-                <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
+                <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col bg-card">
                   <CardHeader>
                     <CardTitle className="text-xl leading-snug">
                       <Link href={post.href} className="hover:text-primary transition-colors">{post.title}</Link>
@@ -400,7 +427,7 @@ export default function HomePageClient() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-16 md:py-24 bg-secondary/30">
+        <section id="faq" className="py-16 md:py-24 bg-background">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12 md:mb-16">
                     <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -436,7 +463,7 @@ export default function HomePageClient() {
         </section>
         
         {/* SEO Questions Section */}
-        <section id="career-questions" className="py-16 md:py-24 bg-background">
+        <section id="career-questions" className="py-16 md:py-24 bg-secondary/30">
           <div className="container mx-auto px-4">
               <div className="text-center mb-12 md:mb-16">
                   <h2 className="text-3xl md:text-4xl font-bold text-foreground">Trending Career Questions</h2>
@@ -459,7 +486,7 @@ export default function HomePageClient() {
         </section>
 
         {/* Final Call to Action Section */}
-        <section className="py-16 md:py-24 bg-secondary/30">
+        <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
