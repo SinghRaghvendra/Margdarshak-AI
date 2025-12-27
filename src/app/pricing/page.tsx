@@ -26,7 +26,7 @@ const plans = [
             'Personality Alignment Summary'
         ],
         cta: 'Get Your Verdict',
-        sampleReportUrl: '/sample-report-verdict.md'
+        sampleReportUrl: 'https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/verdict.pdf?alt=media&token=c81b2447-3231-4a23-8743-7f4625d3b6a9'
     },
     {
         id: 'clarity',
@@ -43,7 +43,7 @@ const plans = [
             'General Career Demand Outlook'
         ],
         cta: 'Get Clarity Report',
-        sampleReportUrl: '/sample-report-clarity.md'
+        sampleReportUrl: 'https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/clarity.pdf?alt=media&token=8490371b-43ae-4c6a-94ae-e84af6f18a04'
     },
     {
         id: 'blueprint',
@@ -59,7 +59,7 @@ const plans = [
             '20-Year Future Trends & Outlook'
         ],
         cta: 'Get Full Blueprint',
-        sampleReportUrl: '/sample-report-blueprint.md'
+        sampleReportUrl: 'https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/blueprint.pdf?alt=media&token=3fceacfc-e0da-4688-bf29-ab42245fdeab'
     }
 ];
 
