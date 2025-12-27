@@ -26,7 +26,7 @@ const plans = [
             'Personality Alignment Summary'
         ],
         cta: 'Get Your Verdict',
-        sampleReportUrl: 'https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/verdict.pdf?alt=media&token=c81b2447-3231-4a23-8743-7f4625d3b6a9'
+        sampleReportUrl: 'https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/verdict.pdf?alt=media&token=395e44ac-e7d3-46f5-9a25-011197fb083e'
     },
     {
         id: 'clarity',
