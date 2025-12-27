@@ -3,13 +3,14 @@
 
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Ticket, ArrowRight, CheckCircle, Star } from 'lucide-react';
+import { Ticket, ArrowRight, CheckCircle, Star, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@/firebase';
 import type { User } from 'firebase/auth';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import Link from 'next/link';
 
 const plans = [
     {
@@ -25,6 +26,7 @@ const plans = [
             'Personality Alignment Summary'
         ],
         cta: 'Get Your Verdict',
+        sampleReportUrl: '/sample-report-verdict.md'
     },
     {
         id: 'clarity',
@@ -41,6 +43,7 @@ const plans = [
             'General Career Demand Outlook'
         ],
         cta: 'Get Clarity Report',
+        sampleReportUrl: '/sample-report-clarity.md'
     },
     {
         id: 'blueprint',
@@ -56,6 +59,7 @@ const plans = [
             '20-Year Future Trends & Outlook'
         ],
         cta: 'Get Full Blueprint',
+        sampleReportUrl: '/sample-report-blueprint.md'
     }
 ];
 
@@ -186,7 +190,7 @@ export default function PricingPage() {
                             ))}
                         </ul>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="flex-col items-stretch space-y-2">
                         <Button 
                             className="w-full text-lg py-6"
                             variant={plan.isPopular ? 'default' : 'outline'}
@@ -194,6 +198,12 @@ export default function PricingPage() {
                         >
                           {plan.cta} <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
+                        <Link href={plan.sampleReportUrl} download target="_blank" rel="noopener noreferrer">
+                          <Button variant="link" className="w-full">
+                            <Download className="mr-2 h-4 w-4" />
+                            Download Sample
+                          </Button>
+                        </Link>
                     </CardFooter>
                 </Card>
               ))}
