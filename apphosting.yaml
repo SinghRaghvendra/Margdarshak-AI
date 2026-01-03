@@ -18,11 +18,11 @@ env:
   - variable: FIREBASE_PRIVATE_KEY
     secret: private_key
   - variable: NEXT_PUBLIC_RAZORPAY_KEY_ID
-    value: "rzp_test_Rqg0LoN1to7E0o"
+    value: "rzp_live_Rqe0Dt9aWQ4FPR"
   - variable: RAZORPAY_KEY_ID
-    value: "rzp_test_Rqg0LoN1to7E0o"
+    value: "rzp_live_Rqe0Dt9aWQ4FPR"
   - variable: RAZORPAY_KEY_SECRET
-    value: "AltMGwiZm87s58ihjx14oU81"
+    value: "D8zyaEPzXsvnrzE0438ffwLT"
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     value: "AIzaSyBCU_pzGk1Dcvq5g-nJMwUp5FI7JDomvZg"
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
@@ -42,3 +42,4 @@ build:
     - package.json
     - next.config.ts
     - tsconfig.json
+
