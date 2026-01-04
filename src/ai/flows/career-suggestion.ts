@@ -137,12 +137,49 @@ const getBasePrompt = () => {
     `;
 };
 
+// Function to create a summary of traits to reduce token usage
+const summarizeTraits = (traits: CareerSuggestionInput['traits']) => {
+    const summary: Record<string, any> = {};
+
+    // Example summary logic: You can make this more sophisticated
+    // s1: Personality
+    if (traits.s1) {
+        summary.personality = {
+            workStyle: Number(traits.s1.s1q1) > 3 ? 'Team-oriented' : 'Independent',
+            decisionMaking: Number(traits.s1.s1q2) > 3 ? 'Intuitive' : 'Logical',
+            planningStyle: Number(traits.s1.s1q3) > 3 ? 'Organized' : 'Spontaneous',
+            socialStyle: Number(traits.s1.s1q4) > 3 ? 'Extroverted' : 'Introverted',
+        };
+    }
+    // s3: Motivation
+     if (traits.s3) {
+        summary.motivation = {
+            primaryDriver: Number(traits.s3.s3q1) > 3 ? 'Impact-driven' : 'Security-driven',
+            jobPreference: Number(traits.s3.s3q2) > 3 ? 'Dynamic' : 'Stable',
+            rewardPreference: traits.s3.s3q13 || 'Not specified',
+        };
+    }
+    // s4: Cognitive
+    if (traits.s4) {
+        summary.cognitive = {
+           problemSolving: traits.s4.s4q1,
+           learningStyle: traits.s4.s4q2,
+           focus: Number(traits.s4.s4q3) > 3 ? 'Detail-oriented' : 'Big-picture',
+        }
+    }
+
+    return summary;
+}
+
+
 export async function suggestCareers(input: CareerSuggestionInput): Promise<CareerSuggestionOutput> {
+    const traitSummary = summarizeTraits(input.traits);
+    
     const prompt = `
     ${getBasePrompt()}
 
-    User_Traits_JSON:
-    ${JSON.stringify(input.traits)}
+    User_Traits_Summary:
+    ${JSON.stringify(traitSummary)}
     
     **User's Personalized Answers (for qualitative context):**
     1. Ideal Workday: ${input.personalizedAnswers.q1}

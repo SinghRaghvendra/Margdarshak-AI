@@ -45,15 +45,28 @@ export default function CareerSuggestionsPage() {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const userDoc = await getDoc(userDocRef);
 
-        if (!userDoc.exists() || !userDoc.data()?.paymentSuccessful) {
+        if (!userDoc.exists()) {
+            throw new Error("User document not found. Please sign up again.");
+        }
+        
+        const userData = userDoc.data();
+        
+        if (!userData?.paymentSuccessful) {
           toast({ title: 'Payment Required', description: 'Please select a plan to generate career suggestions.', variant: 'destructive'});
           router.replace('/pricing');
           return;
         }
         
-        const userData = userDoc.data();
         let userTraits = userData.userTraits;
         let personalizedAnswers = userData.personalizedAnswers;
+        let allSuggestions = userData.allSuggestions;
+
+        if (allSuggestions) {
+            setSuggestions(allSuggestions);
+            setIsLoading(false);
+            toast({title: "Loaded Suggestions", description: "Loaded your previously generated career suggestions."});
+            return;
+        }
 
         if (!userTraits || !personalizedAnswers) {
             throw new Error("Critical user data for suggestions is missing from the database.");
@@ -93,9 +106,9 @@ export default function CareerSuggestionsPage() {
 
           setSuggestions(suggestionsWithScore);
           
-          const journeyId = localStorage.getItem('margdarshak_current_journey_id') || `journey_${Date.now()}`;
-          const journeyDocRef = doc(db, 'users', currentUser.uid, 'journeys', journeyId);
-          await setDoc(journeyDocRef, { allCareerSuggestions: suggestionsWithScore, lastUpdated: new Date() }, { merge: true });
+          // Save to Firestore for persistence
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          await setDoc(userDocRef, { allSuggestions: suggestionsWithScore }, { merge: true });
 
           localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestionsWithScore));
 
