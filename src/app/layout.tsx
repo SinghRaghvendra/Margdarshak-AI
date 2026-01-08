@@ -83,6 +83,17 @@ export default function RootLayout({
           </footer>
           <Toaster />
         </AppProviders>
+        
+        {/* Google Analytics Tag */}
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-Z6P0652JC4"></Script>
+        <Script id="google-analytics">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-Z6P0652JC4');
+          `}
+        </Script>
       </body>
     </html>
   );
