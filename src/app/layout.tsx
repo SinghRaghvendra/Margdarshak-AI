@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'AI Councel Career Guide | AI COUNCEL LAB',
   description: 'AI-Powered Career Guidance. Get a data-driven career roadmap or instantly tailor your resume for any job application. Your professional journey, guided by AI.',
   keywords: ['career guide', 'resume builder', 'AI career advice', 'career roadmap', 'psychometric test', 'career suggestions', 'AI resume tailor'],
+  other: {
+    'facebook-domain-verification': '5sdewoekcpkipvjg1thrcwsf33cvy8',
+  },
 };
 
 export default function RootLayout({
