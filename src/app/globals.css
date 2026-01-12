@@ -9,22 +9,22 @@ body {
 
 @layer base {
   :root {
-    --background: 56 71% 94.5%; /* #FCFBE6 */
+    --background: 0 0% 100%; /* #FFFFFF */
     --foreground: 60 10% 20%; /* Dark warm gray for text */
 
-    --card: 56.5 100% 88.8%; /* #FFF9C4 Soft yellow */
+    --card: 0 0% 100%; /* #FFFFFF */
     --card-foreground: 60 10% 20%;
 
-    --popover: 56 71% 94.5%;
+    --popover: 0 0% 100%;
     --popover-foreground: 60 10% 20%;
 
     --primary: 45 97.7% 60.2%; /* #FDD835 Amber 600 */
     --primary-foreground: 45 100% 10%; /* Dark text on primary */
 
-    --secondary: 56 50% 90.6%; /* Lighter shade of background for secondary elements */
+    --secondary: 60 4.8% 95.9%; /* #F4F4F5 - A very light gray for sections */
     --secondary-foreground: 60 10% 20%;
 
-    --muted: 56 50% 90.6%;
+    --muted: 60 4.8% 95.9%;
     --muted-foreground: 56 20% 50.2%; /* For less important text */
 
     --accent: 200 92.1% 85.3%; /* #B3E5FC Light blue */
