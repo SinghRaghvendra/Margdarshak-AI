@@ -18,10 +18,10 @@ import ReactMarkdown from 'react-markdown';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-// Since pdfjs-dist is a large library, we need to set the worker source.
-// This is a common pattern for using it in web applications.
+// FIX: Explicitly set the worker source to the correct CDN path for the installed version.
+// This prevents errors where the library fails to fetch its background worker script.
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
 }
 
 interface AnalysisResult {
@@ -179,4 +179,3 @@ export default function ResumeBuilderPage() {
         </div>
     );
 }
-
