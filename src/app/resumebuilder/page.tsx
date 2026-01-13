@@ -129,8 +129,9 @@ export default function ResumeBuilderPage() {
         }
     };
     
-    const handleDownload = (content: string, format: 'txt' | 'md') => {
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const handleDownload = (content: string, format: 'txt' | 'doc') => {
+        const mimeType = format === 'txt' ? 'text/plain' : 'application/msword';
+        const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -287,8 +288,10 @@ export default function ResumeBuilderPage() {
                              <div>
                                 <h3 className="text-2xl font-bold mb-4 mt-8 text-center">ATS-Optimized Resume</h3>
                                 <Card className="bg-background">
-                                    <CardContent className="p-4" ref={resumeContentRef}>
-                                        <pre className="whitespace-pre-wrap text-sm text-foreground/90 font-sans">{analysisResult.optimizedResume}</pre>
+                                    <CardContent className="p-4">
+                                        <div ref={resumeContentRef} className="prose prose-sm sm:prose-base max-w-none">
+                                            <ReactMarkdown>{analysisResult.optimizedResume}</ReactMarkdown>
+                                        </div>
                                     </CardContent>
                                 </Card>
                                 <div className="mt-4 flex flex-wrap gap-4 justify-center">
@@ -296,11 +299,11 @@ export default function ResumeBuilderPage() {
                                         {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                                         Download as PDF
                                     </Button>
-                                    <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'txt')} variant="secondary">
-                                        <Download className="mr-2 h-4 w-4" /> Download as TXT
+                                    <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'doc')} variant="secondary">
+                                        <Download className="mr-2 h-4 w-4" /> Download as Doc
                                     </Button>
-                                     <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'md')} variant="secondary">
-                                        <Download className="mr-2 h-4 w-4" /> Download as Markdown
+                                     <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'txt')} variant="secondary">
+                                        <Download className="mr-2 h-4 w-4" /> Download as TXT
                                     </Button>
                                 </div>
                             </div>
@@ -311,5 +314,3 @@ export default function ResumeBuilderPage() {
         </div>
     );
 }
-
-    

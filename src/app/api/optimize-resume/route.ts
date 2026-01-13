@@ -105,10 +105,11 @@ function getResumeRewritePrompt(resumeText: string, jobDescription: string, anal
       You are an expert resume writer. Your task is to rewrite the user's resume to be ATS-friendly and better aligned with the provided job description.
       
       RULES:
-      - Respond ONLY with the plain text of the rewritten resume.
+      - Respond ONLY with the rewritten resume content in **Markdown format**.
       - Do NOT include any other text, titles, or explanations.
+      - Use clear, standard headings (e.g., '# Name', '## Experience', '## Education', '## Skills'). Use heading levels appropriately.
+      - Use bullet points for job responsibilities and achievements.
       - Incorporate keywords from the job description naturally.
-      - Use clear, simple formatting with standard headings (e.g., 'Experience', 'Education', 'Skills').
       - Use the provided analysis to guide your rewrite, focusing on addressing the weaknesses and skill gaps.
 
       USER's ORIGINAL RESUME:
@@ -128,7 +129,7 @@ function getResumeRewritePrompt(resumeText: string, jobDescription: string, anal
       Skills to Add: ${analysis.skillGap}
       ---
 
-      Return only the rewritten resume content as plain text.
+      Return only the rewritten resume content as Markdown text.
     `;
 }
 
