@@ -8,7 +8,11 @@ export const runtime = 'nodejs';
 /**
  * Performs a direct REST API call to the Gemini API.
  */
-async function callGeminiWithApiKey(prompt: string, maxTokens: number) {
+async function callGeminiWithApiKey(
+    prompt: string, 
+    maxTokens: number, 
+    responseMimeType: 'application/json' | 'text/plain' = 'application/json'
+) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("AI Service is unavailable: GEMINI_API_KEY is not set.");
@@ -31,7 +35,7 @@ async function callGeminiWithApiKey(prompt: string, maxTokens: number) {
         generationConfig: {
           maxOutputTokens: maxTokens,
           temperature: 0.4,
-          responseMimeType: "application/json",
+          responseMimeType: responseMimeType,
         },
         safetySettings,
       }),
@@ -102,7 +106,7 @@ function getResumeAnalysisPrompt(resumeText: string, jobDescription: string): st
 // --- PROMPT 2: For rewriting ONLY the resume text ---
 function getResumeRewritePrompt(resumeText: string, jobDescription: string, analysis: any): string {
     return `
-      You are an expert resume writer. Your task is to rewrite the user's resume to be ATS-friendly and better aligned with the provided job description.
+      You are an expert resume writer. Your task is to rewrite the user's resume to be ATS-friendly and better aligned with the provided job description. The output should be a complete, well-structured 2-page resume.
       
       RULES:
       - Respond ONLY with the rewritten resume content in **Markdown format**.
@@ -152,7 +156,7 @@ export async function POST(req: Request) {
 
     // --- STEP 1: Get the JSON Analysis ---
     const analysisPrompt = getResumeAnalysisPrompt(resumeText, jobDescription);
-    const analysisResponseText = await callGeminiWithApiKey(analysisPrompt, 4096);
+    const analysisResponseText = await callGeminiWithApiKey(analysisPrompt, 4096, 'application/json');
     
     if (!analysisResponseText) {
         throw new Error("The AI model returned an empty response for the analysis step.");
@@ -162,7 +166,7 @@ export async function POST(req: Request) {
 
     // --- STEP 2: Get the Rewritten Resume ---
     const rewritePrompt = getResumeRewritePrompt(resumeText, jobDescription, analysisJson);
-    const optimizedResumeText = await callGeminiWithApiKey(rewritePrompt, 4096);
+    const optimizedResumeText = await callGeminiWithApiKey(rewritePrompt, 8192, 'text/plain');
 
     if (!optimizedResumeText) {
         throw new Error("The AI model returned an empty response for the resume rewrite step.");
