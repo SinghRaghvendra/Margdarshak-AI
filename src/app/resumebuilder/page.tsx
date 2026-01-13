@@ -11,15 +11,13 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Wand2, FileText, Briefcase, Loader2, Download, AlertTriangle, CheckCircle, BarChart, BrainCircuit, Bot } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useUser, useFirestore, useAuth } from '@/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import * as pdfjsLib from 'pdfjs-dist';
 import ReactMarkdown from 'react-markdown';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-// FIX: Explicitly set the worker source to the correct CDN path for the installed version.
-// This prevents errors where the library fails to fetch its background worker script.
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
 }
@@ -38,7 +36,6 @@ export default function ResumeBuilderPage() {
     const { user, loading: userLoading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
-    const db = useFirestore();
 
     const [resumeText, setResumeText] = useState<string>('');
     const [jobDescription, setJobDescription] = useState<string>('');
@@ -48,7 +45,6 @@ export default function ResumeBuilderPage() {
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Initial check to redirect if not logged in
     useEffect(() => {
         if (!userLoading && !user) {
             toast({ title: 'Login Required', description: 'Please log in to use the Resume Optimizer.', variant: 'destructive'});
@@ -61,7 +57,7 @@ export default function ResumeBuilderPage() {
         if (!file) return;
 
         setFileName(file.name);
-        setResumeText(''); // Reset previous text
+        setResumeText('');
         setIsLoading(true);
         toast({ title: 'Reading Resume...', description: 'Extracting text from your file.'});
 
@@ -93,18 +89,66 @@ export default function ResumeBuilderPage() {
     };
     
     const handleGenerate = async () => {
-        // This is where the main logic will go.
-        // For now, it's a placeholder.
-        toast({ title: 'Coming Soon!', description: 'The AI analysis feature is under development.' });
+        if (!user) {
+            toast({ title: 'Authentication Error', description: 'You must be logged in.', variant: 'destructive' });
+            return;
+        }
+
+        setIsLoading(true);
+        setError(null);
+        setAnalysisResult(null);
+        toast({ title: 'Starting Analysis...', description: 'The AI is reviewing your documents. This may take a moment.' });
+
+        try {
+            const idToken = await user.getIdToken();
+            const response = await fetch('/api/optimize-resume', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({ resumeText, jobDescription }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'An unknown error occurred.');
+            }
+            
+            setAnalysisResult(data);
+            toast({ title: 'Analysis Complete!', description: 'Your resume report is ready below.' });
+
+        } catch (err: any) {
+            setError(err.message);
+            toast({ title: 'Analysis Failed', description: err.message, variant: 'destructive' });
+        } finally {
+            setIsLoading(false);
+        }
     };
+    
+    const handleDownload = (content: string, format: 'txt' | 'md') => {
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `optimized_resume.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
 
     if (userLoading) {
         return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
     }
     
+    const matchScoreValue = analysisResult?.matchScore ? parseInt(analysisResult.matchScore.replace('%', '')) : 0;
+    
     return (
         <div className="py-12 bg-secondary/30">
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto px-4 space-y-8">
                  <Card className="w-full max-w-4xl mx-auto shadow-2xl">
                     <CardHeader className="text-center">
                         <Bot className="h-16 w-16 text-primary mx-auto mb-4" />
@@ -114,7 +158,6 @@ export default function ResumeBuilderPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-8">
-                        {/* Step 1: Upload Resume */}
                         <div className="space-y-2">
                            <Label htmlFor="resume-upload" className="text-xl font-semibold flex items-center gap-2"><FileText className="h-6 w-6 text-primary"/> Your Resume</Label>
                            <div 
@@ -147,7 +190,6 @@ export default function ResumeBuilderPage() {
                             />
                         </div>
 
-                        {/* Step 2: Job Description */}
                         <div className="space-y-2">
                            <Label htmlFor="job-description" className="text-xl font-semibold flex items-center gap-2"><Briefcase className="h-6 w-6 text-primary"/> Job Description</Label>
                             <Textarea 
@@ -158,7 +200,6 @@ export default function ResumeBuilderPage() {
                                 className="min-h-[200px]"
                             />
                         </div>
-
                     </CardContent>
                     <CardFooter className="flex-col">
                         <Button
@@ -173,8 +214,66 @@ export default function ResumeBuilderPage() {
                     </CardFooter>
                  </Card>
 
-                 {/* Future content will go here */}
+                 {error && (
+                    <Alert variant="destructive" className="max-w-4xl mx-auto">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Analysis Error</AlertTitle>
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                 )}
 
+                 {analysisResult && (
+                    <Card className="w-full max-w-4xl mx-auto shadow-2xl">
+                        <CardHeader>
+                            <CardTitle className="text-3xl font-bold text-center">Your Resume Analysis</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {/* Match Score */}
+                            <div className="text-center p-6 bg-secondary/50 rounded-lg">
+                                <h3 className="text-lg font-semibold text-muted-foreground">Match Score</h3>
+                                <p className="text-6xl font-bold text-primary my-2">{analysisResult.matchScore}</p>
+                                <Progress value={matchScoreValue} className="w-full max-w-sm mx-auto h-3" />
+                                <p className="text-sm text-muted-foreground mt-3">Your resume's alignment with the job description.</p>
+                            </div>
+                            
+                            <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
+                                <AccordionItem value="item-1">
+                                    <AccordionTrigger className="text-xl font-semibold"><CheckCircle className="h-5 w-5 mr-2 text-green-500" />Strengths</AccordionTrigger>
+                                    <AccordionContent className="prose max-w-none pt-2 text-muted-foreground"><ReactMarkdown>{analysisResult.strengths}</ReactMarkdown></AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="item-2">
+                                    <AccordionTrigger className="text-xl font-semibold"><AlertTriangle className="h-5 w-5 mr-2 text-yellow-500" />Weaknesses</AccordionTrigger>
+                                    <AccordionContent className="prose max-w-none pt-2 text-muted-foreground"><ReactMarkdown>{analysisResult.weaknesses}</ReactMarkdown></AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="item-3">
+                                    <AccordionTrigger className="text-xl font-semibold"><BarChart className="h-5 w-5 mr-2 text-blue-500" />Skill Gap</AccordionTrigger>
+                                    <AccordionContent className="prose max-w-none pt-2 text-muted-foreground"><ReactMarkdown>{analysisResult.skillGap}</ReactMarkdown></AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="item-4">
+                                    <AccordionTrigger className="text-xl font-semibold"><BrainCircuit className="h-5 w-5 mr-2 text-purple-500" />Interview Prep</AccordionTrigger>
+                                    <AccordionContent className="prose max-w-none pt-2 text-muted-foreground"><ReactMarkdown>{analysisResult.interviewPrep}</ReactMarkdown></AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+
+                             <div>
+                                <h3 className="text-2xl font-bold mb-4 mt-8 text-center">ATS-Optimized Resume</h3>
+                                <Card className="bg-background">
+                                    <CardContent className="p-4">
+                                        <pre className="whitespace-pre-wrap text-sm text-foreground/90 font-sans">{analysisResult.optimizedResume}</pre>
+                                    </CardContent>
+                                </Card>
+                                <div className="mt-4 flex gap-4 justify-center">
+                                    <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'txt')}>
+                                        <Download className="mr-2 h-4 w-4" /> Download as TXT
+                                    </Button>
+                                     <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'md')} variant="secondary">
+                                        <Download className="mr-2 h-4 w-4" /> Download as Markdown
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                 )}
             </div>
         </div>
     );
