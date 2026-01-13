@@ -47,15 +47,20 @@ async function callGeminiWithApiKey(prompt: string) {
 }
 
 /**
- * Extracts a JSON object from a string that might contain markdown or other text.
+ * Defensively extracts a JSON object from a string that might contain other text or markdown.
+ * It finds the first '{' and the last '}' to isolate the JSON content.
  */
 function extractJSON(text: string): any {
-  const match = text.match(/```json\s*([\s\S]*?)\s*```|({[\s\S]*})/);
-  if (!match) {
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
     console.error("RAW AI RESPONSE (no JSON object found):", text);
     throw new Error('Could not find a valid JSON object in the AI response.');
   }
-  const jsonString = match[1] || match[2];
+
+  const jsonString = text.slice(firstBrace, lastBrace + 1);
+  
   try {
     return JSON.parse(jsonString);
   } catch (parseError) {
@@ -70,10 +75,12 @@ function getResumeOptimizerPrompt(resumeText: string, jobDescription: string): s
       Your task is to analyze a user's resume against a job description and provide a detailed analysis and an optimized resume.
 
       RULES:
-      - Respond ONLY with a valid JSON object wrapped in \`\`\`json markdown.
-      - The JSON object must conform to the schema defined below.
-      - All string values within the JSON must be formatted as Markdown for rich text rendering.
-      - The optimizedResume should be plain text, ready for a .txt file.
+      - Respond ONLY with a valid JSON object.
+      - Do NOT include markdown \`\`\`json wrappers.
+      - Do NOT include any explanations or introductory text.
+      - The final output MUST be a raw JSON object.
+      - All string values within the JSON must be formatted as Markdown for rich text rendering, except for the 'optimizedResume' field.
+      - The 'optimizedResume' field must be plain text, ready for a .txt file.
 
       USER's RESUME:
       ---
