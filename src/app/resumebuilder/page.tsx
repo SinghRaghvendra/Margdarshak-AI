@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -41,8 +42,10 @@ export default function ResumeBuilderPage() {
     const [fileName, setFileName] = useState<string>('');
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const resumeContentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!userLoading && !user) {
@@ -136,6 +139,33 @@ export default function ResumeBuilderPage() {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+    };
+
+    const handleDownloadPdf = async () => {
+        if (!resumeContentRef.current || !analysisResult) {
+          toast({ title: 'Error', description: 'Content not available for PDF generation.', variant: 'destructive' });
+          return;
+        }
+        setIsGeneratingPdf(true);
+        toast({ title: 'Generating PDF', description: `Preparing your resume...` });
+    
+        const html2pdf = (await import('html2pdf.js')).default;
+        const element = resumeContentRef.current;
+        const filename = `AI_Councel_Optimized_Resume.pdf`;
+    
+        const opt = {
+          margin: [0.5, 0.5, 0.5, 0.5],
+          filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+    
+        html2pdf().from(element).set(opt).save()
+          .then(() => toast({ title: 'PDF Downloaded', description: `Resume saved as ${filename}` }))
+          .catch((err) => toast({ title: 'PDF Generation Failed', variant: 'destructive' }))
+          .finally(() => setIsGeneratingPdf(false));
     };
 
 
@@ -257,12 +287,16 @@ export default function ResumeBuilderPage() {
                              <div>
                                 <h3 className="text-2xl font-bold mb-4 mt-8 text-center">ATS-Optimized Resume</h3>
                                 <Card className="bg-background">
-                                    <CardContent className="p-4">
+                                    <CardContent className="p-4" ref={resumeContentRef}>
                                         <pre className="whitespace-pre-wrap text-sm text-foreground/90 font-sans">{analysisResult.optimizedResume}</pre>
                                     </CardContent>
                                 </Card>
-                                <div className="mt-4 flex gap-4 justify-center">
-                                    <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'txt')}>
+                                <div className="mt-4 flex flex-wrap gap-4 justify-center">
+                                    <Button onClick={handleDownloadPdf} disabled={isGeneratingPdf}>
+                                        {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                                        Download as PDF
+                                    </Button>
+                                    <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'txt')} variant="secondary">
                                         <Download className="mr-2 h-4 w-4" /> Download as TXT
                                     </Button>
                                      <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'md')} variant="secondary">
@@ -277,3 +311,5 @@ export default function ResumeBuilderPage() {
         </div>
     );
 }
+
+    
