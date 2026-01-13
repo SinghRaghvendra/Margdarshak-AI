@@ -254,7 +254,7 @@ export default function HomePageClient() {
         {/* Text and CTA content, raised above the animation */}
         <div className="relative z-10">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
-            Confused About Your Career? Let AI Decide with Data.
+            Confused About Your Career? Let AI help you decide.
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
             Take our AI-powered career test to uncover your strengths, identify your best-fit careers, and get a clear roadmap for success.
