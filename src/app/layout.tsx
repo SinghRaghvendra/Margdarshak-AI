@@ -85,6 +85,12 @@ export default function RootLayout({
                   {/* Left Column: Policies & Contact */}
                   <div className="space-y-4">
                       <div>
+                          <h3 className="font-semibold text-foreground">Our Tools</h3>
+                          <ul className="space-y-1 text-muted-foreground mt-1">
+                              <li><Link href="/aitools" className="hover:text-primary hover:underline">AI Tools</Link></li>
+                          </ul>
+                      </div>
+                      <div>
                           <h3 className="font-semibold text-foreground">Policies</h3>
                           <ul className="space-y-1 text-muted-foreground mt-1">
                               <li><Link href="/privacy-policy" className="hover:text-primary hover:underline">Privacy Policy</Link></li>
