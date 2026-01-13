@@ -1,6 +1,20 @@
 
 export const allBlogPosts = [
     {
+      title: 'How to Optimize Your Resume for ATS in 2026',
+      excerpt: 'Learn why 75% of resumes are rejected by ATS bots and how to optimize your resume with the right keywords to land more interviews in 2026.',
+      href: '/blog/how-to-optimize-your-resume',
+      date: '2026-01-03',
+      tags: ['Resume', 'ATS', 'Job Search', 'AI'],
+    },
+    {
+      title: 'How to Find Your Dream Career with AI in 2026',
+      excerpt: 'Stop guessing about your future. Learn how AI career guidance provides a data-driven roadmap to find a dream career that aligns with your personality and skills in 2026.',
+      href: '/blog/find-dream-career-with-ai-2026',
+      date: '2026-01-02',
+      tags: ['Dream Career', 'AI', 'Career Guidance', '2026'],
+    },
+    {
       title: 'Reskilling vs. Upskilling: The Survival Guide for the Modern Indian Workforce',
       excerpt: 'Learn how to stay relevant in the Indian job market. Discover the difference between upskilling and reskilling and how to get data-backed career guidance.',
       href: '/blog/reskilling-vs-upskilling',
