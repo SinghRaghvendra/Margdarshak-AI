@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 /**
  * Performs a direct REST API call to the Gemini API.
  */
-async function callGeminiWithApiKey(prompt: string) {
+async function callGeminiWithApiKey(prompt: string, maxTokens: number) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("AI Service is unavailable: GEMINI_API_KEY is not set.");
@@ -29,7 +29,7 @@ async function callGeminiWithApiKey(prompt: string) {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          maxOutputTokens: 8192,
+          maxOutputTokens: maxTokens,
           temperature: 0.4,
           responseMimeType: "application/json",
         },
@@ -48,7 +48,6 @@ async function callGeminiWithApiKey(prompt: string) {
 
 /**
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
- * It finds the first '{' and the last '}' to isolate the JSON content.
  */
 function extractJSON(text: string): any {
   const firstBrace = text.indexOf('{');
@@ -69,18 +68,15 @@ function extractJSON(text: string): any {
   }
 }
 
-function getResumeOptimizerPrompt(resumeText: string, jobDescription: string): string {
+// --- PROMPT 1: For generating ONLY the JSON analysis ---
+function getResumeAnalysisPrompt(resumeText: string, jobDescription: string): string {
     return `
-      You are an expert career coach and resume writer functioning as a JSON API.
-      Your task is to analyze a user's resume against a job description and provide a detailed analysis and an optimized resume.
+      You are an expert career coach functioning as a JSON API. Your task is to analyze a user's resume against a job description.
 
       RULES:
       - Respond ONLY with a valid JSON object.
-      - Do NOT include markdown \`\`\`json wrappers.
-      - Do NOT include any explanations or introductory text.
-      - The final output MUST be a raw JSON object.
-      - All string values within the JSON must be formatted as Markdown for rich text rendering, except for the 'optimizedResume' field.
-      - The 'optimizedResume' field must be plain text, ready for a .txt file.
+      - Do NOT include markdown \`\`\`json wrappers or any explanatory text.
+      - All string values within the JSON must be formatted as Markdown.
 
       USER's RESUME:
       ---
@@ -94,13 +90,45 @@ function getResumeOptimizerPrompt(resumeText: string, jobDescription: string): s
 
       RESPONSE JSON SCHEMA:
       {
-        "matchScore": "string (e.g., '85%'). A qualitative score representing how well the resume matches the job description.",
-        "strengths": "string (Markdown formatted). A bulleted list of the top 3-4 strengths from the resume that align with the job.",
-        "weaknesses": "string (Markdown formatted). A bulleted list of the top 3-4 areas where the resume is weak in relation to the job description.",
-        "skillGap": "string (Markdown formatted). A bulleted list of specific skills or technologies mentioned in the job description that are missing from the resume.",
-        "interviewPrep": "string (Markdown formatted). A bulleted list of 3-5 potential interview questions based on the job description and the candidate's resume, along with a brief tip for each.",
-        "optimizedResume": "string (Plain Text). A rewritten, ATS-friendly version of the resume. Incorporate keywords from the job description naturally. Use clear, simple formatting with standard headings (e.g., 'Experience', 'Education', 'Skills')."
+        "matchScore": "string (e.g., '85%')",
+        "strengths": "string (Markdown bulleted list of top 3-4 strengths)",
+        "weaknesses": "string (Markdown bulleted list of top 3-4 weaknesses)",
+        "skillGap": "string (Markdown bulleted list of missing skills)",
+        "interviewPrep": "string (Markdown bulleted list of 3-5 potential interview questions)"
       }
+    `;
+}
+
+// --- PROMPT 2: For rewriting ONLY the resume text ---
+function getResumeRewritePrompt(resumeText: string, jobDescription: string, analysis: any): string {
+    return `
+      You are an expert resume writer. Your task is to rewrite the user's resume to be ATS-friendly and better aligned with the provided job description.
+      
+      RULES:
+      - Respond ONLY with the plain text of the rewritten resume.
+      - Do NOT include any other text, titles, or explanations.
+      - Incorporate keywords from the job description naturally.
+      - Use clear, simple formatting with standard headings (e.g., 'Experience', 'Education', 'Skills').
+      - Use the provided analysis to guide your rewrite, focusing on addressing the weaknesses and skill gaps.
+
+      USER's ORIGINAL RESUME:
+      ---
+      ${resumeText}
+      ---
+
+      JOB DESCRIPTION:
+      ---
+      ${jobDescription}
+      ---
+
+      AI ANALYSIS (for your reference):
+      ---
+      Strengths: ${analysis.strengths}
+      Weaknesses to Address: ${analysis.weaknesses}
+      Skills to Add: ${analysis.skillGap}
+      ---
+
+      Return only the rewritten resume content as plain text.
     `;
 }
 
@@ -116,23 +144,36 @@ export async function POST(req: Request) {
     const decodedToken = await getAuth().verifyIdToken(idToken);
     const userId = decodedToken.uid;
 
-    // TODO: Implement usage tracking and paywall logic here in the future.
-    
     const { resumeText, jobDescription } = await req.json();
     if (!resumeText || !jobDescription) {
       return NextResponse.json({ error: 'Resume and job description are required.' }, { status: 400 });
     }
 
-    const prompt = getResumeOptimizerPrompt(resumeText, jobDescription);
-    const aiResponseText = await callGeminiWithApiKey(prompt);
+    // --- STEP 1: Get the JSON Analysis ---
+    const analysisPrompt = getResumeAnalysisPrompt(resumeText, jobDescription);
+    const analysisResponseText = await callGeminiWithApiKey(analysisPrompt, 4096);
     
-    if (!aiResponseText) {
-        throw new Error("The AI model returned an empty or invalid response.");
+    if (!analysisResponseText) {
+        throw new Error("The AI model returned an empty response for the analysis step.");
     }
+    const analysisJson = extractJSON(analysisResponseText);
 
-    const parsedJson = extractJSON(aiResponseText);
 
-    return NextResponse.json(parsedJson);
+    // --- STEP 2: Get the Rewritten Resume ---
+    const rewritePrompt = getResumeRewritePrompt(resumeText, jobDescription, analysisJson);
+    const optimizedResumeText = await callGeminiWithApiKey(rewritePrompt, 4096);
+
+    if (!optimizedResumeText) {
+        throw new Error("The AI model returned an empty response for the resume rewrite step.");
+    }
+    
+    // --- STEP 3: Combine and return the final result ---
+    const finalResult = {
+        ...analysisJson,
+        optimizedResume: optimizedResumeText,
+    };
+
+    return NextResponse.json(finalResult);
 
   } catch (err: any) {
     console.error("optimize-resume API error:", err);
