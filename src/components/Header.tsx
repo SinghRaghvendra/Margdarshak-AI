@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,11 +14,95 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import AuthStatus from '@/components/AuthStatus';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
+const languages = [
+  { value: 'English', label: 'English' },
+  { value: 'Telugu', label: 'Telugu' },
+  { value: 'Kannada', label: 'Kannada' },
+  { value: 'Marathi', label: 'Marathi' },
+  { value: 'Tamil', label: 'Tamil' },
+  { value: 'Hindi', label: 'Hindi' },
+  { value: 'Oriya', label: 'Oriya' },
+  { value: 'Spanish', label: 'Spanish' },
+  { value: 'Russian', label: 'Russian' },
+  { value: 'Arabic', label: 'Arabic' },
+];
+
+function LanguageSelector() {
+    const { user } = useUser();
+    const db = useFirestore();
+    const { toast } = useToast();
+    const [selectedLanguage, setSelectedLanguage] = useState<string>('English');
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (user && db) {
+            const userDocRef = doc(db, 'users', user.uid);
+            getDoc(userDocRef).then(docSnap => {
+                if (docSnap.exists() && docSnap.data().language) {
+                    setSelectedLanguage(docSnap.data().language);
+                }
+                setIsLoading(false);
+            });
+        } else {
+            setIsLoading(false);
+        }
+    }, [user, db]);
+
+    const handleLanguageChange = async (newLanguage: string) => {
+        if (!user || !db) return;
+        
+        setSelectedLanguage(newLanguage);
+        toast({ title: 'Updating Language...', description: `Setting preferred report language to ${newLanguage}.`});
+        
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            await setDoc(userDocRef, { language: newLanguage }, { merge: true });
+            
+            const userInfoString = localStorage.getItem('margdarshak_user_info');
+            if (userInfoString) {
+                const userInfo = JSON.parse(userInfoString);
+                userInfo.language = newLanguage;
+                localStorage.setItem('margdarshak_user_info', JSON.stringify(userInfo));
+            }
+
+            toast({ title: 'Language Updated!', description: `Future reports will now be in ${newLanguage}.` });
+        } catch (error) {
+            console.error("Failed to update language:", error);
+            toast({ title: 'Update Failed', description: 'Could not save your language preference.', variant: 'destructive'});
+        }
+    };
+
+    if (!user || isLoading) {
+        return null; // Don't show selector if logged out or loading
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <Globe className="h-4 w-4 text-muted-foreground" />
+        <Select onValueChange={handleLanguageChange} value={selectedLanguage}>
+            <SelectTrigger className="w-[120px] h-9 text-xs">
+                <SelectValue placeholder="Language" />
+            </SelectTrigger>
+            <SelectContent>
+                {languages.map(lang => (
+                    <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+      </div>
+    );
+}
+
 
 export default function Header() {
   const { user } = useUser();
@@ -76,6 +161,7 @@ export default function Header() {
                 </Button>
             </Link>
           ))}
+          {user && <LanguageSelector />}
           {auth && (
             user ? (
               <Button onClick={handleLogout} variant="outline" className="text-sm ml-2 px-4 py-2">
@@ -141,6 +227,11 @@ export default function Header() {
                       </Link>
                     </SheetClose>
                   ))}
+                   {user && (
+                    <div className="px-2 pt-2">
+                      <LanguageSelector />
+                    </div>
+                  )}
                   <div className="pt-4 border-t">
                     {auth && (
                       user ? (
