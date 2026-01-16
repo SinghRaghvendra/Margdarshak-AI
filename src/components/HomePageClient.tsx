@@ -70,7 +70,7 @@ export default function HomePageClient() {
       title: 'Personalized Career Guidance',
       description: 'Uncover your innate strengths and ideal work style through our insightful psychometric assessment, then receive a comprehensive 10-year career roadmap.',
       href: careerGuidanceHref,
-      cta: isLoggedIn ? "Continue Your Journey" : "Start my Career quiz",
+      cta: isLoggedIn ? "Continue Your Journey" : "Start Career Quiz Now",
       isExternal: false,
     },
   ];
@@ -271,7 +271,7 @@ export default function HomePageClient() {
               <>
                 <Link href={careerGuidanceHref}>
                     <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold">
-                        Start my Career quiz
+                        Start Career Quiz Now
                     </Button>
                 </Link>
                  <AlertDialog>
@@ -299,7 +299,7 @@ export default function HomePageClient() {
             ) : (
                 <Link href={careerGuidanceHref}>
                   <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold" suppressHydrationWarning={true}>
-                    Start my Career quiz
+                    Start Career Quiz Now
                   </Button>
                 </Link>
             )}
@@ -331,7 +331,7 @@ export default function HomePageClient() {
                   <CardContent>
                       <Link href={feature.href} target={feature.isExternal ? '_blank' : '_self'} rel={feature.isExternal ? 'noopener noreferrer' : ''}>
                             <Button className="w-full font-bold" suppressHydrationWarning={true}>
-                              {isLoggedIn ? "Continue Your Journey" : "Start my Career quiz"} <ArrowRight className="ml-2 h-5 w-5" />
+                              {isLoggedIn ? "Continue Your Journey" : "Start Career Quiz Now"} <ArrowRight className="ml-2 h-5 w-5" />
                             </Button>
                       </Link>
                   </CardContent>
@@ -374,7 +374,7 @@ export default function HomePageClient() {
              <div className="text-center mt-12 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href={careerGuidanceHref}>
                     <Button size="lg" className="text-lg py-6 px-8 shadow-md font-bold" suppressHydrationWarning>
-                        Start my Career quiz
+                        Start Career Quiz Now
                     </Button>
                 </Link>
                 <Link href="/pricing">
@@ -560,7 +560,7 @@ export default function HomePageClient() {
             </p>
             <Link href={careerGuidanceHref}>
               <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold" suppressHydrationWarning={true}>
-                {isLoggedIn ? "Continue Your Journey" : "Start my Career quiz"}
+                {isLoggedIn ? "Continue Your Journey" : "Start Career Quiz Now"}
               </Button>
             </Link>
           </div>
@@ -569,3 +569,5 @@ export default function HomePageClient() {
     </div>
   );
 }
+
+    
