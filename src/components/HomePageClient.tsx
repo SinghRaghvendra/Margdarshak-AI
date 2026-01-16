@@ -212,7 +212,7 @@ export default function HomePageClient() {
         style={{
           backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/ban1.png?alt=media&token=d4f81318-abc3-47d8-94a0-1fcbc2a82b7b')",
           backgroundSize: '100% auto',
-          backgroundPosition: 'center calc(50% + 130px)',
+          backgroundPosition: 'center calc(50% - 70px)',
         }}
       >
         <div
