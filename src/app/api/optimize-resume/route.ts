@@ -74,14 +74,13 @@ function extractJSON(text: string): any {
 // --- Combined Prompt for Analysis and Multiple Resume Templates ---
 function getCombinedResumePrompt(resumeText: string, jobDescription: string): string {
     return `
-      You are an expert career coach and resume writer functioning as a single JSON API. Your task is to analyze a user's resume against a job description and then generate three distinct, optimized resume versions in Markdown.
+      You are an expert career coach and resume writer functioning as a single JSON API. Your primary goal is to produce a valid, complete JSON object. Brevity is more important than detail.
 
       RULES:
-      - Respond ONLY with a single, valid JSON object.
-      - Do NOT include markdown \`\`\`json wrappers or any explanatory text.
-      - The final output must be a raw JSON object, starting with { and ending with }.
-      - All string values for analysis (strengths, weaknesses, etc.) must be formatted as Markdown bulleted lists.
-      - VERY IMPORTANT: The content for each resume template MUST be concise. Aim for a one-page resume. Brevity is essential to avoid response truncation and ensure a valid JSON output.
+      - Respond ONLY with a single, valid JSON object. Do not include \`\`\`json wrappers or any other text.
+      - THE ENTIRE RESPONSE MUST BE AS SHORT AS POSSIBLE TO AVOID BEING CUT OFF.
+      - For all analysis fields (strengths, weaknesses, etc.), use short, impactful bullet points.
+      - For each resume template, create a highly condensed, one-page version. Use short sentences and bullet points.
 
       USER's RESUME:
       ---
@@ -101,42 +100,40 @@ function getCombinedResumePrompt(resumeText: string, jobDescription: string): st
         "skillGap": "string (Markdown bulleted list of missing skills)",
         "interviewPrep": "string (Markdown bulleted list of 3-5 potential interview questions)",
         "resumes": {
-          "simple": "Markdown for a clean, standard resume.",
-          "professional": "Markdown for a formal, classic resume.",
-          "minimal": "Markdown for a compact, modern resume."
+          "simple": "Markdown for a clean, standard resume. MUST BE CONCISE.",
+          "professional": "Markdown for a formal, classic resume. MUST BE CONCISE.",
+          "minimal": "Markdown for a compact, modern resume. MUST BE CONCISE."
         }
       }
 
       --- MARKDOWN STRUCTURE GUIDELINES FOR EACH TEMPLATE ---
 
       1.  **"simple" Template Structure:**
-          -   Use a single-column layout.
           -   Name: # Your Name
-          -   Contact Info: A single paragraph, separated by pipes (|). Example: _youremail@example.com | (555) 123-4567 | linkedin.com/in/yourprofile_
-          -   Sections (Summary, Experience, Education, Skills): ## Section Title
-          -   Job Roles: ### Job Title | Company Name
-          -   Dates/Location: _City, State | Month Year - Month Year_
-          -   Bullet points: * Responsibility or achievement.
+          -   Contact Info: Single line | Example: _youremail@example.com | (555) 123-4567_
+          -   Sections: ## Section Title
+          -   Job Roles: ### Job Title | Company
+          -   Dates/Location: _City | Month Year - Month Year_
+          -   Bullet points: * Use short, action-oriented phrases.
 
       2.  **"professional" Template Structure:**
-          -   Use a single-column, classic layout.
           -   Name: # YOUR NAME (All caps)
-          -   Contact Info: Single paragraph, separated by bullets (•).
-          -   Sections: ## SECTION TITLE (All caps, followed by a horizontal rule ---).
+          -   Contact Info: Single line with • separator.
+          -   Sections: ## SECTION TITLE (All caps, followed by ---).
           -   Job Roles: ### Job Title
-          -   Company/Dates: **Company Name** | _City, State | Month Year - Month Year_
-          -   Bullet points: * Responsibility or achievement.
+          -   Company/Dates: **Company** | _City | Month Year - Month Year_
+          -   Bullet points: * Use concise, professional language.
 
       3.  **"minimal" Template Structure:**
-          -   Use a highly compact, single-column layout.
           -   Name: # Your Name
           -   Contact Info: Single paragraph.
-          -   Sections: **Section Title** (Bold, no '##').
-          -   Job Roles & Company: **Job Title,** *Company Name*
-          -   Dates/Location: _City, State | Month Year - Month Year_ (On the same line as the job role if possible, otherwise below).
-          -   Bullet points: * Responsibility or achievement. Use concise language.
+          -   Sections: **Section Title** (Bold).
+          -   Job Roles & Company: **Job Title,** *Company*
+          -   Dates/Location: _City | Month Year - Month Year_
+          -   Bullet points: * Use extremely brief phrases.
     `;
 }
+
 
 export async function POST(req: Request) {
   try {
