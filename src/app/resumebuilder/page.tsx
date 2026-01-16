@@ -288,13 +288,13 @@ export default function ResumeBuilderPage() {
                              <div>
                                 <h3 className="text-2xl font-bold mb-4 mt-8 text-center">ATS-Optimized Resume</h3>
                                 <Card className="bg-background">
-                                    <CardContent className="p-4">
-                                        <div ref={resumeContentRef} className="prose prose-sm sm:prose-base max-w-none">
+                                    <CardContent className="p-6">
+                                        <div ref={resumeContentRef} className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
                                             <ReactMarkdown>{analysisResult.optimizedResume}</ReactMarkdown>
                                         </div>
                                     </CardContent>
                                 </Card>
-                                <div className="mt-4 flex flex-wrap gap-4 justify-center">
+                                <div className="mt-6 flex flex-wrap gap-4 justify-center">
                                     <Button onClick={handleDownloadPdf} disabled={isGeneratingPdf}>
                                         {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                                         Download as PDF
@@ -306,6 +306,7 @@ export default function ResumeBuilderPage() {
                                         <Download className="mr-2 h-4 w-4" /> Download as TXT
                                     </Button>
                                 </div>
+                                <p className="text-xs text-muted-foreground text-center mt-3">PDF is recommended for preserving formatting.</p>
                             </div>
                         </CardContent>
                     </Card>

@@ -106,34 +106,51 @@ function getResumeAnalysisPrompt(resumeText: string, jobDescription: string): st
 // --- PROMPT 2: For rewriting ONLY the resume text ---
 function getResumeRewritePrompt(resumeText: string, jobDescription: string, analysis: any): string {
     return `
-      You are an expert resume writer. Your task is to rewrite the user's resume to be ATS-friendly and better aligned with the provided job description. The output should be a complete, well-structured 2-page resume.
-      
-      RULES:
-      - Respond ONLY with the rewritten resume content in **Markdown format**.
-      - Do NOT include any other text, titles, or explanations.
-      - Use clear, standard headings (e.g., '# Name', '## Experience', '## Education', '## Skills'). Use heading levels appropriately.
-      - Use bullet points for job responsibilities and achievements.
-      - Incorporate keywords from the job description naturally.
-      - Use the provided analysis to guide your rewrite, focusing on addressing the weaknesses and skill gaps.
+      You are an expert resume writer creating an ATS-friendly resume in **Markdown format**. The final output must be sharp, polished, and ready for a professional presentation.
 
-      USER's ORIGINAL RESUME:
+      RULES:
+      - Respond ONLY with the rewritten resume content in Markdown. Do not include any other text, titles, or explanations.
+      - The resume must be a single-column layout.
+      - Use horizontal rules (---) to separate major sections.
+
+      STRUCTURE:
+      1.  **Name:** Use a level 1 heading (#).
+      2.  **Contact Info:** Directly below the name, list Email, Phone, and LinkedIn (if available) on a single line, separated by pipes (|).
+          Example: _youremail@example.com | (555) 123-4567 | linkedin.com/in/yourprofile_
+      3.  **Summary:** Use a level 2 heading (## Summary). Write a 2-4 sentence professional summary tailored to the job description, highlighting key skills and experience from the analysis.
+      4.  **Experience:** Use a level 2 heading (## Experience).
+          - For each role, use a level 3 heading (###) for "Job Title | Company Name".
+          - Below the title, add a line for "City, State | Month Year - Month Year" in italics.
+          - Use bullet points (*) for responsibilities and achievements. Focus on quantifiable results (e.g., "Increased sales by 20%").
+      5.  **Education:** Use a level 2 heading (## Education).
+          - List degrees with "Degree Name, Major" as bold text.
+          - Below each degree, add "University Name, City, State" and "Graduation Year".
+      6.  **Skills:** Use a level 2 heading (## Skills).
+          - Create subheadings for different skill categories (e.g., **Technical Skills:**, **Languages:**).
+          - List skills as a comma-separated list after the subheading.
+
+      CONTENT GUIDELINES:
+      - Rewrite the user's resume to better align with the JOB DESCRIPTION below.
+      - Naturally incorporate keywords from the job description.
+      - Address the weaknesses and skill gaps identified in the AI ANALYSIS.
+      - Use strong action verbs to start each bullet point in the Experience section.
+
       ---
+      USER's ORIGINAL RESUME:
       ${resumeText}
       ---
 
       JOB DESCRIPTION:
-      ---
       ${jobDescription}
       ---
 
-      AI ANALYSIS (for your reference):
-      ---
+      AI ANALYSIS (for your internal reference):
       Strengths: ${analysis.strengths}
       Weaknesses to Address: ${analysis.weaknesses}
       Skills to Add: ${analysis.skillGap}
       ---
 
-      Return only the rewritten resume content as Markdown text.
+      Return only the polished, rewritten resume content in Markdown.
     `;
 }
 
