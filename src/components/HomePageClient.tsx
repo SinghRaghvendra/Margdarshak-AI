@@ -206,7 +206,7 @@ export default function HomePageClient() {
       {/* Hero Section */}
       <section
         className="relative isolate z-0 pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('https://storage.googleapis.com/aai-cdn-assets/cloud-workstations/hero-bg.png')" }}
+        style={{ backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/ban1.png?alt=media&token=d4f81318-abc3-47d8-94a0-1fcbc2a82b7b')" }}
       >
         <div
           aria-hidden
