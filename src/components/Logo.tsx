@@ -1,12 +1,10 @@
 
 import Link from 'next/link';
-import { Compass } from 'lucide-react';
 
 export default function Logo() {
   return (
-    <Link href="/" className="flex items-center space-x-2 text-2xl font-bold text-primary hover:text-primary/90 transition-colors">
-      <Compass className="h-8 w-8" />
-      <span>AI Councel</span>
+    <Link href="/" className="text-2xl font-extrabold tracking-wider text-primary hover:text-primary/90 transition-colors">
+      <span>AI COUNCEL</span>
     </Link>
   );
 }
