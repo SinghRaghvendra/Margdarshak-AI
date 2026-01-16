@@ -210,13 +210,14 @@ export default function HomePageClient() {
         className="relative isolate z-0 pt-10 pb-10 md:pt-16 md:pb-16 flex flex-col items-center justify-center text-center bg-no-repeat"
         style={{
           backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/ban1.png?alt=media&token=d4f81318-abc3-47d8-94a0-1fcbc2a82b7b')",
-          backgroundSize: '100% auto',
-          backgroundPosition: 'center calc(50% - 70px)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundColor: '#0c0a09',
         }}
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-black/50"
+          className="pointer-events-none absolute inset-0 bg-black/40"
         ></div>
 
         <div
@@ -250,7 +251,7 @@ export default function HomePageClient() {
           >
               <Image
                 src="/logo.png"
-                alt="AI Councel Lab Logo"
+                alt="AI COUNCEL Logo"
                 width={150}
                 height={150}
                 priority
@@ -348,7 +349,7 @@ export default function HomePageClient() {
               <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                The modern job market is confusing. AI Councel replaces that confusion with a clear, data-driven action plan so you can move forward with confidence.
+                The modern job market is confusing. AI COUNCEL replaces that confusion with a clear, data-driven action plan so you can move forward with confidence.
               </p>
             </div>
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -411,7 +412,7 @@ export default function HomePageClient() {
         <section className="py-12 md:py-16 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">What People Are Saying About AI Councel</h2>
+              <h2 className="text-3xl md:text-4xl font-bold">What People Are Saying About AI COUNCEL</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
                 Real stories from students, parents, and professionals who found clarity with us.
               </p>
@@ -569,5 +570,3 @@ export default function HomePageClient() {
     </div>
   );
 }
-
-    
