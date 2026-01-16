@@ -10,8 +10,7 @@ export const runtime = 'nodejs';
  */
 async function callGeminiWithApiKey(
     prompt: string, 
-    maxTokens: number, 
-    responseMimeType: 'application/json' | 'text/plain' = 'application/json'
+    maxTokens: number
 ) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -35,7 +34,7 @@ async function callGeminiWithApiKey(
         generationConfig: {
           maxOutputTokens: maxTokens,
           temperature: 0.4,
-          responseMimeType: responseMimeType,
+          responseMimeType: 'application/json',
         },
         safetySettings,
       }),
@@ -72,15 +71,17 @@ function extractJSON(text: string): any {
   }
 }
 
-// --- PROMPT 1: For generating ONLY the JSON analysis ---
-function getResumeAnalysisPrompt(resumeText: string, jobDescription: string): string {
+// --- Combined Prompt for Analysis and Multiple Resume Templates ---
+function getCombinedResumePrompt(resumeText: string, jobDescription: string): string {
     return `
-      You are an expert career coach functioning as a JSON API. Your task is to analyze a user's resume against a job description.
+      You are an expert career coach and resume writer functioning as a single JSON API. Your task is to analyze a user's resume against a job description and then generate three distinct, optimized resume versions in Markdown.
 
       RULES:
-      - Respond ONLY with a valid JSON object.
+      - Respond ONLY with a single, valid JSON object.
       - Do NOT include markdown \`\`\`json wrappers or any explanatory text.
-      - All string values within the JSON must be formatted as Markdown.
+      - The final output must be a raw JSON object, starting with { and ending with }.
+      - All string values for analysis (strengths, weaknesses, etc.) must be formatted as Markdown bulleted lists.
+      - Each resume version must be a complete, well-structured Markdown document.
 
       USER's RESUME:
       ---
@@ -98,62 +99,44 @@ function getResumeAnalysisPrompt(resumeText: string, jobDescription: string): st
         "strengths": "string (Markdown bulleted list of top 3-4 strengths)",
         "weaknesses": "string (Markdown bulleted list of top 3-4 weaknesses)",
         "skillGap": "string (Markdown bulleted list of missing skills)",
-        "interviewPrep": "string (Markdown bulleted list of 3-5 potential interview questions)"
+        "interviewPrep": "string (Markdown bulleted list of 3-5 potential interview questions)",
+        "resumes": {
+          "simple": "Markdown for a clean, standard resume.",
+          "professional": "Markdown for a formal, classic resume.",
+          "minimal": "Markdown for a compact, modern resume."
+        }
       }
+
+      --- MARKDOWN STRUCTURE GUIDELINES FOR EACH TEMPLATE ---
+
+      1.  **"simple" Template Structure:**
+          -   Use a single-column layout.
+          -   Name: # Your Name
+          -   Contact Info: A single paragraph, separated by pipes (|). Example: _youremail@example.com | (555) 123-4567 | linkedin.com/in/yourprofile_
+          -   Sections (Summary, Experience, Education, Skills): ## Section Title
+          -   Job Roles: ### Job Title | Company Name
+          -   Dates/Location: _City, State | Month Year - Month Year_
+          -   Bullet points: * Responsibility or achievement.
+
+      2.  **"professional" Template Structure:**
+          -   Use a single-column, classic layout.
+          -   Name: # YOUR NAME (All caps)
+          -   Contact Info: Single paragraph, separated by bullets (•).
+          -   Sections: ## SECTION TITLE (All caps, followed by a horizontal rule ---).
+          -   Job Roles: ### Job Title
+          -   Company/Dates: **Company Name** | _City, State | Month Year - Month Year_
+          -   Bullet points: * Responsibility or achievement.
+
+      3.  **"minimal" Template Structure:**
+          -   Use a highly compact, single-column layout.
+          -   Name: # Your Name
+          -   Contact Info: Single paragraph.
+          -   Sections: **Section Title** (Bold, no '##').
+          -   Job Roles & Company: **Job Title,** *Company Name*
+          -   Dates/Location: _City, State | Month Year - Month Year_ (On the same line as the job role if possible, otherwise below).
+          -   Bullet points: * Responsibility or achievement. Use concise language.
     `;
 }
-
-// --- PROMPT 2: For rewriting ONLY the resume text ---
-function getResumeRewritePrompt(resumeText: string, jobDescription: string, analysis: any): string {
-    return `
-      You are an expert resume writer creating an ATS-friendly resume in **Markdown format**. The final output must be sharp, polished, and ready for a professional presentation.
-
-      RULES:
-      - Respond ONLY with the rewritten resume content in Markdown. Do not include any other text, titles, or explanations.
-      - The resume must be a single-column layout.
-      - Use horizontal rules (---) to separate major sections.
-
-      STRUCTURE:
-      1.  **Name:** Use a level 1 heading (#).
-      2.  **Contact Info:** Directly below the name, list Email, Phone, and LinkedIn (if available) on a single line, separated by pipes (|).
-          Example: _youremail@example.com | (555) 123-4567 | linkedin.com/in/yourprofile_
-      3.  **Summary:** Use a level 2 heading (## Summary). Write a 2-4 sentence professional summary tailored to the job description, highlighting key skills and experience from the analysis.
-      4.  **Experience:** Use a level 2 heading (## Experience).
-          - For each role, use a level 3 heading (###) for "Job Title | Company Name".
-          - Below the title, add a line for "City, State | Month Year - Month Year" in italics.
-          - Use bullet points (*) for responsibilities and achievements. Focus on quantifiable results (e.g., "Increased sales by 20%").
-      5.  **Education:** Use a level 2 heading (## Education).
-          - List degrees with "Degree Name, Major" as bold text.
-          - Below each degree, add "University Name, City, State" and "Graduation Year".
-      6.  **Skills:** Use a level 2 heading (## Skills).
-          - Create subheadings for different skill categories (e.g., **Technical Skills:**, **Languages:**).
-          - List skills as a comma-separated list after the subheading.
-
-      CONTENT GUIDELINES:
-      - Rewrite the user's resume to better align with the JOB DESCRIPTION below.
-      - Naturally incorporate keywords from the job description.
-      - Address the weaknesses and skill gaps identified in the AI ANALYSIS.
-      - Use strong action verbs to start each bullet point in the Experience section.
-
-      ---
-      USER's ORIGINAL RESUME:
-      ${resumeText}
-      ---
-
-      JOB DESCRIPTION:
-      ${jobDescription}
-      ---
-
-      AI ANALYSIS (for your internal reference):
-      Strengths: ${analysis.strengths}
-      Weaknesses to Address: ${analysis.weaknesses}
-      Skills to Add: ${analysis.skillGap}
-      ---
-
-      Return only the polished, rewritten resume content in Markdown.
-    `;
-}
-
 
 export async function POST(req: Request) {
   try {
@@ -171,30 +154,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Resume and job description are required.' }, { status: 400 });
     }
 
-    // --- STEP 1: Get the JSON Analysis ---
-    const analysisPrompt = getResumeAnalysisPrompt(resumeText, jobDescription);
-    const analysisResponseText = await callGeminiWithApiKey(analysisPrompt, 4096, 'application/json');
+    // --- Single API call for both analysis and all resume versions ---
+    const combinedPrompt = getCombinedResumePrompt(resumeText, jobDescription);
+    const responseText = await callGeminiWithApiKey(combinedPrompt, 8192);
     
-    if (!analysisResponseText) {
-        throw new Error("The AI model returned an empty response for the analysis step.");
+    if (!responseText) {
+        throw new Error("The AI model returned an empty response.");
     }
-    const analysisJson = extractJSON(analysisResponseText);
 
+    const finalResult = extractJSON(responseText);
 
-    // --- STEP 2: Get the Rewritten Resume ---
-    const rewritePrompt = getResumeRewritePrompt(resumeText, jobDescription, analysisJson);
-    const optimizedResumeText = await callGeminiWithApiKey(rewritePrompt, 8192, 'text/plain');
-
-    if (!optimizedResumeText) {
-        throw new Error("The AI model returned an empty response for the resume rewrite step.");
+    // Validate the structure
+    if (!finalResult.resumes || !finalResult.resumes.simple || !finalResult.resumes.professional || !finalResult.resumes.minimal) {
+        throw new Error("AI response was missing one or more resume templates.");
     }
     
-    // --- STEP 3: Combine and return the final result ---
-    const finalResult = {
-        ...analysisJson,
-        optimizedResume: optimizedResumeText,
-    };
-
     return NextResponse.json(finalResult);
 
   } catch (err: any) {

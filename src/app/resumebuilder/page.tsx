@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Wand2, FileText, Briefcase, Loader2, Download, AlertTriangle, CheckCircle, BarChart, BrainCircuit, Bot } from 'lucide-react';
+import { Upload, Wand2, FileText, Briefcase, Loader2, Download, AlertTriangle, CheckCircle, BarChart, BrainCircuit, Bot, Palette } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useUser } from '@/firebase';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -17,6 +17,7 @@ import ReactMarkdown from 'react-markdown';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { cn } from '@/lib/utils';
 
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
@@ -28,8 +29,14 @@ interface AnalysisResult {
     weaknesses: string;
     skillGap: string;
     interviewPrep: string;
-    optimizedResume: string;
+    resumes: {
+        simple: string;
+        professional: string;
+        minimal: string;
+    };
 }
+
+type TemplateName = 'simple' | 'professional' | 'minimal';
 
 
 export default function ResumeBuilderPage() {
@@ -41,6 +48,7 @@ export default function ResumeBuilderPage() {
     const [jobDescription, setJobDescription] = useState<string>('');
     const [fileName, setFileName] = useState<string>('');
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<TemplateName>('simple');
     const [isLoading, setIsLoading] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -129,13 +137,15 @@ export default function ResumeBuilderPage() {
         }
     };
     
-    const handleDownload = (content: string, format: 'txt' | 'doc') => {
+    const handleDownload = (format: 'txt' | 'doc') => {
+        if (!analysisResult) return;
+        const content = analysisResult.resumes[selectedTemplate];
         const mimeType = format === 'txt' ? 'text/plain' : 'application/msword';
         const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `optimized_resume.${format}`;
+        link.download = `optimized_resume_${selectedTemplate}.${format}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -152,7 +162,7 @@ export default function ResumeBuilderPage() {
     
         const html2pdf = (await import('html2pdf.js')).default;
         const element = resumeContentRef.current;
-        const filename = `AI_Councel_Optimized_Resume.pdf`;
+        const filename = `AI_Councel_Optimized_Resume_${selectedTemplate}.pdf`;
     
         const opt = {
           margin: [0.5, 0.5, 0.5, 0.5],
@@ -176,6 +186,17 @@ export default function ResumeBuilderPage() {
     
     const matchScoreValue = analysisResult?.matchScore ? parseInt(analysisResult.matchScore.replace('%', '')) : 0;
     
+    // Style overrides for ReactMarkdown
+    const professionalTemplateStyles = {
+        h1: ({node, ...props}: any) => <h1 className="text-4xl font-extrabold mb-2 text-blue-800 tracking-tight" {...props} />,
+        h2: ({node, ...props}: any) => <h2 className="text-xl font-bold mt-5 mb-2 border-b-2 pb-1 border-blue-200 text-blue-700 uppercase" {...props} />,
+    };
+
+    const getMarkdownContent = () => {
+        if (!analysisResult) return '';
+        return analysisResult.resumes[selectedTemplate];
+    };
+
     return (
         <div className="py-12 bg-secondary/30">
             <div className="container mx-auto px-4 space-y-8">
@@ -255,7 +276,7 @@ export default function ResumeBuilderPage() {
                  {analysisResult && (
                     <Card className="w-full max-w-4xl mx-auto shadow-2xl">
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Your Resume Analysis</CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center">Your Resume Analysis & Preview</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             {/* Match Score */}
@@ -286,11 +307,24 @@ export default function ResumeBuilderPage() {
                             </Accordion>
 
                              <div>
-                                <h3 className="text-2xl font-bold mb-4 mt-8 text-center">ATS-Optimized Resume</h3>
+                                <h3 className="text-2xl font-bold mb-4 mt-8 text-center flex items-center justify-center gap-2"><Palette/> Choose Your Template</h3>
+                                <div className="flex justify-center gap-2 mb-6">
+                                    <Button variant={selectedTemplate === 'simple' ? 'default' : 'outline'} onClick={() => setSelectedTemplate('simple')}>Simple</Button>
+                                    <Button variant={selectedTemplate === 'professional' ? 'default' : 'outline'} onClick={() => setSelectedTemplate('professional')}>Professional</Button>
+                                    <Button variant={selectedTemplate === 'minimal' ? 'default' : 'outline'} onClick={() => setSelectedTemplate('minimal')}>Minimal</Button>
+                                </div>
+
                                 <Card className="bg-background">
-                                    <CardContent className="p-6">
-                                        <div ref={resumeContentRef} className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
-                                            <ReactMarkdown>{analysisResult.optimizedResume}</ReactMarkdown>
+                                    <CardContent className="p-0">
+                                        <div ref={resumeContentRef}>
+                                            <div className={cn("p-6 md:p-8 bg-white text-black", selectedTemplate === 'professional' && 'professional-theme')}>
+                                                <ReactMarkdown
+                                                    components={selectedTemplate === 'professional' ? professionalTemplateStyles : {}}
+                                                    className="prose prose-sm sm:prose-base max-w-none"
+                                                >
+                                                    {getMarkdownContent()}
+                                                </ReactMarkdown>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -299,10 +333,10 @@ export default function ResumeBuilderPage() {
                                         {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                                         Download as PDF
                                     </Button>
-                                    <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'doc')} variant="secondary">
+                                    <Button onClick={() => handleDownload('doc')} variant="secondary">
                                         <Download className="mr-2 h-4 w-4" /> Download as Doc
                                     </Button>
-                                     <Button onClick={() => handleDownload(analysisResult.optimizedResume, 'txt')} variant="secondary">
+                                     <Button onClick={() => handleDownload('txt')} variant="secondary">
                                         <Download className="mr-2 h-4 w-4" /> Download as TXT
                                     </Button>
                                 </div>
