@@ -82,6 +82,7 @@ function getCombinedResumePrompt(resumeText: string, jobDescription: string): st
       - The final output must be a raw JSON object, starting with { and ending with }.
       - All string values for analysis (strengths, weaknesses, etc.) must be formatted as Markdown bulleted lists.
       - Each resume version must be a complete, well-structured Markdown document.
+      - CRUCIAL: Keep the content for each resume version concise and impactful. Aim for a length that fits on a single page, and do not exceed two pages. This is critical to ensure the full JSON object is returned without being truncated.
 
       USER's RESUME:
       ---
