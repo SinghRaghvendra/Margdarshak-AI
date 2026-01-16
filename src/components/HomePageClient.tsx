@@ -205,19 +205,20 @@ export default function HomePageClient() {
     <div>
       {/* Hero Section */}
       <section
-        className="relative isolate z-0 pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center justify-center text-center bg-gradient-to-br from-background to-secondary/30 overflow-hidden"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onMouseEnter={handleMouseEnter}
+        className="relative isolate z-0 pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('https://storage.googleapis.com/aai-cdn-assets/cloud-workstations/hero-bg.png')" }}
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-background/50"
+          className="pointer-events-none absolute inset-0 bg-black/60"
         ></div>
 
         <div
           className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
           style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onMouseEnter={handleMouseEnter}
         >
           {/* Base Pulsating Waves */}
           <div className="pulsing-waves"></div>
@@ -252,11 +253,11 @@ export default function HomePageClient() {
         </div>
 
         {/* Text and CTA content, raised above the animation */}
-        <div className="relative z-10">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-foreground leading-tight">
+        <div className="relative z-10 text-white">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
             Confused About Your Career? Let AI help you decide.
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-white/80 mb-10 max-w-3xl mx-auto">
             Take our AI-powered career test to uncover your strengths, identify your best-fit careers, and get a clear roadmap for success.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -269,7 +270,7 @@ export default function HomePageClient() {
                 </Link>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
-                       <Button size="lg" variant="outline" className="text-lg py-7 px-10 shadow-lg">
+                       <Button size="lg" variant="outline" className="text-lg py-7 px-10 shadow-lg bg-transparent text-white border-white hover:bg-white hover:text-black">
                          <NewJourneyIcon className="mr-2 h-5 w-5" /> Start New Journey
                        </Button>
                     </AlertDialogTrigger>
