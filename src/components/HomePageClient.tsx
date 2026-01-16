@@ -1,4 +1,6 @@
 
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp, Group, XCircle, Users, BarChart } from 'lucide-react';
@@ -209,8 +211,8 @@ export default function HomePageClient() {
         className="relative isolate z-0 pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center justify-center text-center bg-no-repeat"
         style={{
           backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/ban1.png?alt=media&token=d4f81318-abc3-47d8-94a0-1fcbc2a82b7b')",
-          backgroundSize: '120% auto',
-          backgroundPosition: 'center 50%',
+          backgroundSize: '100% auto',
+          backgroundPosition: 'center calc(50% + 130px)',
         }}
       >
         <div
