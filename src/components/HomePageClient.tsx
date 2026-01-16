@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -220,47 +221,49 @@ export default function HomePageClient() {
           className="pointer-events-none absolute inset-0 bg-black/40"
         ></div>
 
-        <div
-          className={`relative w-[250px] h-[250px] mb-8 flex items-center justify-center transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
-          style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onMouseEnter={handleMouseEnter}
-        >
-          {/* Base Pulsating Waves */}
-          <div className="pulsing-waves"></div>
-
-          {/* Explosion waves on hover */}
-          {isHovered && (
-             <div className="explosion-container">
-                {[...Array(11)].map((_, i) => (
-                    <div key={i} className="explosion-wave" style={{ animationDelay: `${i * 0.05}s` }}></div>
-                ))}
-             </div>
-          )}
-
-
-          {/* Atomic Orbits */}
-          <div className="orbit orbit-1"></div>
-          <div className="orbit orbit-2"></div>
-          <div className="orbit orbit-3"></div>
-
-          {/* Logo */}
+        <div className="transform scale-90 md:scale-100">
           <div
-              className={`absolute logo-container ${isHovered ? 'logo-popped' : ''}`}
+            className={`relative w-[250px] h-[250px] mb-4 md:mb-8 flex items-center justify-center transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
+            style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            onMouseEnter={handleMouseEnter}
           >
-              <Image
-                src="/logo.png"
-                alt="AI COUNCEL Logo"
-                width={150}
-                height={150}
-                priority
-              />
+            {/* Base Pulsating Waves */}
+            <div className="pulsing-waves"></div>
+
+            {/* Explosion waves on hover */}
+            {isHovered && (
+               <div className="explosion-container">
+                  {[...Array(11)].map((_, i) => (
+                      <div key={i} className="explosion-wave" style={{ animationDelay: `${i * 0.05}s` }}></div>
+                  ))}
+               </div>
+            )}
+
+
+            {/* Atomic Orbits */}
+            <div className="orbit orbit-1"></div>
+            <div className="orbit orbit-2"></div>
+            <div className="orbit orbit-3"></div>
+
+            {/* Logo */}
+            <div
+                className={`absolute logo-container ${isHovered ? 'logo-popped' : ''}`}
+            >
+                <Image
+                  src="/logo.png"
+                  alt="AI COUNCEL Logo"
+                  width={150}
+                  height={150}
+                  priority
+                />
+            </div>
           </div>
         </div>
 
         {/* Text and CTA content, raised above the animation */}
-        <div className="relative z-10 text-white">
+        <div className="relative z-10 text-white px-4">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
             Confused About Your Career? Let AI help you decide.
           </h1>
