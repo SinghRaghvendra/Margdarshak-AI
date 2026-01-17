@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -293,7 +292,7 @@ export default function ResumeBuilderPage() {
                                         <ReactMarkdown
                                             components={{
                                                 h1: ({node, ...props}) => <h1 className="text-center text-3xl font-bold mb-1 text-gray-900" {...props} />,
-                                                h2: ({node, ...props}) => <h2 className="text-sm font-bold text-primary uppercase tracking-widest mt-6 mb-2 border-b-2 border-gray-200 pb-1" {...props} />,
+                                                h2: ({node, ...props}) => <h2 className="text-sm font-bold text-gray-900 uppercase tracking-widest mt-6 mb-2 border-b-2 border-gray-200 pb-1" {...props} />,
                                                 h3: ({node, ...props}) => <h3 className="text-center text-sm font-medium text-gray-600 mb-4" {...props} />,
                                                 p: ({node, ...props}) => <p className="text-sm mb-2 text-gray-800" {...props} />,
                                                 ul: ({node, ...props}) => <ul className="list-disc list-outside pl-5 space-y-1.5 text-sm text-gray-700" {...props} />,
