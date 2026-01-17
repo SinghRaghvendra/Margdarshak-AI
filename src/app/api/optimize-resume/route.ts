@@ -78,7 +78,7 @@ function getCombinedResumePrompt(resumeText: string, jobDescription: string): st
 
       **KEY OBJECTIVES:**
       1.  **Maximize Match:** Rewrite the user's resume to achieve a match score of over 90% against the job description by strategically incorporating keywords and aligning experiences.
-      2.  **Professional Length:** The final rewritten resumes should be comprehensive but professionally concise, ideally fitting within two pages.
+      2.  **Professional Conciseness:** The final rewritten resumes should be concise and professional, ideally fitting within one page.
       3.  **Strict JSON Output:** The entire response MUST be a single, raw, valid JSON object without any extra text, explanations, or markdown wrappers like \`\`\`json.
 
       **USER's RESUME:**
@@ -91,17 +91,17 @@ function getCombinedResumePrompt(resumeText: string, jobDescription: string): st
       ${jobDescription}
       ---
 
-      **RESPONSE JSON SCHEMA:**
+      **RESPONSE JSON SCHEMA (be concise):**
       {
         "matchScore": "string (e.g., '92%')",
-        "strengths": "string (Markdown with detailed paragraphs and bullet points of top 3-4 strengths)",
-        "weaknesses": "string (Markdown with detailed paragraphs and bullet points of top 3-4 weaknesses)",
-        "skillGap": "string (Markdown with detailed bullet points of missing skills and suggestions to fill them)",
-        "interviewPrep": "string (Markdown with a list of 5-7 potential interview questions with sample answers/talking points)",
+        "strengths": "string (Markdown with 3-4 concise bullet points of top strengths)",
+        "weaknesses": "string (Markdown with 3-4 concise bullet points of top weaknesses)",
+        "skillGap": "string (Markdown with concise bullet points of missing skills)",
+        "interviewPrep": "string (Markdown with a list of 5 potential interview questions and brief talking points)",
         "resumes": {
-          "simple": "Markdown for a clean, ATS-friendly, comprehensive resume (aim for 2 pages max).",
-          "professional": "Markdown for a formal, classic, detailed resume (aim for 2 pages max).",
-          "minimal": "Markdown for a modern, well-structured, but comprehensive resume (aim for 2 pages max)."
+          "simple": "Markdown for a clean, ATS-friendly, concise resume (aim for 1 page).",
+          "professional": "Markdown for a formal, classic, concise resume (aim for 1 page).",
+          "minimal": "Markdown for a modern, well-structured, but concise resume (aim for 1 page)."
         }
       }
 
@@ -131,7 +131,8 @@ export async function POST(req: Request) {
 
     // --- Single API call for both analysis and all resume versions ---
     const combinedPrompt = getCombinedResumePrompt(resumeText, jobDescription);
-    const responseText = await callGeminiWithApiKey(combinedPrompt, 10000);
+    // Corrected token limit to be within the model's capacity (e.g., 8000 for gemini-2.5-flash's 8192 max)
+    const responseText = await callGeminiWithApiKey(combinedPrompt, 8000);
     
     if (!responseText) {
         throw new Error("The AI model returned an empty response.");
