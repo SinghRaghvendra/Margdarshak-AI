@@ -74,65 +74,41 @@ function extractJSON(text: string): any {
 // --- Combined Prompt for Analysis and Multiple Resume Templates ---
 function getCombinedResumePrompt(resumeText: string, jobDescription: string): string {
     return `
-      You are an expert career coach and resume writer functioning as a single JSON API. Your primary goal is to produce a valid, complete JSON object. Provide detailed and elaborate analysis for each section.
+      You are an expert career coach and resume writer functioning as a single JSON API. Your primary goal is to produce a valid, complete JSON object.
 
-      RULES:
-      - Respond ONLY with a single, valid JSON object. Do not include \`\`\`json wrappers or any other text.
-      - For all analysis fields (strengths, weaknesses, etc.), use detailed paragraphs and bullet points to provide comprehensive feedback.
-      - For each resume template, create a comprehensive and detailed resume that elaborates on the user's experience and skills.
+      **KEY OBJECTIVES:**
+      1.  **Maximize Match:** Rewrite the user's resume to achieve a match score of over 90% against the job description by strategically incorporating keywords and aligning experiences.
+      2.  **Professional Length:** The final rewritten resumes should be comprehensive but professionally concise, ideally fitting within two pages.
+      3.  **Strict JSON Output:** The entire response MUST be a single, raw, valid JSON object without any extra text, explanations, or markdown wrappers like \`\`\`json.
 
-      USER's RESUME:
+      **USER's RESUME:**
       ---
       ${resumeText}
       ---
 
-      JOB DESCRIPTION:
+      **JOB DESCRIPTION:**
       ---
       ${jobDescription}
       ---
 
-      RESPONSE JSON SCHEMA:
+      **RESPONSE JSON SCHEMA:**
       {
-        "matchScore": "string (e.g., '85%')",
+        "matchScore": "string (e.g., '92%')",
         "strengths": "string (Markdown with detailed paragraphs and bullet points of top 3-4 strengths)",
         "weaknesses": "string (Markdown with detailed paragraphs and bullet points of top 3-4 weaknesses)",
         "skillGap": "string (Markdown with detailed bullet points of missing skills and suggestions to fill them)",
         "interviewPrep": "string (Markdown with a list of 5-7 potential interview questions with sample answers/talking points)",
         "resumes": {
-          "simple": "Markdown for a clean, standard, but comprehensive resume.",
-          "professional": "Markdown for a formal, classic, and detailed resume.",
-          "minimal": "Markdown for a modern resume that is comprehensive yet well-structured."
+          "simple": "Markdown for a clean, ATS-friendly, comprehensive resume (aim for 2 pages max).",
+          "professional": "Markdown for a formal, classic, detailed resume (aim for 2 pages max).",
+          "minimal": "Markdown for a modern, well-structured, but comprehensive resume (aim for 2 pages max)."
         }
       }
 
-      --- MARKDOWN STRUCTURE GUIDELINES FOR EACH TEMPLATE ---
-
-      1.  **"simple" Template Structure:**
-          -   Name: # Your Name
-          -   Contact Info: Single line | Example: _youremail@example.com | (555) 123-4567_
-          -   Summary: ## Summary - A 3-4 sentence professional summary.
-          -   Sections: ## Section Title (e.g., Experience, Education, Skills)
-          -   Job Roles: ### Job Title | Company
-          -   Dates/Location: _City | Month Year - Month Year_
-          -   Bullet points: * Use detailed, action-oriented phrases with quantifiable results (e.g., "Increased sales by 20% by implementing a new CRM strategy.").
-
-      2.  **"professional" Template Structure:**
-          -   Name: # YOUR NAME (All caps)
-          -   Contact Info: Single line with • separator.
-          -   Summary: ## PROFESSIONAL SUMMARY (All caps, followed by ---). A 3-4 sentence professional summary.
-          -   Sections: ## SECTION TITLE (All caps, followed by ---).
-          -   Job Roles: ### Job Title
-          -   Company/Dates: **Company** | _City | Month Year - Month Year_
-          -   Bullet points: * Use professional language and elaborate on responsibilities and achievements with metrics.
-
-      3.  **"minimal" Template Structure:**
-          -   Name: # Your Name
-          -   Contact Info: Single paragraph.
-          -   Summary: **Summary** - A concise but informative professional summary.
-          -   Sections: **Section Title** (Bold).
-          -   Job Roles & Company: **Job Title,** *Company*
-          -   Dates/Location: _City | Month Year - Month Year_
-          -   Bullet points: * Use impactful phrases that highlight key achievements.
+      **MARKDOWN GUIDELINES FOR RESUME TEMPLATES:**
+      - **"simple":** Name (#), Contact (_email | phone_), Summary (## Summary), Sections (## Title), Job Roles (### Title | Company), Dates (_City | Month Year - Month Year_), Bullets (* action-oriented phrases with metrics).
+      - **"professional":** Name (# YOUR NAME), Contact (line with • separator), Summary (## PROFESSIONAL SUMMARY ---), Sections (## TITLE ---), Job Roles (### Job Title), Company/Dates (**Company** | _City | Month Year - Month Year_), Bullets (* professional language with metrics).
+      - **"minimal":** Name (#), Contact (paragraph), Summary (**Summary**), Sections (**Title**), Job Roles & Company (**Job Title,** *Company*), Dates (_City | Month Year - Month Year_), Bullets (* impactful phrases).
     `;
 }
 
@@ -155,7 +131,7 @@ export async function POST(req: Request) {
 
     // --- Single API call for both analysis and all resume versions ---
     const combinedPrompt = getCombinedResumePrompt(resumeText, jobDescription);
-    const responseText = await callGeminiWithApiKey(combinedPrompt, 6000);
+    const responseText = await callGeminiWithApiKey(combinedPrompt, 10000);
     
     if (!responseText) {
         throw new Error("The AI model returned an empty response.");
