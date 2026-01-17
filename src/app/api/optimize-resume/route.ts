@@ -34,7 +34,6 @@ async function callGeminiWithApiKey(
         generationConfig: {
           maxOutputTokens: maxTokens,
           temperature: 0.4,
-          responseMimeType: 'application/json',
         },
         safetySettings,
       }),
