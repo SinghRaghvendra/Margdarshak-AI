@@ -53,6 +53,9 @@ async function callGeminiWithApiKey(
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
  */
 function extractJSON(text: string): any {
+  if (!text) {
+    throw new Error('Cannot extract JSON from an empty or null response text.');
+  }
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
 
@@ -71,15 +74,10 @@ function extractJSON(text: string): any {
   }
 }
 
-// --- Combined Prompt for Analysis and Multiple Resume Templates ---
-function getCombinedResumePrompt(resumeText: string, jobDescription: string): string {
+// --- PROMPT FOR ANALYSIS ---
+function getAnalysisPrompt(resumeText: string, jobDescription: string): string {
     return `
-      You are an expert career coach and resume writer functioning as a single JSON API. Your primary goal is to produce a valid, complete JSON object.
-
-      **KEY OBJECTIVES:**
-      1.  **Maximize Match:** Rewrite the user's resume to achieve a match score of over 90% against the job description by strategically incorporating keywords and aligning experiences.
-      2.  **Professional Conciseness:** The final rewritten resumes should be concise and professional, ideally fitting within one page.
-      3.  **Strict JSON Output:** The entire response MUST be a single, raw, valid JSON object without any extra text, explanations, or markdown wrappers like \`\`\`json.
+      You are an expert career coach analyzing a resume against a job description. Your response MUST be a single, raw, valid JSON object without any extra text or markdown wrappers.
 
       **USER's RESUME:**
       ---
@@ -91,24 +89,48 @@ function getCombinedResumePrompt(resumeText: string, jobDescription: string): st
       ${jobDescription}
       ---
 
-      **RESPONSE JSON SCHEMA (be concise):**
+      **RESPONSE JSON SCHEMA (be concise but insightful):**
       {
         "matchScore": "string (e.g., '92%')",
         "strengths": "string (Markdown with 3-4 concise bullet points of top strengths)",
         "weaknesses": "string (Markdown with 3-4 concise bullet points of top weaknesses)",
         "skillGap": "string (Markdown with concise bullet points of missing skills)",
-        "interviewPrep": "string (Markdown with a list of 5 potential interview questions and brief talking points)",
-        "resumes": {
-          "simple": "Markdown for a clean, ATS-friendly, concise resume (aim for 1 page).",
-          "professional": "Markdown for a formal, classic, concise resume (aim for 1 page).",
-          "minimal": "Markdown for a modern, well-structured, but concise resume (aim for 1 page)."
-        }
+        "interviewPrep": "string (Markdown with a list of 5 potential interview questions and brief talking points)"
       }
+    `;
+}
 
-      **MARKDOWN GUIDELINES FOR RESUME TEMPLATES:**
-      - **"simple":** Name (#), Contact (_email | phone_), Summary (## Summary), Sections (## Title), Job Roles (### Title | Company), Dates (_City | Month Year - Month Year_), Bullets (* action-oriented phrases with metrics).
-      - **"professional":** Name (# YOUR NAME), Contact (line with • separator), Summary (## PROFESSIONAL SUMMARY ---), Sections (## TITLE ---), Job Roles (### Job Title), Company/Dates (**Company** | _City | Month Year - Month Year_), Bullets (* professional language with metrics).
-      - **"minimal":** Name (#), Contact (paragraph), Summary (**Summary**), Sections (**Title**), Job Roles & Company (**Job Title,** *Company*), Dates (_City | Month Year - Month Year_), Bullets (* impactful phrases).
+// --- PROMPT FOR A SINGLE RESUME TEMPLATE ---
+function getSingleResumePrompt(resumeText: string, jobDescription: string, templateName: 'simple' | 'professional' | 'minimal'): string {
+    const templateGuidelines = {
+        simple: `- **"simple":** Name (#), Contact (_email | phone_), Summary (## Summary), Sections (## Title), Job Roles (### Title | Company), Dates (_City | Month Year - Month Year_), Bullets (* action-oriented phrases with metrics).`,
+        professional: `- **"professional":** Name (# YOUR NAME), Contact (line with • separator), Summary (## PROFESSIONAL SUMMARY ---), Sections (## TITLE ---), Job Roles (### Job Title), Company/Dates (**Company** | _City | Month Year - Month Year_), Bullets (* professional language with metrics).`,
+        minimal: `- **"minimal":** Name (#), Contact (paragraph), Summary (**Summary**), Sections (**Title**), Job Roles & Company (**Job Title,** *Company*), Dates (_City | Month Year - Month Year_), Bullets (* impactful phrases).`
+    };
+    
+    return `
+      You are an expert resume writer rewriting a resume to match a job description, using a specific template. Your response MUST be a single, raw, valid JSON object containing only the rewritten resume in Markdown.
+
+      **USER's RESUME:**
+      ---
+      ${resumeText}
+      ---
+
+      **JOB DESCRIPTION:**
+      ---
+      ${jobDescription}
+      ---
+
+      **TASK:**
+      Rewrite the resume to maximize its match to the job description (aiming for over 90%), making it concise (ideally one page), and formatting it as Markdown using the **"${templateName}"** style.
+
+      **MARKDOWN GUIDELINE:**
+      ${templateGuidelines[templateName]}
+      
+      **RESPONSE JSON SCHEMA:**
+      {
+        "resume": "string (The full, rewritten resume in Markdown format.)"
+      }
     `;
 }
 
@@ -129,20 +151,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Resume and job description are required.' }, { status: 400 });
     }
 
-    // --- Single API call for both analysis and all resume versions ---
-    const combinedPrompt = getCombinedResumePrompt(resumeText, jobDescription);
-    // Corrected token limit to be within the model's capacity (e.g., 8000 for gemini-2.5-flash's 8192 max)
-    const responseText = await callGeminiWithApiKey(combinedPrompt, 8000);
+    // --- Re-architected to use multiple, smaller API calls to avoid truncation ---
     
-    if (!responseText) {
-        throw new Error("The AI model returned an empty response.");
+    // Call 1: Get the analysis
+    const analysisPrompt = getAnalysisPrompt(resumeText, jobDescription);
+    const analysisText = await callGeminiWithApiKey(analysisPrompt, 2048); // Analysis part is smaller
+    if (!analysisText) {
+        throw new Error("The AI model returned an empty response for the analysis part.");
     }
+    const analysisResult = extractJSON(analysisText);
 
-    const finalResult = extractJSON(responseText);
+    // Calls 2, 3, 4: Get each resume template concurrently
+    const templates: ('simple' | 'professional' | 'minimal')[] = ['simple', 'professional', 'minimal'];
+    const resumePromises = templates.map(templateName => {
+        const resumePrompt = getSingleResumePrompt(resumeText, jobDescription, templateName);
+        return callGeminiWithApiKey(resumePrompt, 4096); // 4k tokens should be plenty for one resume
+    });
 
-    // Validate the structure
+    const resumeResultsText = await Promise.all(resumePromises);
+    
+    const resumes = {
+        simple: extractJSON(resumeResultsText[0]).resume,
+        professional: extractJSON(resumeResultsText[1]).resume,
+        minimal: extractJSON(resumeResultsText[2]).resume,
+    };
+
+    // --- Assemble the final result ---
+    const finalResult = {
+        ...analysisResult,
+        resumes: resumes,
+    };
+
+    // Validate the final structure
     if (!finalResult.resumes || !finalResult.resumes.simple || !finalResult.resumes.professional || !finalResult.resumes.minimal) {
-        throw new Error("AI response was missing one or more resume templates.");
+        throw new Error("AI response was missing one or more resume templates after assembly.");
     }
     
     return NextResponse.json(finalResult);
