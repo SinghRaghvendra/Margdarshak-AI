@@ -76,8 +76,48 @@ function extractJSON(text: string): any {
 
 // --- CONSOLIDATED PROMPT FOR ANALYSIS & ONE RESUME ---
 function getCombinedOptimizationPrompt(resumeText: string, jobDescription: string): string {
+    const exampleFormat = `
+# Tanya Verma
+### Software Engineer
++91-99999999XX | abc@gmail.com | Hyderabad, India | Experience: 2 years 3 months | linkedin.com/abc
+
+Passionate software engineer with over 5 years of experience in building scalable, high-performance applications. Expertise in distributed systems, cloud computing, and delivering impactful solutions that drive business success. Adept at problem-solving, optimizing systems, and enhancing user experiences in fast-paced environments.
+***
+## SKILLS
+***
+*   Software Engineer - Amazon
+*   Distributed Systems
+*   Cloud Computing (AWS)
+*   Data Structures and Algorithms
+*   SQL
+*   Python
+*   Docker
+*   Kubernetes
+*   System Design
+***
+## CERTIFICATION
+***
+*   SAFe 6 Product Owner/Product Manager
+*   Full Stack Software Developer Assessment
+***
+## WORK EXPERIENCE
+***
+### Software Engineer - Amazon (Jun 2019 - Present)
+#### Key Contributions
+*   **Revolutionized Personalization:** Designed a scalable recommendation engine for Amazon Prime Video, boosting user engagement by 20% and significantly improving personalized content delivery.
+*   **Architected Scalable Solutions:** Played a key role in developing a micro services-based architecture for Amazon's fulfillment system, reducing deployment time by 25% and increasing system modularity.
+#### Innovation and Problem-Solving
+*   **High Availability Systems:** Created a fault-tolerant, real-time order tracking system, increasing uptime to 99.99% across regions, ensuring uninterrupted service.
+*   **Data-Driven Forecasting:** Developed a predictive analytics tool for warehouse demand forecasting, reducing overstocking by 15% and optimizing inventory management.
+***
+## INTERNSHIPS
+***
+### Software Development Intern, Flipkart (3 Months)
+*   Developed a new feature for the customer returns module...
+`;
+
     return `
-      You are an expert career coach and resume writer. Your task is to analyze a resume against a job description and then provide a full rewrite of the resume in ATS-friendly Markdown. Your response MUST be a single, raw, valid JSON object without any extra text or markdown wrappers.
+      You are an expert career coach and resume writer. Your task is to analyze a resume against a job description and then provide a full rewrite of the resume in a specific Markdown format. Your response MUST be a single, raw, valid JSON object without any extra text or markdown wrappers.
 
       **USER's RESUME:**
       ---
@@ -90,17 +130,23 @@ function getCombinedOptimizationPrompt(resumeText: string, jobDescription: strin
       ---
 
       **TASK:**
-      1.  Analyze the resume against the job description.
-      2.  Rewrite the resume to be concise (ideally one page), ATS-friendly, and tailored to maximize the match for the job description. Use a clean, professional Markdown format.
+      1.  **Analysis:** Analyze the user's resume against the job description.
+      2.  **Rewrite:** Rewrite the resume to be concise, ATS-friendly, and tailored to the job description.
+      3.  **Formatting:** The "optimizedResume" field in your JSON response MUST be a string containing Markdown that strictly follows the structure and style of the example below.
 
-      **RESPONSE JSON SCHEMA:**
+      **MARKDOWN FORMAT EXAMPLE:**
+      \`\`\`markdown
+      ${exampleFormat}
+      \`\`\`
+
+      **RESPONSE JSON SCHEMA (Strictly adhere to this):**
       {
         "matchScore": "string (e.g., '92%')",
-        "strengths": "string (Markdown with 3-4 concise bullet points of top strengths)",
-        "weaknesses": "string (Markdown with 3-4 concise bullet points of top weaknesses)",
-        "skillGap": "string (Markdown with concise bullet points of missing skills)",
-        "interviewPrep": "string (Markdown with a list of 5 potential interview questions and brief talking points)",
-        "optimizedResume": "string (The full, rewritten resume in professional, ATS-friendly Markdown format.)"
+        "strengths": "string (Markdown with 3-4 concise bullet points)",
+        "weaknesses": "string (Markdown with 3-4 concise bullet points)",
+        "skillGap": "string (Markdown with concise bullet points)",
+        "interviewPrep": "string (Markdown with 5 potential interview questions and brief talking points)",
+        "optimizedResume": "string (The full, rewritten resume in the specific Markdown format shown in the example.)"
       }
     `;
 }
