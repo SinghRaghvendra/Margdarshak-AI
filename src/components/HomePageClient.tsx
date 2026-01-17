@@ -210,7 +210,7 @@ export default function HomePageClient() {
       <section
         className="relative isolate z-0 pt-10 pb-10 md:pt-16 md:pb-16 flex flex-col items-center justify-center text-center bg-no-repeat"
         style={{
-          backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/ban1.png?alt=media&token=d4f81318-abc3-47d8-94a0-1fcbc2a82b7b')",
+          backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/ChatGPT%20Image%20Jan%2017%2C%202026%2C%2012_05_56%20PM.jpg?alt=media&token=3b4786f5-95f5-42a6-97f4-7ea44aa6ba0c')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundColor: '#0c0a09',
