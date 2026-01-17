@@ -55,7 +55,9 @@ export default function LoginPage() {
     }
 
     if (authUser) {
-      router.replace('/welcome-guest');
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get('redirect');
+      router.replace(redirectUrl || '/welcome-guest');
     } else {
       setPageLoading(false);
     }
@@ -105,7 +107,10 @@ export default function LoginPage() {
           title: 'Login Successful',
           description: `Welcome back, ${userProfileForLocal.name}! Redirecting...`,
       });
-      router.push('/welcome-guest');
+
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get('redirect');
+      router.push(redirectUrl || '/welcome-guest');
 
     } catch (error: any) {
       console.error('Login error:', error.code);
