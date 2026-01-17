@@ -76,47 +76,39 @@ function extractJSON(text: string): any {
 // --- CONSOLIDATED PROMPT FOR ANALYSIS & ONE RESUME ---
 function getCombinedOptimizationPrompt(resumeText: string, jobDescription: string): string {
     const exampleFormat = `
-# Tanya Verma
-### Software Engineer
-+91-99999999XX | abc@gmail.com | Hyderabad, India | Experience: 2 years 3 months | linkedin.com/abc
+# John Doe
+### Senior Software Engineer
++1-555-555-5555 | john.doe@email.com | San Francisco, CA | linkedin.com/in/johndoe
 
-Passionate software engineer with over 5 years of experience in building scalable, high-performance applications. Expertise in distributed systems, cloud computing, and delivering impactful solutions that drive business success. Adept at problem-solving, optimizing systems, and enhancing user experiences in fast-paced environments.
+A highly motivated and results-oriented software engineer with 8+ years of experience in designing, developing, and deploying scalable and maintainable web applications. Proven ability to lead projects, mentor junior developers, and collaborate effectively in fast-paced Agile environments.
 ***
 ## SKILLS
 ***
-*   Software Engineer - Amazon
-*   Distributed Systems
-*   Cloud Computing (AWS)
-*   Data Structures and Algorithms
-*   SQL
-*   Python
-*   Docker
-*   Kubernetes
-*   System Design
-***
-## CERTIFICATION
-***
-*   SAFe 6 Product Owner/Product Manager
-*   Full Stack Software Developer Assessment
+*   **Languages:** JavaScript (ES6+), TypeScript, Python, Java
+*   **Frameworks:** React, Node.js, Express, Spring Boot
+*   **Databases:** PostgreSQL, MongoDB, Redis
+*   **Cloud/DevOps:** AWS (EC2, S3, Lambda), Docker, Kubernetes, CI/CD
 ***
 ## WORK EXPERIENCE
 ***
-### Software Engineer - Amazon (Jun 2019 - Present)
-#### Key Contributions
-*   **Revolutionized Personalization:** Designed a scalable recommendation engine for Amazon Prime Video, boosting user engagement by 20% and significantly improving personalized content delivery.
-*   **Architected Scalable Solutions:** Played a key role in developing a micro services-based architecture for Amazon's fulfillment system, reducing deployment time by 25% and increasing system modularity.
-#### Innovation and Problem-Solving
-*   **High Availability Systems:** Created a fault-tolerant, real-time order tracking system, increasing uptime to 99.99% across regions, ensuring uninterrupted service.
-*   **Data-Driven Forecasting:** Developed a predictive analytics tool for warehouse demand forecasting, reducing overstocking by 15% and optimizing inventory management.
+### Lead Software Engineer | Tech Solutions Inc. | (Jan 2020 - Present)
+*   Led a team of 5 engineers to develop a new microservices-based e-commerce platform, resulting in a 40% increase in performance and a 25% reduction in server costs.
+*   Architected and implemented a real-time inventory management system using WebSockets, reducing stock discrepancies by 95%.
+*   Mentored junior engineers, conducted code reviews, and established best practices for a monorepo architecture.
+### Software Engineer | Innovate Corp. | (Jun 2016 - Dec 2019)
+*   Developed and maintained key features for a high-traffic social media application using React and Node.js.
+*   Optimized database queries and implemented caching strategies that improved API response times by 50%.
 ***
-## INTERNSHIPS
+## EDUCATION
 ***
-### Software Development Intern, Flipkart (3 Months)
-*   Developed a new feature for the customer returns module...
+### M.S. in Computer Science | University of California, Berkeley | (2014 - 2016)
+### B.S. in Computer Science | University of Texas at Austin | (2010 - 2014)
 `;
 
     return `
-      You are an expert career coach and resume writer. Your task is to analyze a resume against a job description and then provide a full rewrite of the resume in a specific Markdown format. Your response MUST be a single, raw, valid JSON object without any extra text or markdown wrappers.
+      You are an expert career coach and resume writer. Your task is to analyze a resume against a job description, then provide a comprehensive analysis and a full rewrite of the resume in a specific Markdown format.
+      
+      Your response MUST be a single, raw, valid JSON object without any extra text or markdown wrappers.
 
       **USER's RESUME:**
       ---
@@ -129,11 +121,11 @@ Passionate software engineer with over 5 years of experience in building scalabl
       ---
 
       **TASK:**
-      1.  **Analysis:** Analyze the user's resume against the job description.
-      2.  **Rewrite:** Rewrite the resume to be concise, ATS-friendly, and tailored to the job description.
-      3.  **Formatting:** The "optimizedResume" field in your JSON response MUST be a string containing Markdown that strictly follows the structure and style of the example below.
+      1.  **Analysis:** Provide a detailed analysis including match score, strengths, weaknesses, skill gap, and interview prep questions.
+      2.  **Rewrite:** Rewrite the entire resume into a single, aesthetically pleasing, and professionally structured Markdown string. The resume should be ATS-friendly and tailored to the job description.
+      3.  **Formatting:** The "optimizedResume" field MUST strictly follow the structure and style of the example below. Use markdown for structure (e.g., '#', '##', '###', '*', '**'). Use '***' for horizontal lines between major sections.
 
-      **MARKDOWN FORMAT EXAMPLE:**
+      **MARKDOWN FORMAT EXAMPLE (Strictly follow this structure):**
       \`\`\`markdown
       ${exampleFormat}
       \`\`\`

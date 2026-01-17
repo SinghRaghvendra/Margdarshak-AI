@@ -287,31 +287,39 @@ export default function ResumeBuilderPage() {
                             </Accordion>
 
                              <div>
-                                <h3 className="text-2xl font-bold mb-4 mt-8 text-center">Optimized Resume</h3>
-                                <Card className="bg-background">
-                                    <CardContent className="p-0">
-                                        <div ref={resumeContentRef}>
-                                            <div className="p-6 md:p-8 bg-white text-black">
-                                                <ReactMarkdown className="prose prose-sm sm:prose-base max-w-none">
-                                                    {analysisResult.optimizedResume}
-                                                </ReactMarkdown>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                <h3 className="text-2xl font-bold mb-4 mt-8 text-center">Optimized Resume Preview</h3>
+                                <div ref={resumeContentRef} className="max-w-3xl mx-auto">
+                                    <div className="p-8 bg-white text-black shadow-2xl ring-1 ring-black ring-opacity-5 font-sans">
+                                        <ReactMarkdown
+                                            components={{
+                                                h1: ({node, ...props}) => <h1 className="text-center text-3xl font-bold mb-1 text-gray-900" {...props} />,
+                                                h2: ({node, ...props}) => <h2 className="text-sm font-bold text-primary uppercase tracking-widest mt-6 mb-2 border-b-2 border-gray-200 pb-1" {...props} />,
+                                                h3: ({node, ...props}) => <h3 className="text-center text-sm font-medium text-gray-600 mb-4" {...props} />,
+                                                p: ({node, ...props}) => <p className="text-sm mb-2 text-gray-800" {...props} />,
+                                                ul: ({node, ...props}) => <ul className="list-disc list-outside pl-5 space-y-1.5 text-sm text-gray-700" {...props} />,
+                                                hr: ({node, ...props}) => <hr className="my-4" {...props} />,
+                                                strong: ({node, ...props}) => <strong className="font-semibold text-gray-900" {...props} />,
+                                            }}
+                                        >
+                                            {analysisResult.optimizedResume}
+                                        </ReactMarkdown>
+                                    </div>
+                                </div>
                                 <div className="mt-6 flex flex-wrap gap-4 justify-center">
                                     <Button onClick={handleDownloadPdf} disabled={isGeneratingPdf}>
                                         {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                                         Download as PDF
                                     </Button>
-                                    <Button onClick={() => handleDownload('doc')} variant="secondary">
+                                </div>
+                                <p className="text-xs text-muted-foreground text-center mt-3">For further customization, download as a Doc or TXT file.</p>
+                                <div className="mt-2 flex flex-wrap gap-4 justify-center">
+                                    <Button onClick={() => handleDownload('doc')} variant="outline" size="sm">
                                         <Download className="mr-2 h-4 w-4" /> Download as Doc
                                     </Button>
-                                     <Button onClick={() => handleDownload('txt')} variant="secondary">
+                                     <Button onClick={() => handleDownload('txt')} variant="outline" size="sm">
                                         <Download className="mr-2 h-4 w-4" /> Download as TXT
                                     </Button>
                                 </div>
-                                <p className="text-xs text-muted-foreground text-center mt-3">PDF is recommended for preserving formatting.</p>
                             </div>
                         </CardContent>
                     </Card>
