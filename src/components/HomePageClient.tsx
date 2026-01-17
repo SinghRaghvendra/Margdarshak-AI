@@ -49,18 +49,6 @@ export default function HomePageClient() {
       setIsHovered(true);
   }
 
-  const handleStartNewJourney = () => {
-    // Clear all localStorage items related to the journey
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
-            localStorage.removeItem(key);
-        }
-    });
-    // Redirect to the beginning of the journey for a logged-in user
-    router.push('/birth-details');
-  };
-
-
   const isLoggedIn = !!user;
   const careerGuidanceHref = isLoggedIn ? "/welcome-guest" : "/signup";
 
@@ -271,42 +259,11 @@ export default function HomePageClient() {
             AI Powered Career Test for just Rs.199/- with 10 year roadmap.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-             {isLoggedIn ? (
-              <>
-                <Link href={careerGuidanceHref}>
-                    <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold">
-                        Start Career Quiz Now
-                    </Button>
-                </Link>
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                       <Button size="lg" variant="outline" className="text-lg py-7 px-10 shadow-lg bg-transparent text-white border-white hover:bg-white hover:text-black">
-                         <NewJourneyIcon className="mr-2 h-5 w-5" /> Start New Journey
-                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure you want to start a new journey?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will clear any of your previous in-progress journey data from this browser session (such as test answers). Saved reports in your profile will not be affected.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleStartNewJourney}>
-                            Yes, Start New Journey
-                        </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-              </>
-            ) : (
-                <Link href={careerGuidanceHref}>
-                  <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold" suppressHydrationWarning={true}>
+            <Link href={careerGuidanceHref}>
+                <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold" suppressHydrationWarning={true}>
                     Start Career Quiz Now
-                  </Button>
-                </Link>
-            )}
+                </Button>
+            </Link>
           </div>
         </div>
       </section>
