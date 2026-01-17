@@ -265,10 +265,10 @@ export default function HomePageClient() {
         {/* Text and CTA content, raised above the animation */}
         <div className="relative z-10 text-white px-4">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            Confused About Your Career? Let AI help you decide.
+            Find your Dream Career
           </h1>
           <p className="text-lg md:text-xl text-white/80 mb-10 max-w-3xl mx-auto">
-            Take our AI-powered career test to uncover your strengths, identify your best-fit careers, and get a clear roadmap for success.
+            AI Powered Career Test for just Rs.199/- with 10 year roadmap.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
              {isLoggedIn ? (
