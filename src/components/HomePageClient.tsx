@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -142,12 +143,17 @@ export default function HomePageClient() {
       href: '/blog/best-career-options-for-2026',
     },
   ];
+  
+  const heroBackgroundImage = "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2232&auto=format&fit=crop";
 
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 py-24 md:py-40 text-center text-white overflow-hidden">
-          <div className="absolute inset-0 bg-grid-slate-700/[0.05] bg-[bottom_1px_center] [mask-image:linear-gradient(to_bottom,transparent,white)]"></div>
+      <section
+        className="relative bg-cover bg-center py-24 md:py-40 text-center text-white overflow-hidden"
+        style={{ backgroundImage: `url(${heroBackgroundImage})` }}
+      >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
           <div className="relative z-10 container mx-auto px-4">
               <div className="mb-6">
                 <Logo />
