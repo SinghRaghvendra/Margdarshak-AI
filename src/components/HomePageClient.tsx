@@ -3,26 +3,23 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp, Group, XCircle, Users, BarChart } from 'lucide-react';
+import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp, Group, XCircle, Users, BarChart, Brain, Workflow, Target } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import Logo from '@/components/Logo';
 import { useAuth } from '@/firebase';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
 import { testimonials } from '@/lib/testimonials';
+import { cn } from '@/lib/utils';
 
 export default function HomePageClient() {
   const router = useRouter();
   const auth = useAuth();
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (!auth) return;
@@ -32,38 +29,44 @@ export default function HomePageClient() {
     return () => unsubscribe();
   }, [auth]);
 
-  const handleMouseMove = (event: React.MouseEvent<HTMLElement>) => {
-    const { clientX, clientY, currentTarget } = event;
-    const { left, top, width, height } = currentTarget.getBoundingClientRect();
-    const x = (clientX - left - width / 2) / (width / 2);
-    const y = (clientY - top - height / 2) / (height / 2);
-    setRotation({ x: -y * 10, y: x * 10 }); // Multiplier adjusts sensitivity
-  };
-
-  const handleMouseLeave = () => {
-    setRotation({ x: 0, y: 0 });
-    setIsHovered(false);
-  };
-
-  const handleMouseEnter = () => {
-      setIsHovered(true);
-  }
-
   const isLoggedIn = !!user;
   const careerGuidanceHref = isLoggedIn ? "/welcome-guest" : "/signup";
 
-
-  const features = [
+  const bentoFeatures = [
     {
-      icon: <ClipboardList className="h-10 w-10 text-primary mb-4" />,
-      title: 'Personalized Career Guidance',
-      description: 'Uncover your innate strengths and ideal work style through our insightful psychometric assessment, then receive a comprehensive 10-year career roadmap.',
+      icon: <Brain className="h-8 w-8 text-primary mb-4" />,
+      title: 'Deep Psychometric Analysis',
+      description: 'Go beyond simple quizzes. Our assessment analyzes your core personality, motivations, and cognitive style.',
+      className: 'md:col-span-2',
       href: careerGuidanceHref,
-      cta: isLoggedIn ? "Continue Your Journey" : "Start Career Quiz Now",
-      isExternal: false,
+      cta: 'Start Your Assessment'
+    },
+    {
+      icon: <Target className="h-8 w-8 text-primary mb-4" />,
+      title: 'AI-Powered Career Matching',
+      description: 'Receive a data-driven list of your top 3 career matches, complete with a "fit score".',
+       className: 'md:col-span-1',
+       href: careerGuidanceHref,
+       cta: 'See Your Matches'
+    },
+    {
+      icon: <MapPinned className="h-8 w-8 text-primary mb-4" />,
+      title: '10-Year Career Blueprint',
+      description: 'Get a step-by-step roadmap for your top career choice, including skills to learn and salary projections.',
+       className: 'md:col-span-1',
+       href: careerGuidanceHref,
+       cta: 'View Your Roadmap'
+    },
+    {
+      icon: <Workflow className="h-8 w-8 text-primary mb-4" />,
+      title: 'ATS-Optimized Resume Builder',
+      description: 'Tailor your resume for any job description in seconds to beat the bots and land more interviews.',
+      className: 'md:col-span-2',
+      href: '/resumebuilder',
+      cta: 'Optimize Your Resume'
     },
   ];
-  
+
   const problemsAndSolutions = [
       {
         icon: <Search className="h-8 w-8 text-primary" />,
@@ -101,44 +104,7 @@ export default function HomePageClient() {
             'Turns your career into a manageable project plan.'
         ]
       },
-      {
-        icon: <AlertTriangle className="h-8 w-8 text-primary" />,
-        painPoint: 'Afraid of making the wrong choice?',
-        solutionPoints: [
-            'Future-path analysis shows long-term career outlook.',
-            'Highlights potential challenges and opportunities.',
-            'Reduces risk by making informed decisions upfront.'
-        ]
-      },
-      {
-        icon: <TrendingUp className="h-8 w-8 text-primary" />,
-        painPoint: 'Worried if a career is future-proof?',
-        solutionPoints: [
-            'Analyzes market trends and demand signals.',
-            'Prioritizes roles with strong long-term growth.',
-            'Helps you invest time in skills that will last.'
-        ]
-      },
   ];
-
-  const researchPoints = [
-    {
-      icon: <XCircle className="h-10 w-10 text-primary mb-3 mx-auto" />,
-      title: 'The Awareness Gap',
-      description: 'A staggering 93% of Indian students know about only seven career options, while hundreds of high-growth fields remain hidden.'
-    },
-    {
-      icon: <Users className="h-10 w-10 text-primary mb-3 mx-auto" />,
-      title: 'The Guidance Gap',
-      description: 'With less than 10,000 trained counsellors for over 400 million students and professionals, getting personalized, unbiased advice is nearly impossible.'
-    },
-    {
-      icon: <BarChart className="h-10 w-10 text-primary mb-3 mx-auto" />,
-      title: 'The Skill Gap',
-      description: 'The half-life of a professional skill has dropped to just a few years. What was valuable yesterday may be obsolete tomorrow, making the right guidance more critical than ever.'
-    }
-  ];
-
 
   const homeFaqs = [
       {
@@ -159,20 +125,6 @@ export default function HomePageClient() {
       }
   ];
 
-  const careerQuestions = [
-      "Which career is best for me?",
-      "How to choose the right career in 2025",
-      "What career suits my personality?",
-      "Are career tests accurate?",
-      "Can AI help me choose a career?",
-      "How does career matching work?",
-      "Career options after graduation",
-      "How to find the right career path",
-      "Career guidance for students",
-      "Career advice for working professionals",
-      "AI vs human career counseling"
-  ];
-  
   const blogPosts = [
     {
       title: 'Which Career Is Best for Students?',
@@ -191,119 +143,64 @@ export default function HomePageClient() {
     },
   ];
 
-
   return (
     <div>
       {/* Hero Section */}
       <section
-        className="relative isolate z-0 pt-10 pb-10 md:pt-16 md:pb-16 flex flex-col items-center justify-center text-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/margdarshak-ai.firebasestorage.app/o/ChatGPT%20Image%20Jan%2017%2C%202026%2C%2012_05_56%20PM.jpg?alt=media&token=3b4786f5-95f5-42a6-97f4-7ea44aa6ba0c')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundColor: '#0c0a09',
-        }}
+          className="relative bg-cover bg-center py-24 md:py-40 text-center text-white"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop')" }}
       >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-black/40"
-        ></div>
-
-        <div className="transform scale-90 md:scale-100">
-          <div
-            className={`relative w-[250px] h-[250px] mb-4 md:mb-8 flex items-center justify-center transition-transform duration-300 ${isHovered ? 'energized' : ''}`}
-            style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            onMouseEnter={handleMouseEnter}
-          >
-            {/* Base Pulsating Waves */}
-            <div className="pulsing-waves"></div>
-
-            {/* Explosion waves on hover */}
-            {isHovered && (
-               <div className="explosion-container">
-                  {[...Array(11)].map((_, i) => (
-                      <div key={i} className="explosion-wave" style={{ animationDelay: `${i * 0.05}s` }}></div>
-                  ))}
-               </div>
-            )}
-
-
-            {/* Atomic Orbits */}
-            <div className="orbit orbit-1"></div>
-            <div className="orbit orbit-2"></div>
-            <div className="orbit orbit-3"></div>
-
-            {/* Logo */}
-            <div
-                className={`absolute logo-container ${isHovered ? 'logo-popped' : ''}`}
-            >
-                <Image
-                  src="/logo.png"
-                  alt="AI COUNCEL Logo"
-                  width={150}
-                  height={150}
-                  priority
-                />
-            </div>
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+          <div className="relative z-10 container mx-auto px-4">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight">
+                  Stop Guessing. Start Planning.
+              </h1>
+              <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+                  Get a data-driven, personalized 10-year career roadmap. Our AI analyzes your unique strengths to find the path you're built for.
+              </p>
+              <Link href={careerGuidanceHref}>
+                  <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90" suppressHydrationWarning={true}>
+                      Start Your Free Assessment <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+              </Link>
           </div>
-        </div>
-
-        {/* Text and CTA content, raised above the animation */}
-        <div className="relative z-10 text-white px-4">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            Find your Dream Career
-          </h1>
-          <p className="text-lg md:text-xl text-white/80 mb-10 max-w-3xl mx-auto">
-            AI Powered Career Test for just Rs.199/- with 10 year roadmap.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href={careerGuidanceHref}>
-                <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold" suppressHydrationWarning={true}>
-                    Start Career Quiz Now
-                </Button>
-            </Link>
-          </div>
-        </div>
       </section>
 
-      {/* All other sections are wrapped in a new div to isolate them */}
+      {/* Page Content */}
       <div id="page-content" className="relative z-10 bg-background">
-        {/* Features Section */}
-        <section className="py-12 md:py-20 bg-background">
+        
+        {/* Features Bento Grid Section */}
+        <section className="py-16 md:py-24 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Navigate Your Career with AI-Powered Guidance</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Your Career Clarity Toolkit</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-              Our tools are designed to provide clear, data-driven insights into your professional life. Let AI illuminate your path to a fulfilling career.
+                From self-discovery to job application, our AI-powered tools guide you at every step.
               </p>
             </div>
-            <div className="grid md:grid-cols-1 gap-8 max-w-2xl mx-auto">
-              {features.map((feature, index) => (
-                <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card flex flex-col">
-                  <CardHeader className="items-center text-center">
-                    {feature.icon}
-                    <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center flex-grow">
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                  <CardContent>
-                      <Link href={feature.href} target={feature.isExternal ? '_blank' : '_self'} rel={feature.isExternal ? 'noopener noreferrer' : ''}>
-                            <Button className="w-full font-bold" suppressHydrationWarning={true}>
-                              {isLoggedIn ? "Continue Your Journey" : "Start Career Quiz Now"} <ArrowRight className="ml-2 h-5 w-5" />
-                            </Button>
-                      </Link>
-                  </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {bentoFeatures.map((feature) => (
+                <Link href={feature.href} key={feature.title} className={cn('block group', feature.className)}>
+                  <Card className="p-6 h-full flex flex-col justify-between bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                    <div>
+                      {feature.icon}
+                      <h3 className="text-xl font-bold mt-2">{feature.title}</h3>
+                      <p className="text-muted-foreground mt-2 text-sm">{feature.description}</p>
+                    </div>
+                    <div className="mt-4">
+                      <div className="font-semibold text-primary group-hover:underline flex items-center">
+                        {feature.cta} <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
         </section>
 
         {/* Pain Points Section */}
-        <section id="features" className="py-12 md:py-16 bg-secondary/30">
+        <section id="features" className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -323,7 +220,7 @@ export default function HomePageClient() {
                     <ul className="space-y-2 text-sm text-muted-foreground">
                         {item.solutionPoints.map((solution, i) => (
                             <li key={i} className="flex items-start">
-                                <CheckCircle className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
                                 <span>{solution}</span>
                             </li>
                         ))}
@@ -347,54 +244,25 @@ export default function HomePageClient() {
           </div>
         </section>
         
-        {/* Research Points Section */}
-        <section id="research-points" className="py-12 md:py-16 bg-background">
-            <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold text-foreground">Why Traditional Career Guidance Is Failing</h2>
-                     <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                        The world of work has changed, but the methods for choosing a career have not. Here's the reality.
-                    </p>
-                </div>
-                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {researchPoints.map((point, index) => (
-                        <Card key={index} className="bg-card/50 border-l-4 border-primary p-6 text-center">
-                           {point.icon}
-                           <h3 className="text-xl font-bold mt-2">{point.title}</h3>
-                           <p className="text-muted-foreground mt-2">{point.description}</p>
-                        </Card>
-                    ))}
-                </div>
-            </div>
-        </section>
-
         {/* Testimonials Section */}
-        <section className="py-12 md:py-16 bg-secondary/30">
+        <section className="py-16 md:py-24 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">What People Are Saying About AI COUNCEL</h2>
+              <h2 className="text-3xl md:text-4xl font-bold">What People Are Saying</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
                 Real stories from students, parents, and professionals who found clarity with us.
               </p>
             </div>
             <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              plugins={[
-                Autoplay({
-                  delay: 4000,
-                  stopOnInteraction: true,
-                }),
-              ]}
+              opts={{ align: "start", loop: true }}
+              plugins={[ Autoplay({ delay: 4000, stopOnInteraction: true })]}
               className="w-full max-w-4xl mx-auto"
             >
               <CarouselContent>
                 {testimonials.map((testimonial, index) => (
                   <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                     <div className="p-1 h-full">
-                      <Card className="flex flex-col h-full justify-between">
+                      <Card className="flex flex-col h-full justify-between bg-card">
                         <CardContent className="pt-6">
                           <p className="text-sm md:text-base text-muted-foreground italic">"{testimonial.quote}"</p>
                         </CardContent>
@@ -413,9 +281,8 @@ export default function HomePageClient() {
           </div>
         </section>
 
-
         {/* Blog Section */}
-        <section id="blog" className="py-12 md:py-16 bg-background">
+        <section id="blog" className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -454,7 +321,7 @@ export default function HomePageClient() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-12 md:py-16 bg-secondary/30">
+        <section id="faq" className="py-16 md:py-24 bg-secondary/30">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
                     <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -489,31 +356,8 @@ export default function HomePageClient() {
             </div>
         </section>
         
-        {/* SEO Questions Section */}
-        <section id="career-questions" className="py-12 md:py-16 bg-background">
-          <div className="container mx-auto px-4">
-              <div className="text-center mb-12">
-                  <h2 className="text-3xl md:text-4xl font-bold text-foreground">Trending Career Questions</h2>
-                  <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                      Explore the most common questions people ask when making a career decision. Click any question to get AI-backed guidance.
-                  </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-                  {careerQuestions.map((question, index) => (
-                      <Link
-                          key={index}
-                          href="/career-assessment"
-                          className="block p-4 bg-card hover:bg-accent rounded-lg font-medium text-card-foreground hover:text-accent-foreground transition-all duration-200 ease-in-out transform hover:-translate-y-1 shadow-sm hover:shadow-lg"
-                      >
-                          {question}
-                      </Link>
-                  ))}
-              </div>
-          </div>
-        </section>
-
         {/* Final Call to Action Section */}
-        <section className="py-12 md:py-20 bg-secondary/30">
+        <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
@@ -521,7 +365,7 @@ export default function HomePageClient() {
             </p>
             <Link href={careerGuidanceHref}>
               <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold" suppressHydrationWarning={true}>
-                {isLoggedIn ? "Continue Your Journey" : "Start Career Quiz Now"}
+                {isLoggedIn ? "Continue Your Journey" : "Start Your Free Assessment"}
               </Button>
             </Link>
           </div>
