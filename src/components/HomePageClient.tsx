@@ -159,10 +159,10 @@ export default function HomePageClient() {
                 <Logo />
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight">
-                  Stop Guessing. Start Planning.
+                  AI-Powered Career Guidance
               </h1>
               <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  Get a data-driven, personalized 10-year career roadmap. Our AI analyzes your unique strengths to find the path you're built for.
+                  Stop Guessing. Start Planning. Get a data-driven, personalized 10-year career roadmap. Our AI analyzes your unique strengths to find the path you're built for.
               </p>
               <Link href={careerGuidanceHref}>
                   <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90" suppressHydrationWarning={true}>
