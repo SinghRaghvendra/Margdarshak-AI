@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Link from 'next/link';
 import Script from 'next/script';
-import { Mail } from 'lucide-react';
+import { Mail, Facebook, Linkedin, Youtube } from 'lucide-react';
 import AppProviders from '@/components/AppProviders';
 
 export const dynamic = 'force-dynamic';
@@ -129,10 +129,21 @@ export default function RootLayout({
                       </div>
                   </div>
               </div>
-              <div className="container mx-auto px-4 flex justify-between items-center mt-8 pt-6 border-t border-border">
-                  <p className="text-xs text-muted-foreground">
+              <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 pt-6 border-t border-border">
+                  <p className="text-xs text-muted-foreground text-center sm:text-left">
                       © 2024 AI Councel Lab. All rights reserved.
                   </p>
+                   <div className="flex items-center gap-4">
+                        <Link href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            <Facebook className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+                        </Link>
+                        <Link href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                            <Linkedin className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+                        </Link>
+                        <Link href="#" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                            <Youtube className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+                        </Link>
+                    </div>
               </div>
           </footer>
           <Toaster />
