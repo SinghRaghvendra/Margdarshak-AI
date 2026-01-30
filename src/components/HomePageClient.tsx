@@ -1,10 +1,8 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClipboardList, Lightbulb, MapPinned, ArrowRight, HelpCircle, CheckCircle, Wand2, User, Sparkles as NewJourneyIcon, BookOpen, Search, AlertTriangle, Cpu, Milestone, TrendingUp, Group, XCircle, Users, BarChart, Brain, Workflow, Target } from 'lucide-react';
-import Image from 'next/image';
+import { HelpCircle, CheckCircle, ArrowRight, Brain, Target, MapPinned, Workflow, Search, Group, Cpu, Milestone, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -15,6 +13,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from "embla-carousel-autoplay";
 import { testimonials } from '@/lib/testimonials';
 import { cn } from '@/lib/utils';
+import Logo from '@/components/Logo';
+
 
 export default function HomePageClient() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function HomePageClient() {
   const isLoggedIn = !!user;
   const careerGuidanceHref = isLoggedIn ? "/welcome-guest" : "/signup";
 
-  const bentoFeatures = [
+    const bentoFeatures = [
     {
       icon: <Brain className="h-8 w-8 text-primary mb-4" />,
       title: 'Deep Psychometric Analysis',
@@ -146,12 +146,12 @@ export default function HomePageClient() {
   return (
     <div>
       {/* Hero Section */}
-      <section
-          className="relative bg-cover bg-center py-24 md:py-40 text-center text-white"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop')" }}
-      >
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+      <section className="relative bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 py-24 md:py-40 text-center text-white overflow-hidden">
+          <div className="absolute inset-0 bg-grid-slate-700/[0.05] bg-[bottom_1px_center] [mask-image:linear-gradient(to_bottom,transparent,white)]"></div>
           <div className="relative z-10 container mx-auto px-4">
+              <div className="mb-6">
+                <Logo />
+              </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight">
                   Stop Guessing. Start Planning.
               </h1>
