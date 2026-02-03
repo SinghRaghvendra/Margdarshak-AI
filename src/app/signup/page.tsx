@@ -119,8 +119,14 @@ export default function SignupPage() {
       });
       
       toast({
-        title: 'Account Created!',
-        description: "Let's get started with your birth details...",
+        title: 'Signed up Successfully!',
+        description: (
+          <div>
+            Use Coupon code <strong className="text-primary">AICOUNCEL25</strong> to get 25% off on your reports.
+            <p className="text-xs mt-1">* one time use only.</p>
+          </div>
+        ),
+        duration: 9000,
       });
       router.push('/birth-details');
 

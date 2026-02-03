@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -15,12 +14,14 @@ import Autoplay from "embla-carousel-autoplay";
 import { testimonials } from '@/lib/testimonials';
 import { cn } from '@/lib/utils';
 import Logo from '@/components/Logo';
+import SignupPopup from './SignupPopup';
 
 
 export default function HomePageClient() {
   const router = useRouter();
   const auth = useAuth();
   const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
 
   useEffect(() => {
     if (!auth) return;
@@ -29,6 +30,26 @@ export default function HomePageClient() {
     });
     return () => unsubscribe();
   }, [auth]);
+
+  // Effect to trigger the popup
+  useEffect(() => {
+    // Only run this effect on the client
+    if (typeof window !== 'undefined') {
+        // Check if the popup has been shown in this session
+        const popupShown = sessionStorage.getItem('margdarshak_popup_shown');
+        
+        // If there is no user and the popup hasn't been shown
+        if (!user && !popupShown) {
+            const timer = setTimeout(() => {
+                setIsPopupOpen(true);
+                // Mark that the popup has been shown for this session
+                sessionStorage.setItem('margdarshak_popup_shown', 'true');
+            }, 3000); // 3 seconds
+
+            return () => clearTimeout(timer); // Cleanup the timer
+        }
+    }
+  }, [user]); // Rerun when user state changes
 
   const isLoggedIn = !!user;
   const careerGuidanceHref = isLoggedIn ? "/welcome-guest" : "/signup";
@@ -144,10 +165,13 @@ export default function HomePageClient() {
     },
   ];
   
-  const heroBackgroundImage = "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2232&auto=format&fit=crop";
+  const heroBackgroundImage = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop";
 
   return (
     <div>
+      {/* Render the popup */}
+      <SignupPopup isOpen={isPopupOpen} onOpenChange={setIsPopupOpen} />
+      
       {/* Hero Section */}
       <section
         className="relative bg-cover bg-center py-24 md:py-40 text-center text-white overflow-hidden"
