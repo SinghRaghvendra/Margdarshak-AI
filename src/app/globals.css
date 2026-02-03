@@ -9,39 +9,39 @@ body {
 
 @layer base {
   :root {
-    --background: 222 47% 4%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
 
-    --card: 222 47% 11%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 45 64% 52%;
-    --primary-foreground: 45 64% 10%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 222 47% 17%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 215 28% 95%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 222 47% 17%;
+    --muted: 215 28% 95%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 158 84% 39%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 215 28% 95%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 222 47% 17%;
-    --input: 222 47% 17%;
-    --ring: 45 64% 52%;
+    --border: 215 20% 90%;
+    --input: 215 20% 90%;
+    --ring: 217 91% 60%;
     
-    --chart-1: 45 64% 52%;
-    --chart-2: 158 84% 39%;
-    --chart-3: 270 66% 31%;
+    --chart-1: 217 91% 60%;
+    --chart-2: 45 93% 47%;
+    --chart-3: 142 71% 45%;
     --chart-4: 0 84% 60%;
-    --chart-5: 217 91% 60%;
+    --chart-5: 270 91% 65%;
     --radius: 0.5rem;
   }
 
