@@ -169,24 +169,24 @@ export default function HomePageClient() {
       
       {/* Hero Section */}
       <section
-        className="relative bg-cover bg-center py-24 md:py-40 text-center text-white overflow-hidden"
+        className="relative bg-cover bg-center py-20 md:py-28 text-center text-white overflow-hidden"
         style={{ backgroundImage: `url(${heroBackgroundImage})` }}
       >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
           <div className="relative z-10 container mx-auto px-4">
-              <div className="mb-6 flex justify-center">
-                <div className="bg-white/90 rounded-full p-4 shadow-lg">
-                    <Image src="/logo.png" alt="AI Councel Logo" width={200} height={200} priority />
+              <div className="mb-4 flex justify-center">
+                <div className="bg-white/90 rounded-full p-3 shadow-lg">
+                    <Image src="/logo.png" alt="AI Councel Logo" width={128} height={128} priority />
                 </div>
               </div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight">
+              <h1 className="text-4xl sm:text-5xl font-bold mb-4 leading-tight">
                   AI-Powered Career Guidance
               </h1>
               <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
                   Stop Guessing. Start Planning. Get a data-driven, personalized 10-year career roadmap. Our AI analyzes your unique strengths to find the path you're built for.
               </p>
               <Link href={careerGuidanceHref}>
-                  <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90" suppressHydrationWarning={true}>
+                  <Button size="lg" className="text-lg py-6 px-8 shadow-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90" suppressHydrationWarning={true}>
                       Start Your Free Assessment <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
               </Link>
