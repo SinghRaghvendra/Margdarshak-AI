@@ -6,8 +6,7 @@ import { HelpCircle, CheckCircle, ArrowRight, Brain, Target, MapPinned, Workflow
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useUser } from '@/firebase';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
@@ -19,26 +18,22 @@ import SignupPopup from './SignupPopup';
 
 export default function HomePageClient() {
   const router = useRouter();
-  const auth = useAuth();
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const { user, loading: userLoading } = useUser();
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
-
-  useEffect(() => {
-    if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, [auth]);
 
   // Effect to trigger the popup
   useEffect(() => {
+    // Wait until the auth state is resolved to avoid showing popup to logged-in users
+    if (userLoading) {
+      return;
+    }
+
     // Only run this effect on the client
     if (typeof window !== 'undefined') {
         // Check if the popup has been shown in this session
         const popupShown = sessionStorage.getItem('margdarshak_popup_shown');
         
-        // If there is no user and the popup hasn't been shown
+        // If there is NO user and the popup has NOT been shown this session
         if (!user && !popupShown) {
             const timer = setTimeout(() => {
                 setIsPopupOpen(true);
@@ -49,12 +44,12 @@ export default function HomePageClient() {
             return () => clearTimeout(timer); // Cleanup the timer
         }
     }
-  }, [user]); // Rerun when user state changes
+  }, [user, userLoading]); // Rerun when user state changes or loading finishes
 
   const isLoggedIn = !!user;
   const careerGuidanceHref = isLoggedIn ? "/welcome-guest" : "/signup";
-
-    const bentoFeatures = [
+  
+  const bentoFeatures = [
     {
       icon: <Brain className="h-8 w-8 text-primary mb-4" />,
       title: 'Deep Psychometric Analysis',
@@ -165,7 +160,7 @@ export default function HomePageClient() {
     },
   ];
   
-  const heroBackgroundImage = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop";
+  const heroBackgroundImage = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2070&auto=format&fit=crop";
 
   return (
     <div>
