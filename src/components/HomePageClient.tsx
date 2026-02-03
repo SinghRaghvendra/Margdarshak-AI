@@ -12,7 +12,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from "embla-carousel-autoplay";
 import { testimonials } from '@/lib/testimonials';
 import { cn } from '@/lib/utils';
-import Logo from '@/components/Logo';
+import Image from 'next/image';
 import SignupPopup from './SignupPopup';
 
 
@@ -174,8 +174,8 @@ export default function HomePageClient() {
       >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
           <div className="relative z-10 container mx-auto px-4">
-              <div className="mb-6">
-                <Logo />
+              <div className="mb-6 flex justify-center">
+                <Image src="/logo.png" alt="AI Councel Logo" width={100} height={100} priority />
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight">
                   AI-Powered Career Guidance

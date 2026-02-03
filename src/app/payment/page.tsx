@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Loader2, ListChecks, ArrowLeft, Tag } from 'lucide-react'; 
+import { CreditCard, Loader2, ListChecks, ArrowLeft, Tag, Badge } from 'lucide-react'; 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
@@ -36,7 +35,11 @@ export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
   const [userInfo, setUserInfo] = useState({ name: 'Guest', email: '', contact: '' });
   const [user, setUser] = useState<User | null>(null);
+  
+  // States for coupon and pricing display
   const [coupon, setCoupon] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [finalAmount, setFinalAmount] = useState(0);
   
   useEffect(() => {
     if (!auth) return;
@@ -65,7 +68,9 @@ export default function PaymentPage() {
 
       const storedPlan = localStorage.getItem('margdarshak_selected_plan');
       if (storedPlan) {
-        setSelectedPlan(JSON.parse(storedPlan));
+        const plan = JSON.parse(storedPlan) as SelectedPlan;
+        setSelectedPlan(plan);
+        setFinalAmount(plan.price); // Initialize final amount with plan price
       } else {
         throw new Error("No plan selected.");
       }
@@ -77,6 +82,32 @@ export default function PaymentPage() {
     }
   }
 
+  // Effect to calculate discount when coupon changes
+  useEffect(() => {
+    if (!selectedPlan) return;
+
+    const originalAmount = selectedPlan.price;
+    let newFinalAmount = originalAmount;
+    let calculatedDiscount = 0;
+
+    const upperCaseCoupon = coupon.toUpperCase();
+
+    if (upperCaseCoupon === 'RAGHVENDRA100') {
+      newFinalAmount = 1;
+      calculatedDiscount = originalAmount - 1;
+    } else if (upperCaseCoupon === 'AICOUNCEL25') {
+      calculatedDiscount = originalAmount * 0.25;
+      newFinalAmount = originalAmount - calculatedDiscount;
+    } else {
+      // No valid coupon or coupon removed, reset to original price
+      newFinalAmount = originalAmount;
+      calculatedDiscount = 0;
+    }
+
+    setDiscount(calculatedDiscount);
+    setFinalAmount(newFinalAmount);
+  }, [coupon, selectedPlan]);
+
 
   const handlePayment = async () => {
     if (!user || !db || !selectedPlan) {
@@ -87,6 +118,7 @@ export default function PaymentPage() {
     toast({ title: 'Initializing Payment', description: 'Please wait...' });
 
     try {
+      // IMPORTANT: Always send the original price to the backend for verification
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,7 +136,7 @@ export default function PaymentPage() {
 
       const options = {
         key: orderData.key_id,
-        amount: orderData.amount,
+        amount: orderData.amount, // Use amount from server response
         currency: orderData.currency,
         name: 'AI Councel',
         description: `Career Report Plan: ${selectedPlan.id}`,
@@ -215,8 +247,22 @@ export default function PaymentPage() {
               />
             </div>
             
-            <p className="text-lg mb-1">Total Amount: <span className="font-bold text-2xl">₹{selectedPlan.price}</span></p>
-            <p className="text-xs text-muted-foreground mb-4">Discounts will be applied on the payment screen.</p>
+             <div className="my-6 p-4 border rounded-lg bg-secondary/50 text-left space-y-3">
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span>Original Price:</span>
+                <span className="font-medium">₹{selectedPlan.price.toFixed(2)}</span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between items-center text-green-600 font-medium">
+                  <span>Coupon Discount:</span>
+                  <span>- ₹{discount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center font-bold text-xl border-t border-dashed pt-3 mt-3">
+                <span>Net Payable Amount:</span>
+                <span>₹{finalAmount.toFixed(2)}</span>
+              </div>
+            </div>
             
             <Button onClick={handlePayment} className="w-full text-lg py-6 mt-4" disabled={isProcessing}>
               {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
