@@ -161,7 +161,6 @@ export default function Header() {
             </Link>
           ))}
           {user && <LanguageSelector />}
-          {user && <div className='flex items-center text-xs text-muted-foreground ml-2 gap-1'><Globe className='h-3 w-3'/><span>Translate site with your browser</span></div>}
           {auth && (
             user ? (
               <Button onClick={handleLogout} variant="outline" className="text-sm ml-2 px-4 py-2">
@@ -232,7 +231,6 @@ export default function Header() {
                       <LanguageSelector />
                     </div>
                   )}
-                  {user && <div className='flex items-center text-xs text-muted-foreground p-3 gap-1'><Globe className='h-3 w-3'/><span>Translate site with your browser</span></div>}
                   <div className="pt-4 border-t">
                     {auth && (
                       user ? (
