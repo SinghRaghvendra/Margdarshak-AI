@@ -6,12 +6,14 @@ import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Loader2, ListChecks, ArrowLeft } from 'lucide-react'; 
+import { CreditCard, Loader2, ListChecks, ArrowLeft, Tag } from 'lucide-react'; 
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { useAuth, useFirestore } from '@/firebase';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 declare global {
   interface Window {
@@ -34,6 +36,7 @@ export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
   const [userInfo, setUserInfo] = useState({ name: 'Guest', email: '', contact: '' });
   const [user, setUser] = useState<User | null>(null);
+  const [coupon, setCoupon] = useState('');
   
   useEffect(() => {
     if (!auth) return;
@@ -87,7 +90,10 @@ export default function PaymentPage() {
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: selectedPlan.price }),
+        body: JSON.stringify({ 
+            amount: selectedPlan.price,
+            coupon: coupon 
+        }),
       });
       
       const orderData = await orderResponse.json();
@@ -195,11 +201,26 @@ export default function PaymentPage() {
               </h4>
               <p className="font-bold text-xl capitalize">{selectedPlan.id} Report</p>
             </div>
-            <p className="text-lg mb-2">Total Amount Due: <span className="font-bold text-2xl">₹{selectedPlan.price}</span></p>
+
+            <div className="mb-6 space-y-2 text-left">
+              <Label htmlFor="coupon-code" className="flex items-center">
+                <Tag className="mr-2 h-4 w-4 text-muted-foreground" />
+                Coupon Code (Optional)
+              </Label>
+              <Input
+                id="coupon-code"
+                placeholder="Enter coupon code"
+                value={coupon}
+                onChange={(e) => setCoupon(e.target.value)}
+              />
+            </div>
+            
+            <p className="text-lg mb-1">Total Amount: <span className="font-bold text-2xl">₹{selectedPlan.price}</span></p>
+            <p className="text-xs text-muted-foreground mb-4">Discounts will be applied on the payment screen.</p>
             
             <Button onClick={handlePayment} className="w-full text-lg py-6 mt-4" disabled={isProcessing}>
               {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
-              Pay ₹{selectedPlan.price} Securely
+              Pay Securely
             </Button>
             
             <Button variant="link" className="mt-4 text-muted-foreground" onClick={() => router.back()}>
