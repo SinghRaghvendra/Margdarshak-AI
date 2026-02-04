@@ -33,6 +33,7 @@ interface PaymentHistoryItem {
     createdAt: Date;
     status: 'SUCCESS' | 'FAILED';
     reportId: string | null;
+    utr: string | null;
 }
 
 export default function MyReportsPage() {
@@ -84,10 +85,11 @@ export default function MyReportsPage() {
           id: doc.id,
           planId: data.planId,
           amountPaid: data.amountPaid,
-          couponUsed: data.couponUsed,
+          couponUsed: data.couponUsed || null,
           createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : new Date(),
           status: data.status,
           reportId: data.reportId || null,
+          utr: data.razorpayPaymentId || null,
         }
       });
       setPayments(fetchedPayments);
@@ -209,6 +211,7 @@ export default function MyReportsPage() {
                   <TableHead>Plan</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell">Transaction ID</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -216,7 +219,14 @@ export default function MyReportsPage() {
                   <TableRow key={payment.id}>
                     <TableCell className="hidden sm:table-cell">{format(payment.createdAt, 'PPP p')}</TableCell>
                     <TableCell className="sm:hidden">{format(payment.createdAt, 'PP')}</TableCell>
-                    <TableCell className="capitalize">{payment.planId}</TableCell>
+                    <TableCell>
+                        <div className="font-medium capitalize">{payment.planId}</div>
+                        {payment.couponUsed && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                                Coupon: <Badge variant="secondary">{payment.couponUsed}</Badge>
+                            </div>
+                        )}
+                    </TableCell>
                     <TableCell>₹{payment.amountPaid.toFixed(2)}</TableCell>
                     <TableCell>
                       {payment.status === 'SUCCESS' ? 
@@ -224,6 +234,7 @@ export default function MyReportsPage() {
                         <Badge variant="destructive">Failed</Badge>
                       }
                     </TableCell>
+                    <TableCell className="font-mono text-xs hidden md:table-cell">{payment.utr || 'N/A'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
