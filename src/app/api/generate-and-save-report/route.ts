@@ -1,40 +1,28 @@
-
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { getDb } from '@/lib/firebaseAdmin';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
+import { runTransaction } from 'firebase-admin/firestore';
 
 export const runtime = 'nodejs';
 
-/**
- * Performs a direct REST API call to the Gemini API using a standard API key.
- * This function is self-contained and has no external Google SDK imports to prevent auth conflicts.
- * @param prompt The text prompt to send to the model.
- * @param model The specific model to use (e.g., "gemini-2.5-flash").
- * @param maxTokens The maximum number of tokens for the output.
- * @returns The generated text from the model.
- */
 async function callGeminiWithApiKey(
   prompt: string,
   model = "gemini-2.5-flash",
-  maxTokens = 4096
+  maxTokens = 8192
 ) {
   const apiKey = process.env.GEMINI_API_KEY;
-
   if (!apiKey) {
-    throw new Error("AI Service Authentication Failed: The GEMINI_API_KEY environment variable is not set on the server.");
+    throw new Error("AI Service Authentication Failed: GEMINI_API_KEY is not set.");
   }
-  
-  // Defensive check for safety settings to prevent accidental blocking
   const safetySettings = [
       { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
       { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
       { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
       { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
   ];
-
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
@@ -42,36 +30,25 @@ async function callGeminiWithApiKey(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          maxOutputTokens: maxTokens,
-          temperature: 0.7, // A balanced temperature for creative but grounded text
-        },
+        generationConfig: { maxOutputTokens, temperature: 0.7 },
         safetySettings,
       }),
     }
   );
-
   const data = await response.json();
-
   if (!response.ok) {
     console.error("Gemini API Error:", data.error);
-    // Pass the specific error from Google's API to the client for better debugging
-    throw new Error(data.error?.message || `The AI model failed to respond. Status: ${response.status}`);
+    throw new Error(data.error?.message || `AI model failed. Status: ${response.status}`);
   }
-
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
   if (!text) {
     console.warn("Gemini Response Missing Text:", data);
-    throw new Error("The AI model returned an empty or invalid response. Please try again.");
+    throw new Error("The AI model returned an empty or invalid response.");
   }
-
   return text;
 }
 
-
-// --- PROMPT GENERATION FUNCTIONS ---
-
+// --- PROMPT GENERATION FUNCTIONS (omitted for brevity, they are unchanged) ---
 function getVerdictPrompt(input: any) {
   return `
     You are an expert career counselor. Generate a concise "Career Verdict" report.
@@ -265,165 +242,127 @@ function getClarityPrompt(input: any) {
 }
 
 export async function POST(req: Request) {
+  const db = getDb();
+  let paymentDocRef: FirebaseFirestore.DocumentReference | null = null;
+  let newReportId: string | null = null;
+
   try {
-    /* ---------------- AUTH ---------------- */
     const authHeader = req.headers.get('authorization');
-
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'UNAUTHENTICATED: Missing token' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'UNAUTHENTICATED: Missing token' }, { status: 401 });
     }
-
     const idToken = authHeader.replace('Bearer ', '');
-    // Initialize admin to verify token
-    getDb(); 
     const decoded = await getAuth().verifyIdToken(idToken);
-    const userId = decoded.uid; // ✅ trusted source
+    const userId = decoded.uid;
 
-    /* ---------------- INPUT ---------------- */
-    const { plan, language, career, allSuggestions } = await req.json();
-
-    if (!plan || !language || !career || !allSuggestions) {
-      return NextResponse.json(
-        { error: 'Missing required parameters.' },
-        { status: 400 }
-      );
+    const { plan, language, career, allSuggestions, paymentId } = await req.json();
+    if (!plan || !language || !career || !paymentId) {
+      return NextResponse.json({ error: 'Missing required parameters.' }, { status: 400 });
     }
+    
+    paymentDocRef = db.collection('payments').doc(paymentId);
 
-    /* ---------------- FIRESTORE ---------------- */
-    const db = getDb();
-    const userDocRef = db.collection('users').doc(userId);
-    const userDoc = await userDocRef.get();
+    // --- Transaction to ensure atomicity ---
+    const reportMarkdown = await runTransaction(db, async (transaction) => {
+        const paymentDoc = await transaction.get(paymentDocRef!);
+        
+        // SERVER-SIDE ENTITLEMENT CHECK
+        if (!paymentDoc.exists) {
+            throw new Error(`Payment record not found.`);
+        }
+        const paymentData = paymentDoc.data()!;
+        if (paymentData.userId !== userId) {
+            throw new Error(`Payment does not belong to the current user.`);
+        }
+        if (paymentData.status !== 'SUCCESS') {
+            throw new Error(`Payment status is not 'SUCCESS'.`);
+        }
+        if (paymentData.planId !== plan) {
+            throw new Error(`This payment is for the '${paymentData.planId}' plan, not '${plan}'.`);
+        }
+        if (paymentData.reportId) {
+            throw new Error(`This payment has already been used to generate a report.`);
+        }
 
-    if (!userDoc.exists) {
-      return NextResponse.json({ error: 'User not found.' }, { status: 404 });
-    }
+        const userDocRef = db.collection('users').doc(userId);
+        const userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists) throw new Error('User not found.');
+        
+        const userData = userDoc.data()!;
+        const { name, country, birthDetails, userTraits, personalizedAnswers } = userData;
+        if (!name || !birthDetails || !userTraits || !personalizedAnswers) {
+            throw new Error('User profile incomplete.');
+        }
 
-    const userData = userDoc.data()!;
+        const selectedCareerDetails = allSuggestions.find((s: any) => s.name === career);
+        if (!selectedCareerDetails) throw new Error('Career not found.');
 
-    if (!userData.paymentSuccessful || userData.purchasedPlan !== plan) {
-      return NextResponse.json(
-        { error: `Payment required for '${plan}' plan.` },
-        { status: 402 }
-      );
-    }
+        const age = differenceInYears(new Date(), parseISO(birthDetails.dateOfBirth));
+        const lifePathNumber = calculateLifePathNumber(birthDetails.dateOfBirth);
 
-    const {
-      name,
-      country,
-      birthDetails,
-      userTraits,
-      personalizedAnswers,
-      lastPaymentId,
-    } = userData;
+        const baseInput = {
+            careerSuggestion: selectedCareerDetails.name, userTraits, country, userName: name,
+            dateOfBirth: birthDetails.dateOfBirth, timeOfBirth: birthDetails.timeOfBirth,
+            placeOfBirth: birthDetails.placeOfBirth, age, personalizedAnswers,
+            matchScore: selectedCareerDetails.matchScore || 'N/A',
+            personalityProfile: selectedCareerDetails.personalityProfile || 'N/A',
+            lifePathNumber, preferredLanguage: language,
+        };
 
-    if (!name || !birthDetails || !userTraits || !personalizedAnswers) {
-      return NextResponse.json(
-        { error: 'User profile incomplete.' },
-        { status: 400 }
-      );
-    }
+        let prompt: string;
+        let maxTokens: number;
+        switch (plan) {
+            case 'verdict': prompt = getVerdictPrompt(baseInput); maxTokens = 2048; break;
+            case 'clarity':
+                prompt = getClarityPrompt({
+                    ...baseInput,
+                    alternativeCareers: allSuggestions.filter((s: any) => s.name !== career).slice(0, 2),
+                });
+                maxTokens = 4096;
+                break;
+            case 'blueprint': prompt = getBlueprintPrompt(baseInput); maxTokens = 8192; break;
+            default: throw new Error('Invalid plan.');
+        }
 
-    /* ---------------- CAREER ---------------- */
-    const selectedCareerDetails = allSuggestions.find(
-      (s: any) => s.name === career
-    );
+        const generatedMarkdown = await callGeminiWithApiKey(prompt, 'gemini-2.5-flash', maxTokens);
 
-    if (!selectedCareerDetails) {
-      return NextResponse.json(
-        { error: 'Career not found.' },
-        { status: 400 }
-      );
-    }
-
-    const age = differenceInYears(new Date(), parseISO(birthDetails.dateOfBirth));
-    const lifePathNumber = calculateLifePathNumber(birthDetails.dateOfBirth);
-
-    const baseInput = {
-      careerSuggestion: selectedCareerDetails.name,
-      userTraits,
-      country,
-      userName: name,
-      dateOfBirth: birthDetails.dateOfBirth,
-      timeOfBirth: birthDetails.timeOfBirth,
-      placeOfBirth: birthDetails.placeOfBirth,
-      age,
-      personalizedAnswers,
-      matchScore: selectedCareerDetails.matchScore || 'N/A',
-      personalityProfile: selectedCareerDetails.personalityProfile || 'N/A',
-      lifePathNumber,
-      preferredLanguage: language,
-    };
-
-    let prompt: string;
-    let maxTokens: number;
-
-    switch (plan) {
-      case 'verdict':
-        prompt = getVerdictPrompt(baseInput);
-        maxTokens = 2048;
-        break;
-
-      case 'clarity':
-        prompt = getClarityPrompt({
-          ...baseInput,
-          alternativeCareers: allSuggestions
-            .filter((s: any) => s.name !== career)
-            .slice(0, 2),
+        // Save report and get its ID
+        newReportId = await saveReport(db, {
+            userId, userName: name, careerName: selectedCareerDetails.name,
+            reportMarkdown: generatedMarkdown, language, paymentId, plan,
+            assessmentData: {
+                userTraits,
+                matchScore: selectedCareerDetails.matchScore || 'N/A',
+                personalityProfile: selectedCareerDetails.personalityProfile || 'N/A',
+            },
         });
-        maxTokens = 4096;
-        break;
 
-      case 'blueprint':
-        prompt = getBlueprintPrompt(baseInput);
-        maxTokens = 8192;
-        break;
+        // "Consume" the payment record by linking it to the new report
+        transaction.update(paymentDocRef!, { reportId: newReportId });
 
-      default:
-        return NextResponse.json(
-          { error: 'Invalid plan.' },
-          { status: 400 }
-        );
-    }
-
-    /* ---------------- GEMINI ---------------- */
-    const reportMarkdown = await callGeminiWithApiKey(
-      prompt,
-      'gemini-2.5-flash',
-      maxTokens
-    );
-
-    /* ---------------- SAVE ---------------- */
-    await saveReport(db, {
-      userId,
-      userName: name,
-      careerName: selectedCareerDetails.name,
-      reportMarkdown,
-      language,
-      paymentId: lastPaymentId,
-      plan,
-      assessmentData: {
-        userTraits,
-        matchScore: selectedCareerDetails.matchScore || 'N/A',
-        personalityProfile:
-          selectedCareerDetails.personalityProfile || 'N/A',
-      },
+        return generatedMarkdown;
     });
 
-    await userDocRef.update({ paymentSuccessful: false });
-
     return NextResponse.json({ roadmapMarkdown: reportMarkdown });
+
   } catch (err: any) {
-    console.error('generate-and-save-report error:', err);
-    // Ensure a user-friendly message for auth errors
+    console.error(`[${new Date().toISOString()}] generate-and-save-report error:`, err);
+    
+    // Attempt to log the error to the payment document for debugging
+    if (paymentDocRef) {
+        try {
+            await paymentDocRef.update({
+                status: 'FAILED',
+                error: err.message || 'An unknown error occurred.',
+            });
+        } catch (logError) {
+            console.error('Failed to log error to payment document:', logError);
+        }
+    }
+    
     if (err.code === 'auth/id-token-expired' || err.code === 'auth/argument-error') {
        return NextResponse.json({ error: 'Authentication failed. Please log in again.' }, { status: 401 });
     }
-    return NextResponse.json(
-      { error: err.message || 'An unknown server error occurred.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message || 'An unknown server error occurred.' }, { status: 500 });
   }
 }

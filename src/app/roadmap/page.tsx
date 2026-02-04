@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -6,27 +5,24 @@ import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPinned, Download, Loader2, Milestone } from 'lucide-react';
+import { MapPinned, Download, Loader2, Milestone, AlertTriangle, RefreshCw } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import type { User } from 'firebase/auth';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-
+import { collection, query, where, getDocs, orderBy, limit, doc } from 'firebase/firestore';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface StoredRoadmapData {
   markdown: string;
-  generatedAt: number; // Timestamp
-  language: string;
-  plan: string;
+  generatedAt: number;
 }
 
 interface ViewModeData {
     markdown: string;
     careerName: string;
     plan: string;
-
     language: string;
     userName: string;
 }
@@ -40,9 +36,10 @@ export default function RoadmapPage() {
   const db = useFirestore();
   
   const [currentRoadmapMarkdown, setCurrentRoadmapMarkdown] = useState<string | null>(null);
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false); // Default to false
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   
   const [pageLoading, setPageLoading] = useState(true);
   const [pageData, setPageData] = useState<{
@@ -50,29 +47,17 @@ export default function RoadmapPage() {
     language: string;
     userName: string;
     selectedCareer: string;
-    allSuggestions?: any[]; // Optional for view mode
+    allSuggestions?: any[];
   } | null>(null);
 
   const roadmapContentRef = useRef<HTMLDivElement>(null);
-  const hasInitialized = useRef(false); // Add a ref to track initialization.
-
-
-  useEffect(() => {
-    // Ensure this effect runs only once on mount, once user and db are available.
-    if (user && db && !hasInitialized.current) {
-      hasInitialized.current = true; // Mark as initialized
-      initializePage(user);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, db]);
+  const hasInitialized = useRef(false);
 
   const initializePage = async (currentUser: User) => {
     try {
-        // PRIORITY 1: Check for "View Mode" from My Reports page.
         const viewModeDataString = localStorage.getItem('margdarshak_view_report_data');
         if (viewModeDataString) {
             const viewData: ViewModeData = JSON.parse(viewModeDataString);
-            
             setPageData({
                 purchasedPlan: viewData.plan,
                 language: viewData.language,
@@ -82,45 +67,26 @@ export default function RoadmapPage() {
             setCurrentRoadmapMarkdown(viewData.markdown);
             setIsGeneratingReport(false);
             setPageLoading(false);
-            
-            // Important: Clear the item after use so it doesn't persist.
             localStorage.removeItem('margdarshak_view_report_data');
             toast({ title: "Viewing Saved Report", description: `Displaying your report for ${viewData.careerName}.`});
             return;
         }
 
-        // PRIORITY 2: Proceed with the "Generate New Report" flow.
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (!userDoc.exists() || !userDoc.data().paymentSuccessful) {
-            toast({ title: 'Payment Required', description: 'Please purchase a plan to generate a report.', variant: 'destructive' });
-            router.replace('/pricing');
-            return;
-        }
-        
         const selectedCareer = localStorage.getItem('margdarshak_selected_career');
         const allSuggestionsString = localStorage.getItem('margdarshak_all_career_suggestions');
         const userInfoString = localStorage.getItem('margdarshak_user_info');
+        const plan = JSON.parse(localStorage.getItem('margdarshak_selected_plan') || '{}').id;
 
-        if (!selectedCareer || !allSuggestionsString || !userInfoString) {
-            toast({ title: 'Data Missing', description: 'Essential journey data is missing. Please start a new journey.', variant: 'destructive' });
-            router.replace('/welcome-guest');
+        if (!selectedCareer || !allSuggestionsString || !userInfoString || !plan) {
+            toast({ title: 'Data Missing', description: 'Journey data is missing. Checking for existing reports.', variant: 'destructive' });
+            router.replace('/my-reports');
             return;
         }
-        
+
         const userInfo = JSON.parse(userInfoString);
-        const userData = userDoc.data();
-        const plan = userData.purchasedPlan;
-        if (!plan) {
-            toast({ title: 'No Plan Purchased', description: 'Please purchase a plan first.', variant: 'destructive' });
-            router.replace('/pricing');
-            return;
-        }
-      
         const pageInfo = {
             purchasedPlan: plan,
-            language: userData.language || 'English',
+            language: userInfo.language || 'English',
             userName: userInfo.name || 'User',
             selectedCareer: selectedCareer,
             allSuggestions: JSON.parse(allSuggestionsString),
@@ -138,15 +104,19 @@ export default function RoadmapPage() {
   };
 
   useEffect(() => {
+    if (user && db && !hasInitialized.current) {
+      hasInitialized.current = true;
+      initializePage(user);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, db]);
+
+  useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isGeneratingReport) {
-      // Simulate loading for about 25 seconds (100 * 250ms)
       timer = setInterval(() => {
         setGenerationProgress(prev => {
-          if (prev >= 99) {
-            clearInterval(timer);
-            return 99;
-          }
+          if (prev >= 99) { clearInterval(timer); return 99; }
           return prev + 1;
         });
       }, 250); 
@@ -155,66 +125,72 @@ export default function RoadmapPage() {
   }, [isGeneratingReport]);
 
   const fetchAndSetRoadmap = async (currentUser: User, pageInfo: NonNullable<typeof pageData>) => {
+    if (!db) return;
     const { purchasedPlan, language, selectedCareer, allSuggestions } = pageInfo;
+    
+    // Check for cached report first
     const cachedReportKey = `margdarshak_roadmap_${selectedCareer.replace(/\s/g, '_')}_${purchasedPlan}_${language}`;
     const cachedDataString = localStorage.getItem(cachedReportKey);
-
     if (cachedDataString) {
-      try {
         const cachedReport: StoredRoadmapData = JSON.parse(cachedDataString);
         if (Date.now() - cachedReport.generatedAt < REPORT_CACHE_DURATION) {
-          setCurrentRoadmapMarkdown(cachedReport.markdown);
-          toast({ title: 'Report Loaded from Cache', description: `Showing cached ${purchasedPlan} report for ${selectedCareer}.` });
-          setIsGeneratingReport(false);
-          return;
+            setCurrentRoadmapMarkdown(cachedReport.markdown);
+            toast({ title: 'Report Loaded from Cache' });
+            return;
         }
-      } catch (e) {
-        localStorage.removeItem(cachedReportKey);
-      }
     }
 
     setIsGeneratingReport(true);
     setCurrentRoadmapMarkdown(null);
     setGenerationProgress(0);
+    setGenerationError(null);
     toast({ title: `Generating ${language} Report`, description: 'This may take up to 30 seconds...' });
 
     try {
-      const idToken = await currentUser.getIdToken(true);
+        // Find an unspent payment entitlement
+        const paymentsRef = collection(db, 'payments');
+        const q = query(
+            paymentsRef,
+            where('userId', '==', currentUser.uid),
+            where('planId', '==', purchasedPlan),
+            where('status', '==', 'SUCCESS'),
+            where('reportId', '==', null),
+            orderBy('createdAt', 'asc'),
+            limit(1)
+        );
+        const querySnapshot = await getDocs(q);
 
-      const response = await fetch('/api/generate-and-save-report', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({ 
-            plan: purchasedPlan, 
-            language, 
-            career: selectedCareer,
-            allSuggestions
-        }),
-      });
+        if (querySnapshot.empty) {
+            throw new Error(`No unused '${purchasedPlan}' plan payment found. Please purchase a plan.`);
+        }
+        
+        const paymentDoc = querySnapshot.docs[0];
+        const paymentId = paymentDoc.id;
 
-      const result = await response.json();
+        const idToken = await currentUser.getIdToken(true);
+        const response = await fetch('/api/generate-and-save-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+            body: JSON.stringify({ plan: purchasedPlan, language, career: selectedCareer, allSuggestions, paymentId }),
+        });
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to generate report.');
-      }
-      
-      setGenerationProgress(100);
-      setCurrentRoadmapMarkdown(result.roadmapMarkdown);
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to generate report.');
+        
+        setGenerationProgress(100);
+        setCurrentRoadmapMarkdown(result.roadmapMarkdown);
 
-      const newCachedReport: StoredRoadmapData = { markdown: result.roadmapMarkdown, generatedAt: Date.now(), language, plan: purchasedPlan };
-      localStorage.setItem(cachedReportKey, JSON.stringify(newCachedReport));
-      
-      toast({ title: 'Report Generated & Saved!', description: `Your ${language} report is ready.` });
+        const newCachedReport: StoredRoadmapData = { markdown: result.roadmapMarkdown, generatedAt: Date.now() };
+        localStorage.setItem(cachedReportKey, JSON.stringify(newCachedReport));
+        
+        toast({ title: 'Report Generated & Saved!', description: `Your ${language} report is ready.` });
 
     } catch (error: any) {
-      console.error(`Error generating report:`, error);
-      toast({ title: `Error Generating Report`, description: error.message, variant: 'destructive', duration: 7000 });
-      setCurrentRoadmapMarkdown(`## Report Generation Failed\n\nWe encountered an error: ${error.message}. Please try again later or contact support.`);
+        console.error(`Error generating report:`, error);
+        setGenerationError(error.message);
+        toast({ title: `Error Generating Report`, description: error.message, variant: 'destructive', duration: 10000 });
     } finally {
-      setIsGeneratingReport(false);
+        setIsGeneratingReport(false);
     }
   };
 
@@ -245,6 +221,12 @@ export default function RoadmapPage() {
       .finally(() => setIsGeneratingPdf(false));
   };
 
+  const handleRetry = () => {
+    if (user && pageData) {
+      fetchAndSetRoadmap(user, pageData);
+    }
+  }
+
   if (pageLoading || !pageData) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
@@ -267,13 +249,28 @@ export default function RoadmapPage() {
                 <p className="text-sm text-primary font-semibold">{Math.round(generationProgress)}%</p>
                 <p className="text-xs text-muted-foreground">Estimated time: 20-30 seconds</p>
               </div>
+            ) : generationError ? (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Report Generation Failed</AlertTitle>
+                <AlertDescription>
+                  <p>{generationError}</p>
+                  <p className="mt-2">This can happen due to high server load or a network issue. Please try again.</p>
+                </AlertDescription>
+                <div className="mt-4">
+                    <Button onClick={handleRetry}>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Retry Generation
+                    </Button>
+                </div>
+              </Alert>
             ) : currentRoadmapMarkdown ? (
               <div ref={roadmapContentRef} className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-foreground">
                 <ReactMarkdown
                   components={{
                     h1: ({node, ...props}) => <h1 className="text-3xl font-bold mt-8 mb-4 text-primary border-b pb-2" {...props} />,
                     h2: ({node, ...props}) => <h2 className="text-2xl font-semibold mt-6 mb-3 text-primary/90" {...props} />,
-                    h3: ({node, ...props}) => <h3 className="text-xl font-semibold mt-4 mb-2 text-accent-foreground" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-xl font-semibold mt-4 mb-2" {...props} />,
                     p: ({node, ...props}) => <p className="mb-3 leading-relaxed text-foreground/90" {...props} />,
                     ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-1 text-muted-foreground" {...props} />,
                     li: ({node, ...props}) => <li className="leading-relaxed" {...props} />,
@@ -286,14 +283,14 @@ export default function RoadmapPage() {
               </div>
             ) : (
                <div className="text-center py-10">
-                    <p className="text-muted-foreground">The report could not be displayed.</p>
+                    <p className="text-muted-foreground">The report could not be displayed. Please try generating it again.</p>
                </div>
             )}
         </CardContent>
          <CardContent className="mt-6 pb-6 text-center flex flex-col sm:flex-row justify-center items-center gap-4">
             <Button 
               onClick={handleDownloadPdf} 
-              disabled={isGeneratingPdf || isGeneratingReport || !currentRoadmapMarkdown} 
+              disabled={isGeneratingPdf || isGeneratingReport || !currentRoadmapMarkdown || !!generationError} 
               className="w-full sm:w-auto"
             >
               {isGeneratingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}

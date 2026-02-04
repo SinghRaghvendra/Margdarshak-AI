@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Loader2, ListChecks, ArrowLeft, Tag, Badge } from 'lucide-react'; 
+import { CreditCard, Loader2, ListChecks, ArrowLeft, Tag } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { useAuth, useFirestore } from '@/firebase';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,6 @@ export default function PaymentPage() {
   const [userInfo, setUserInfo] = useState({ name: 'Guest', email: '', contact: '' });
   const [user, setUser] = useState<User | null>(null);
   
-  // States for coupon and pricing display
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
@@ -70,7 +69,7 @@ export default function PaymentPage() {
       if (storedPlan) {
         const plan = JSON.parse(storedPlan) as SelectedPlan;
         setSelectedPlan(plan);
-        setFinalAmount(plan.price); // Initialize final amount with plan price
+        setFinalAmount(plan.price);
       } else {
         throw new Error("No plan selected.");
       }
@@ -82,7 +81,6 @@ export default function PaymentPage() {
     }
   }
 
-  // Effect to calculate discount when coupon changes
   useEffect(() => {
     if (!selectedPlan) return;
 
@@ -99,7 +97,6 @@ export default function PaymentPage() {
       calculatedDiscount = originalAmount * 0.25;
       newFinalAmount = originalAmount - calculatedDiscount;
     } else {
-      // No valid coupon or coupon removed, reset to original price
       newFinalAmount = originalAmount;
       calculatedDiscount = 0;
     }
@@ -107,7 +104,6 @@ export default function PaymentPage() {
     setDiscount(calculatedDiscount);
     setFinalAmount(newFinalAmount);
   }, [coupon, selectedPlan]);
-
 
   const handlePayment = async () => {
     if (!user || !db || !selectedPlan) {
@@ -118,7 +114,6 @@ export default function PaymentPage() {
     toast({ title: 'Initializing Payment', description: 'Please wait...' });
 
     try {
-      // IMPORTANT: Always send the original price to the backend for verification
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -136,7 +131,7 @@ export default function PaymentPage() {
 
       const options = {
         key: orderData.key_id,
-        amount: orderData.amount, // Use amount from server response
+        amount: orderData.amount,
         currency: orderData.currency,
         name: 'AI Councel',
         description: `Career Report Plan: ${selectedPlan.id}`,
@@ -156,13 +151,31 @@ export default function PaymentPage() {
             
             const verificationData = await verificationResponse.json();
             
-            if (verificationData.success) {
+            if (verificationData.success && db) {
+                // Create a permanent payment record in Firestore
+                await addDoc(collection(db, 'payments'), {
+                    userId: user.uid,
+                    userName: userInfo.name,
+                    planId: selectedPlan.id,
+                    amountPaid: finalAmount,
+                    originalAmount: selectedPlan.price,
+                    couponUsed: coupon || null,
+                    razorpayOrderId: response.razorpay_order_id,
+                    razorpayPaymentId: response.razorpay_payment_id,
+                    status: 'SUCCESS',
+                    createdAt: serverTimestamp(),
+                    reportId: null, // This will be filled when a report is generated
+                });
+                
+                // Update the user doc to clear the transient `paymentSuccessful` flag
+                // which is now deprecated.
                 const userDocRef = doc(db, 'users', user.uid);
                 await setDoc(userDocRef, { 
-                  paymentSuccessful: true,
-                  purchasedPlan: selectedPlan.id,
-                  lastPaymentId: response.razorpay_payment_id 
+                  paymentSuccessful: false, // Deprecated, set to false
+                  lastPaymentId: response.razorpay_payment_id, // Keep for reference
+                  purchasedPlan: selectedPlan.id, // Keep for reference
                 }, { merge: true });
+
 
                 toast({ title: 'Payment Successful!', description: 'Proceeding to your career suggestions...' });
                 router.push('/career-suggestions');
