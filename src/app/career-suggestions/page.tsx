@@ -40,22 +40,16 @@ export default function CareerSuggestionsPage() {
   useEffect(() => {
     if (!user || !db) return;
 
-    const checkPaymentAndGenerate = async (currentUser: User) => {
+    const checkAndGenerate = async (currentUser: User) => {
       try {
         const userDocRef = doc(db, 'users', currentUser.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
-            throw new Error("User document not found. Please sign up again.");
+            throw new Error("User document not found. Please start your journey again.");
         }
         
         const userData = userDoc.data();
-        
-        if (!userData?.paymentSuccessful) {
-          toast({ title: 'Payment Required', description: 'Please select a plan to generate career suggestions.', variant: 'destructive'});
-          router.replace('/pricing');
-          return;
-        }
         
         let userTraits = userData.userTraits;
         let personalizedAnswers = userData.personalizedAnswers;
@@ -69,7 +63,9 @@ export default function CareerSuggestionsPage() {
         }
 
         if (!userTraits || !personalizedAnswers) {
-            throw new Error("Critical user data for suggestions is missing from the database.");
+            toast({ title: 'Profile Incomplete', description: 'Please complete the psychometric test and personalized questions first.', variant: 'destructive'});
+            router.replace('/personalized-questions');
+            return;
         }
         
         const input: CareerSuggestionInput = {
@@ -83,10 +79,11 @@ export default function CareerSuggestionsPage() {
         toast({ title: 'Error Loading Page', description: error.message, variant: 'destructive' });
         setGenerationError(`An error occurred: ${error.message}`);
         setIsLoading(false);
+        router.replace('/welcome-guest');
       }
     };
 
-    checkPaymentAndGenerate(user);
+    checkAndGenerate(user);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, db, router, toast]);
 
