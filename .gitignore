@@ -57,6 +57,7 @@ secret.txt
 service-account.json
 .env
 .env.local
+.env.local.example
 .env.production
 service-account.json
 *.service-account.json
