@@ -38,7 +38,7 @@ const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION });
  */
 async function callVertexAISecurely(
   prompt: string,
-  model = "gemini-pro",
+  model = "gemini-2.5-flash",
   maxTokens = 1024,
   temperature = 0.6,
   isJsonOutput = false
@@ -132,7 +132,7 @@ export async function generateCareerInsights(input: CareerInsightsInput): Promis
     `;
     
     try {
-        const text = await callVertexAISecurely(prompt, "gemini-pro", 1024, 0.6, true);
+        const text = await callVertexAISecurely(prompt, "gemini-2.5-flash", 1024, 0.6, true);
         
         if (!text) {
              throw new Error("The AI model returned an empty response for career insights.");

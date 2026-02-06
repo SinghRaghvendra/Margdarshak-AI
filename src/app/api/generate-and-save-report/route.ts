@@ -20,7 +20,7 @@ const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION });
  */
 async function callVertexAISecurely(
   prompt: string,
-  model = "gemini-pro",
+  model = "gemini-2.5-flash",
   maxTokens = 8192,
   temperature = 0.7
 ) {
@@ -330,7 +330,7 @@ export async function POST(req: Request) {
             default: throw new Error('Invalid plan.');
         }
 
-        const generatedMarkdown = await callVertexAISecurely(prompt, 'gemini-pro', maxTokens, 0.7);
+        const generatedMarkdown = await callVertexAISecurely(prompt, 'gemini-2.5-flash', maxTokens, 0.7);
 
         // Save report and get its ID
         newReportId = await saveReport(db, {
