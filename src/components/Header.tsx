@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,7 +14,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { useAuth, useUser, useFirestore } from '@/firebase';
@@ -129,6 +130,7 @@ export default function Header() {
 
   const mainNavItems = [
     { label: 'Features', href: '/#features', icon: <Info className="mr-2 h-5 w-5" />, isExternal: false },
+    { label: 'AI Tools', href: '/aitools', icon: <Wand2 className="mr-2 h-5 w-5" />, isExternal: false },
     { label: 'Blog', href: '/blog', icon: <BookOpen className="mr-2 h-5 w-5" />, isExternal: false },
     { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" />, isExternal: false },
     { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" />, isExternal: false },

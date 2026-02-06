@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
  */
 async function callVertexAISecurely(
     prompt: string, 
-    model = "gemini-2.5-flash",
+    model = "gemini-pro",
     maxTokens = 8192,
     temperature = 0.4,
     isJsonOutput = false
@@ -171,7 +171,7 @@ export async function POST(req: Request) {
 
     // --- Simplified to a single, more reliable API call ---
     const combinedPrompt = getCombinedOptimizationPrompt(resumeText, jobDescription);
-    const resultText = await callVertexAISecurely(combinedPrompt, "gemini-2.5-flash", 8192, 0.4, true);
+    const resultText = await callVertexAISecurely(combinedPrompt, "gemini-pro", 8192, 0.4, true);
 
     if (!resultText) {
         throw new Error("The AI model returned an empty response.");
