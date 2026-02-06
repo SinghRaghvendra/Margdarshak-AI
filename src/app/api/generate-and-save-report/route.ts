@@ -10,24 +10,12 @@ import { VertexAI } from '@google-cloud/vertexai';
 
 export const runtime = 'nodejs';
 
-// Initialize Vertex AI client with credentials for local dev, or fallback to ADC for production.
-let vertex_ai: VertexAI;
-try {
-  const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
-  const googleAuthOptions = credentialsJson
-    ? { credentials: JSON.parse(credentialsJson) }
-    : undefined;
-
-  vertex_ai = new VertexAI({
-    project: process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID!,
-    location: process.env.LOCATION || 'us-central1',
-    googleAuthOptions,
-  });
-} catch (e: any) {
-  // We need to handle this error at the top level of the module
-  // to prevent the application from crashing on startup.
-  console.error(`FATAL: Failed to initialize Vertex AI: ${e.message}`);
-}
+// Initialize Vertex AI client. This single initialization works for both local dev (using GOOGLE_APPLICATION_CREDENTIALS)
+// and production on App Hosting (using Application Default Credentials).
+const vertex_ai = new VertexAI({
+  project: process.env.FIREBASE_PROJECT_ID!,
+  location: 'us-central1',
+});
 
 
 /**
