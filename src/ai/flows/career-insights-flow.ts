@@ -27,10 +27,22 @@ const CareerInsightsOutputSchema = z.object({
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
 
-// Initialize Vertex AI
-const PROJECT_ID = process.env.FIREBASE_PROJECT_ID!;
-const LOCATION = 'us-central1';
-const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION });
+// Initialize Vertex AI client with credentials for local dev, or fallback to ADC for production.
+let vertex_ai: VertexAI;
+try {
+  const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+  const googleAuthOptions = credentialsJson
+    ? { credentials: JSON.parse(credentialsJson) }
+    : undefined;
+
+  vertex_ai = new VertexAI({
+    project: process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID!,
+    location: process.env.LOCATION || 'us-central1',
+    googleAuthOptions,
+  });
+} catch (e: any) {
+  throw new Error(`Failed to initialize Vertex AI: ${e.message}`);
+}
 
 /**
  * Performs a secure, authenticated call to the Vertex AI API.
