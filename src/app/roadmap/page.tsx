@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -40,6 +41,7 @@ export default function RoadmapPage() {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [initializationError, setInitializationError] = useState<string | null>(null);
   
   const [pageLoading, setPageLoading] = useState(true);
   const [pageData, setPageData] = useState<{
@@ -78,8 +80,8 @@ export default function RoadmapPage() {
         const plan = JSON.parse(localStorage.getItem('margdarshak_selected_plan') || '{}').id;
 
         if (!selectedCareer || !allSuggestionsString || !userInfoString || !plan) {
-            toast({ title: 'Data Missing', description: 'Journey data is missing. Checking for existing reports.', variant: 'destructive' });
-            router.replace('/my-reports');
+            setInitializationError('Required journey data is missing from your session. This can happen if you refresh the page or open it in a new tab. Please go back to your career suggestions or "My Reports" page to start the report generation process again.');
+            setPageLoading(false);
             return;
         }
 
@@ -96,10 +98,12 @@ export default function RoadmapPage() {
         await fetchAndSetRoadmap(currentUser, pageInfo);
 
     } catch (error: any) {
-       toast({ title: 'Error loading page', description: error.message || 'An unexpected error occurred.', variant: 'destructive'});
-       router.replace('/welcome-guest');
+       setInitializationError(error.message || 'An unexpected error occurred during page setup.');
+       setPageLoading(false);
     } finally {
-        setPageLoading(false);
+        if (!initializationError) {
+          setPageLoading(false);
+        }
     }
   };
 
@@ -144,6 +148,7 @@ export default function RoadmapPage() {
     setCurrentRoadmapMarkdown(null);
     setGenerationProgress(0);
     setGenerationError(null);
+    setInitializationError(null); // Clear previous errors
     toast({ title: `Generating ${language} Report`, description: 'This may take up to 30 seconds...' });
 
     try {
@@ -227,7 +232,9 @@ export default function RoadmapPage() {
     }
   }
 
-  if (pageLoading || !pageData) {
+  const pageError = generationError || initializationError;
+
+  if (pageLoading || !pageData && !pageError) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
@@ -236,31 +243,39 @@ export default function RoadmapPage() {
       <Card className="w-full max-w-4xl mx-auto shadow-xl">
         <CardHeader className="text-center">
           <MapPinned className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="text-4xl font-bold capitalize">{pageData.purchasedPlan} Report</CardTitle>
-          <CardDescription className="text-xl text-muted-foreground">
-            Your detailed {pageData.language} report for <strong className="text-primary/90">{pageData.selectedCareer}</strong>.
-          </CardDescription>
+          <CardTitle className="text-4xl font-bold capitalize">{pageData?.purchasedPlan} Report</CardTitle>
+          {pageData && (
+              <CardDescription className="text-xl text-muted-foreground">
+                Your detailed {pageData.language} report for <strong className="text-primary/90">{pageData.selectedCareer}</strong>.
+              </CardDescription>
+          )}
         </CardHeader>
         <CardContent className="px-2 sm:px-6 py-4">
             {isGeneratingReport ? (
               <div className="flex flex-col items-center justify-center min-h-[300px] space-y-4">
-                <p className="text-muted-foreground">Generating detailed {pageData.language} report...</p>
+                <p className="text-muted-foreground">Generating detailed {pageData?.language} report...</p>
                 <Progress value={generationProgress} className="w-full max-w-md" />
                 <p className="text-sm text-primary font-semibold">{Math.round(generationProgress)}%</p>
                 <p className="text-xs text-muted-foreground">Estimated time: 20-30 seconds</p>
               </div>
-            ) : generationError ? (
+            ) : pageError ? (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Report Generation Failed</AlertTitle>
+                <AlertTitle>{initializationError ? 'Page Load Error' : 'Report Generation Failed'}</AlertTitle>
                 <AlertDescription>
-                  <p>{generationError}</p>
-                  <p className="mt-2">This can happen due to high server load or a network issue. Please try again.</p>
+                  <p>{pageError}</p>
+                  {generationError && <p className="mt-2">This can happen due to high server load or a network issue. Please try again.</p>}
                 </AlertDescription>
-                <div className="mt-4">
-                    <Button onClick={handleRetry}>
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Retry Generation
+                <div className="mt-4 flex gap-4">
+                    {generationError && (
+                        <Button onClick={handleRetry}>
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Retry Generation
+                        </Button>
+                    )}
+                    <Button variant="outline" onClick={() => router.push('/my-reports')}>
+                        <Milestone className="mr-2 h-4 w-4" />
+                        Go to My Reports
                     </Button>
                 </div>
               </Alert>
@@ -290,7 +305,7 @@ export default function RoadmapPage() {
          <CardContent className="mt-6 pb-6 text-center flex flex-col sm:flex-row justify-center items-center gap-4">
             <Button 
               onClick={handleDownloadPdf} 
-              disabled={isGeneratingPdf || isGeneratingReport || !currentRoadmapMarkdown || !!generationError} 
+              disabled={isGeneratingPdf || isGeneratingReport || !currentRoadmapMarkdown || !!pageError} 
               className="w-full sm:w-auto"
             >
               {isGeneratingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
