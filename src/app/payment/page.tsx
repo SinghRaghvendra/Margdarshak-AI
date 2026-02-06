@@ -117,7 +117,7 @@ export default function PaymentPage() {
         setIsProcessing(true);
         toast({ title: 'Processing Test Coupon...', description: 'Bypassing payment gateway for testing.' });
         try {
-            await addDoc(collection(db, 'payments'), {
+            const paymentDocRef = await addDoc(collection(db, 'payments'), {
                 userId: user.uid,
                 userName: userInfo.name,
                 planId: selectedPlan.id,
@@ -130,13 +130,17 @@ export default function PaymentPage() {
                 createdAt: serverTimestamp(),
                 reportId: null,
             });
+            
+            // Explicitly pass the new payment ID to the next page
+            localStorage.setItem('margdarshak_payment_id_for_report', paymentDocRef.id);
+
             toast({ title: 'Test Payment Successful!', description: 'Proceeding to your report...' });
-            router.push('/roadmap'); // CORRECTED: Redirect to the final report generation page.
+            router.push('/roadmap');
         } catch (error: any) {
             toast({ title: 'Test Coupon Failed', description: error.message || 'Could not process the test coupon.', variant: 'destructive' });
             setIsProcessing(false);
         }
-        return; // Stop execution here for the test coupon
+        return;
     }
     
     setIsProcessing(true);
@@ -181,7 +185,6 @@ export default function PaymentPage() {
             const verificationData = await verificationResponse.json();
             
             if (verificationData.success && db) {
-                // Create a permanent payment record in Firestore
                 const paymentDocRef = await addDoc(collection(db, 'payments'), {
                     userId: user.uid,
                     userName: userInfo.name,
@@ -193,9 +196,12 @@ export default function PaymentPage() {
                     razorpayPaymentId: response.razorpay_payment_id,
                     status: 'SUCCESS',
                     createdAt: serverTimestamp(),
-                    reportId: null, // This will be filled when a report is generated
+                    reportId: null,
                 });
                 
+                // Explicitly pass the new payment ID to the next page
+                localStorage.setItem('margdarshak_payment_id_for_report', paymentDocRef.id);
+
                 toast({ title: 'Payment Successful!', description: 'Proceeding to generate your report...' });
                 router.push('/roadmap');
             } else {

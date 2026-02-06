@@ -11,14 +11,8 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import type { User } from 'firebase/auth';
-import { useUser, useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, orderBy, limit, doc } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-
-interface StoredRoadmapData {
-  markdown: string;
-  generatedAt: number;
-}
 
 interface ViewModeData {
     markdown: string;
@@ -28,20 +22,16 @@ interface ViewModeData {
     userName: string;
 }
 
-const REPORT_CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
-
 export default function RoadmapPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useUser();
-  const db = useFirestore();
   
   const [currentRoadmapMarkdown, setCurrentRoadmapMarkdown] = useState<string | null>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState<string | null>(null);
-  const [initializationError, setInitializationError] = useState<string | null>(null);
   
   const [pageLoading, setPageLoading] = useState(true);
   const [pageData, setPageData] = useState<{
@@ -54,9 +44,51 @@ export default function RoadmapPage() {
 
   const roadmapContentRef = useRef<HTMLDivElement>(null);
   const hasInitialized = useRef(false);
+  const retryablePaymentId = useRef<string | null>(null);
+
+
+  const generateReport = async (currentUser: User, pageInfo: NonNullable<typeof pageData>, paymentId: string) => {
+    setIsGeneratingReport(true);
+    setCurrentRoadmapMarkdown(null);
+    setGenerationProgress(0);
+    setGenerationError(null);
+    retryablePaymentId.current = paymentId; // Store for retry
+    toast({ title: `Generating ${pageInfo.language} Report`, description: 'This may take up to 30 seconds...' });
+
+    try {
+        const idToken = await currentUser.getIdToken(true);
+        const response = await fetch('/api/generate-and-save-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+            body: JSON.stringify({ 
+                plan: pageInfo.purchasedPlan, 
+                language: pageInfo.language, 
+                career: pageInfo.selectedCareer, 
+                allSuggestions: pageInfo.allSuggestions, 
+                paymentId 
+            }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to generate report.');
+        
+        setGenerationProgress(100);
+        setCurrentRoadmapMarkdown(result.roadmapMarkdown);
+        toast({ title: 'Report Generated & Saved!', description: `Your ${pageInfo.language} report is ready.` });
+
+    } catch (error: any) {
+        console.error(`Error generating report:`, error);
+        setGenerationError(error.message);
+        toast({ title: `Error Generating Report`, description: error.message, variant: 'destructive', duration: 10000 });
+    } finally {
+        setIsGeneratingReport(false);
+    }
+  }
+
 
   const initializePage = async (currentUser: User) => {
     try {
+        // PRIORITY 1: View Mode (for viewing already generated reports)
         const viewModeDataString = localStorage.getItem('margdarshak_view_report_data');
         if (viewModeDataString) {
             const viewData: ViewModeData = JSON.parse(viewModeDataString);
@@ -67,53 +99,67 @@ export default function RoadmapPage() {
                 selectedCareer: viewData.careerName,
             });
             setCurrentRoadmapMarkdown(viewData.markdown);
-            setIsGeneratingReport(false);
-            setPageLoading(false);
             localStorage.removeItem('margdarshak_view_report_data');
             toast({ title: "Viewing Saved Report", description: `Displaying your report for ${viewData.careerName}.`});
-            return;
-        }
-
-        const selectedCareer = localStorage.getItem('margdarshak_selected_career');
-        const allSuggestionsString = localStorage.getItem('margdarshak_all_career_suggestions');
-        const userInfoString = localStorage.getItem('margdarshak_user_info');
-        const plan = JSON.parse(localStorage.getItem('margdarshak_selected_plan') || '{}').id;
-
-        if (!selectedCareer || !allSuggestionsString || !userInfoString || !plan) {
-            setInitializationError('Required journey data is missing from your session. This can happen if you refresh the page or open it in a new tab. Please go back to your career suggestions or "My Reports" page to start the report generation process again.');
             setPageLoading(false);
             return;
         }
 
-        const userInfo = JSON.parse(userInfoString);
-        const pageInfo = {
-            purchasedPlan: plan,
-            language: userInfo.language || 'English',
-            userName: userInfo.name || 'User',
-            selectedCareer: selectedCareer,
-            allSuggestions: JSON.parse(allSuggestionsString),
-        };
-      
-        setPageData(pageInfo);
-        await fetchAndSetRoadmap(currentUser, pageInfo);
+        // PRIORITY 2: Generation Mode (for generating a new report after payment)
+        const paymentIdForReport = localStorage.getItem('margdarshak_payment_id_for_report');
+        localStorage.removeItem('margdarshak_payment_id_for_report'); // Consume immediately
+
+        if (paymentIdForReport) {
+            const selectedCareer = localStorage.getItem('margdarshak_selected_career');
+            const allSuggestionsString = localStorage.getItem('margdarshak_all_career_suggestions');
+            const userInfoString = localStorage.getItem('margdarshak_user_info');
+            const planString = localStorage.getItem('margdarshak_selected_plan');
+
+            if (!selectedCareer || !allSuggestionsString || !userInfoString || !planString) {
+                throw new Error("Required journey data is missing from your session. Please go back and select a career and plan again.");
+            }
+            
+            const userInfo = JSON.parse(userInfoString);
+            const plan = JSON.parse(planString);
+
+            const currentPageData = {
+                purchasedPlan: plan.id,
+                language: userInfo.language || 'English',
+                userName: userInfo.name || 'User',
+                selectedCareer: selectedCareer,
+                allSuggestions: JSON.parse(allSuggestionsString),
+            };
+
+            setPageData(currentPageData);
+            setPageLoading(false);
+            await generateReport(currentUser, currentPageData, paymentIdForReport);
+        } else {
+             throw new Error("No pending report generation found. Please select a report to generate from the My Reports page or start a new journey.");
+        }
 
     } catch (error: any) {
-       setInitializationError(error.message || 'An unexpected error occurred during page setup.');
+       setGenerationError(error.message || 'An unexpected error occurred during page setup.');
        setPageLoading(false);
-    } finally {
-        if (!initializationError) {
-          setPageLoading(false);
-        }
     }
   };
 
   useEffect(() => {
-    if (user && db && !hasInitialized.current) {
+    if (user && !hasInitialized.current) {
       hasInitialized.current = true;
       initializePage(user);
+    } else if (!user && !hasInitialized.current) {
+        // If auth is still loading, wait. If it's done and there's no user, show error.
+        // This handles the case where the user lands here without being logged in.
+        const authTimer = setTimeout(() => {
+            if (!user) {
+                 setPageLoading(false);
+                 setGenerationError("You must be logged in to view or generate a report.");
+            }
+        }, 1500); // wait 1.5s for auth state to settle
+        return () => clearTimeout(authTimer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, db]);
+  }, [user]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -128,76 +174,6 @@ export default function RoadmapPage() {
     return () => clearInterval(timer);
   }, [isGeneratingReport]);
 
-  const fetchAndSetRoadmap = async (currentUser: User, pageInfo: NonNullable<typeof pageData>) => {
-    if (!db) return;
-    const { purchasedPlan, language, selectedCareer, allSuggestions } = pageInfo;
-    
-    // Check for cached report first
-    const cachedReportKey = `margdarshak_roadmap_${selectedCareer.replace(/\s/g, '_')}_${purchasedPlan}_${language}`;
-    const cachedDataString = localStorage.getItem(cachedReportKey);
-    if (cachedDataString) {
-        const cachedReport: StoredRoadmapData = JSON.parse(cachedDataString);
-        if (Date.now() - cachedReport.generatedAt < REPORT_CACHE_DURATION) {
-            setCurrentRoadmapMarkdown(cachedReport.markdown);
-            toast({ title: 'Report Loaded from Cache' });
-            return;
-        }
-    }
-
-    setIsGeneratingReport(true);
-    setCurrentRoadmapMarkdown(null);
-    setGenerationProgress(0);
-    setGenerationError(null);
-    setInitializationError(null); // Clear previous errors
-    toast({ title: `Generating ${language} Report`, description: 'This may take up to 30 seconds...' });
-
-    try {
-        // Find an unspent payment entitlement
-        const paymentsRef = collection(db, 'payments');
-        const q = query(
-            paymentsRef,
-            where('userId', '==', currentUser.uid),
-            where('planId', '==', purchasedPlan),
-            where('status', '==', 'SUCCESS'),
-            where('reportId', '==', null),
-            orderBy('createdAt', 'asc'),
-            limit(1)
-        );
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            throw new Error(`No unused '${purchasedPlan}' plan payment found. Please purchase a plan.`);
-        }
-        
-        const paymentDoc = querySnapshot.docs[0];
-        const paymentId = paymentDoc.id;
-
-        const idToken = await currentUser.getIdToken(true);
-        const response = await fetch('/api/generate-and-save-report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-            body: JSON.stringify({ plan: purchasedPlan, language, career: selectedCareer, allSuggestions, paymentId }),
-        });
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Failed to generate report.');
-        
-        setGenerationProgress(100);
-        setCurrentRoadmapMarkdown(result.roadmapMarkdown);
-
-        const newCachedReport: StoredRoadmapData = { markdown: result.roadmapMarkdown, generatedAt: Date.now() };
-        localStorage.setItem(cachedReportKey, JSON.stringify(newCachedReport));
-        
-        toast({ title: 'Report Generated & Saved!', description: `Your ${language} report is ready.` });
-
-    } catch (error: any) {
-        console.error(`Error generating report:`, error);
-        setGenerationError(error.message);
-        toast({ title: `Error Generating Report`, description: error.message, variant: 'destructive', duration: 10000 });
-    } finally {
-        setIsGeneratingReport(false);
-    }
-  };
 
   const handleDownloadPdf = async () => {
     if (!roadmapContentRef.current || !pageData) {
@@ -227,14 +203,14 @@ export default function RoadmapPage() {
   };
 
   const handleRetry = () => {
-    if (user && pageData) {
-      fetchAndSetRoadmap(user, pageData);
+    if (user && pageData && retryablePaymentId.current) {
+      generateReport(user, pageData, retryablePaymentId.current);
+    } else {
+        toast({ title: 'Retry Failed', description: "Cannot retry. Necessary information is missing.", variant: 'destructive'});
     }
   }
 
-  const pageError = generationError || initializationError;
-
-  if (pageLoading || !pageData && !pageError) {
+  if (pageLoading) {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
@@ -243,7 +219,7 @@ export default function RoadmapPage() {
       <Card className="w-full max-w-4xl mx-auto shadow-xl">
         <CardHeader className="text-center">
           <MapPinned className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="text-4xl font-bold capitalize">{pageData?.purchasedPlan} Report</CardTitle>
+          <CardTitle className="text-4xl font-bold capitalize">{pageData?.purchasedPlan || 'Report'} Report</CardTitle>
           {pageData && (
               <CardDescription className="text-xl text-muted-foreground">
                 Your detailed {pageData.language} report for <strong className="text-primary/90">{pageData.selectedCareer}</strong>.
@@ -258,16 +234,15 @@ export default function RoadmapPage() {
                 <p className="text-sm text-primary font-semibold">{Math.round(generationProgress)}%</p>
                 <p className="text-xs text-muted-foreground">Estimated time: 20-30 seconds</p>
               </div>
-            ) : pageError ? (
+            ) : generationError ? (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{initializationError ? 'Page Load Error' : 'Report Generation Failed'}</AlertTitle>
+                <AlertTitle>An Error Occurred</AlertTitle>
                 <AlertDescription>
-                  <p>{pageError}</p>
-                  {generationError && <p className="mt-2">This can happen due to high server load or a network issue. Please try again.</p>}
+                  <p>{generationError}</p>
                 </AlertDescription>
                 <div className="mt-4 flex gap-4">
-                    {generationError && (
+                    {retryablePaymentId.current && (
                         <Button onClick={handleRetry}>
                             <RefreshCw className="mr-2 h-4 w-4" />
                             Retry Generation
@@ -298,14 +273,17 @@ export default function RoadmapPage() {
               </div>
             ) : (
                <div className="text-center py-10">
-                    <p className="text-muted-foreground">The report could not be displayed. Please try generating it again.</p>
+                    <p className="text-muted-foreground">Your report should be displayed here. If you are seeing this, an unknown error occurred.</p>
+                     <Button onClick={() => router.push('/my-reports')} className="mt-4">
+                        Go to My Reports
+                    </Button>
                </div>
             )}
         </CardContent>
          <CardContent className="mt-6 pb-6 text-center flex flex-col sm:flex-row justify-center items-center gap-4">
             <Button 
               onClick={handleDownloadPdf} 
-              disabled={isGeneratingPdf || isGeneratingReport || !currentRoadmapMarkdown || !!pageError} 
+              disabled={isGeneratingPdf || isGeneratingReport || !currentRoadmapMarkdown || !!generationError} 
               className="w-full sm:w-auto"
             >
               {isGeneratingPdf ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
