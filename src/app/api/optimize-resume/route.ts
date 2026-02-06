@@ -2,19 +2,27 @@
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { getDb } from '@/lib/firebaseAdmin';
+import { GoogleAuth } from 'google-auth-library';
 
 export const runtime = 'nodejs';
 
 /**
- * Performs a direct REST API call to the Gemini API.
+ * Performs a secure, authenticated REST API call to the Gemini API using OAuth2.
  */
-async function callGeminiWithApiKey(
+async function callGeminiSecurely(
     prompt: string, 
-    maxTokens: number
+    model = "gemini-2.5-flash",
+    maxTokens = 8192,
+    temperature = 0.4
 ) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("AI Service is unavailable: GEMINI_API_KEY is not set.");
+  const auth = new GoogleAuth({
+    scopes: 'https://www.googleapis.com/auth/cloud-platform',
+  });
+  const client = await auth.getClient();
+  const accessToken = (await client.getAccessToken())?.token;
+
+  if (!accessToken) {
+    throw new Error("Authentication failed: Could not retrieve a secure access token for the AI service.");
   }
   
   const safetySettings = [
@@ -25,15 +33,18 @@ async function callGeminiWithApiKey(
   ];
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           maxOutputTokens: maxTokens,
-          temperature: 0.4,
+          temperature: temperature,
         },
         safetySettings,
       }),
@@ -161,7 +172,7 @@ export async function POST(req: Request) {
 
     // --- Simplified to a single, more reliable API call ---
     const combinedPrompt = getCombinedOptimizationPrompt(resumeText, jobDescription);
-    const resultText = await callGeminiWithApiKey(combinedPrompt, 8192); // Use a single, large token limit
+    const resultText = await callGeminiSecurely(combinedPrompt, "gemini-2.5-flash", 8192, 0.4);
 
     if (!resultText) {
         throw new Error("The AI model returned an empty response.");

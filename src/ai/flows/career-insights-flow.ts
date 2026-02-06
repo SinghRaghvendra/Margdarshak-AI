@@ -4,7 +4,7 @@
  * @fileOverview Provides astrological and numerological insights for a selected career.
  * This file uses a direct, self-contained API call for stability and to avoid auth conflicts.
  */
-
+import { GoogleAuth } from 'google-auth-library';
 import { z } from 'zod';
 
 // Define Zod schemas for clear, validated input and output.
@@ -27,18 +27,25 @@ const CareerInsightsOutputSchema = z.object({
 export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
 /**
- * Performs a direct REST API call to the Gemini API using a standard API key.
- * This is isolated from Genkit or other SDKs to ensure simple, predictable authentication.
+ * Performs a secure, authenticated REST API call to the Gemini API using OAuth2.
+ * This method is used on the server to leverage the application's service account identity.
  */
-async function callGeminiWithApiKey(
+async function callGeminiSecurely(
   prompt: string,
   model = "gemini-2.5-flash",
-  maxTokens = 1024
+  maxTokens = 1024,
+  temperature = 0.6
 ) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Use GoogleAuth to get an OAuth2 access token.
+  // This works automatically in Google Cloud environments like App Hosting.
+  const auth = new GoogleAuth({
+    scopes: 'https://www.googleapis.com/auth/cloud-platform',
+  });
+  const client = await auth.getClient();
+  const accessToken = (await client.getAccessToken())?.token;
 
-  if (!apiKey) {
-    throw new Error("AI Service Authentication Failed: The GEMINI_API_KEY environment variable is not set on the server.");
+  if (!accessToken) {
+    throw new Error("Authentication failed: Could not retrieve a secure access token for the AI service.");
   }
   
   const safetySettings = [
@@ -49,15 +56,18 @@ async function callGeminiWithApiKey(
   ];
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`, // Use the OAuth2 token
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           maxOutputTokens: maxTokens,
-          temperature: 0.6,
+          temperature: temperature,
           responseMimeType: "application/json",
         },
         safetySettings,
@@ -69,7 +79,9 @@ async function callGeminiWithApiKey(
 
   if (!response.ok) {
     console.error("Gemini API Error:", data.error);
-    throw new Error(data.error?.message || `The AI model failed to respond. Status: ${response.status}`);
+    const defaultError = `The AI model failed to respond. Status: ${response.status}`;
+    const message = data.error?.message || defaultError;
+    throw new Error(message);
   }
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -81,6 +93,7 @@ async function callGeminiWithApiKey(
 
   return text;
 }
+
 
 /**
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
@@ -138,7 +151,7 @@ export async function generateCareerInsights(input: CareerInsightsInput): Promis
     `;
     
     try {
-        const text = await callGeminiWithApiKey(prompt, "gemini-2.5-flash", 1024);
+        const text = await callGeminiSecurely(prompt, "gemini-2.5-flash", 1024, 0.6);
         
         if (!text) {
              throw new Error("The AI model returned an empty response for career insights.");

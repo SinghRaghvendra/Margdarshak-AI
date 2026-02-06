@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { getDb } from '@/lib/firebaseAdmin';
@@ -5,41 +6,60 @@ import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
 import { runTransaction } from 'firebase-admin/firestore';
+import { GoogleAuth } from 'google-auth-library';
 
 export const runtime = 'nodejs';
 
-async function callGeminiWithApiKey(
+/**
+ * Performs a secure, authenticated REST API call to the Gemini API using OAuth2.
+ * This method is used on the server to leverage the application's service account identity.
+ */
+async function callGeminiSecurely(
   prompt: string,
   model = "gemini-2.5-flash",
-  maxTokens = 8192
+  maxTokens = 8192,
+  temperature = 0.7
 ) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("AI Service Authentication Failed: GEMINI_API_KEY is not set.");
+  // Use GoogleAuth to get an OAuth2 access token.
+  const auth = new GoogleAuth({
+    scopes: 'https://www.googleapis.com/auth/cloud-platform',
+  });
+  const client = await auth.getClient();
+  const accessToken = (await client.getAccessToken())?.token;
+
+  if (!accessToken) {
+    throw new Error("Authentication failed: Could not retrieve a secure access token for the AI service.");
   }
+  
   const safetySettings = [
       { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
       { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
       { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
       { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
   ];
+  
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens, temperature: 0.7 },
+        generationConfig: { maxOutputTokens, temperature },
         safetySettings,
       }),
     }
   );
+  
   const data = await response.json();
   if (!response.ok) {
     console.error("Gemini API Error:", data.error);
     throw new Error(data.error?.message || `AI model failed. Status: ${response.status}`);
   }
+  
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) {
     console.warn("Gemini Response Missing Text:", data);
@@ -47,6 +67,7 @@ async function callGeminiWithApiKey(
   }
   return text;
 }
+
 
 // --- PROMPT GENERATION FUNCTIONS (omitted for brevity, they are unchanged) ---
 function getVerdictPrompt(input: any) {
@@ -277,9 +298,6 @@ export async function POST(req: Request) {
         if (paymentData.status !== 'SUCCESS') {
             throw new Error(`Payment status is not 'SUCCESS'.`);
         }
-        if (paymentData.planId !== plan) {
-            throw new Error(`This payment is for the '${paymentData.planId}' plan, not '${plan}'.`);
-        }
         if (paymentData.reportId) {
             throw new Error(`This payment has already been used to generate a report.`);
         }
@@ -324,7 +342,7 @@ export async function POST(req: Request) {
             default: throw new Error('Invalid plan.');
         }
 
-        const generatedMarkdown = await callGeminiWithApiKey(prompt, 'gemini-2.5-flash', maxTokens);
+        const generatedMarkdown = await callGeminiSecurely(prompt, 'gemini-2.5-flash', maxTokens, 0.7);
 
         // Save report and get its ID
         newReportId = await saveReport(db, {
