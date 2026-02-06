@@ -5,7 +5,6 @@ import { getDb } from '@/lib/firebaseAdmin';
 import { calculateLifePathNumber } from '@/lib/numerology';
 import { differenceInYears, parseISO } from 'date-fns';
 import { saveReport } from '@/services/report-service-server';
-import { runTransaction } from 'firebase-admin/firestore';
 import { VertexAI } from '@google-cloud/vertexai';
 
 export const runtime = 'nodejs';
@@ -15,7 +14,7 @@ export const runtime = 'nodejs';
  */
 async function callVertexAISecurely(
   prompt: string,
-  model = "gemini-2.5-flash",
+  model = "gemini-pro",
   maxTokens = 8192,
   temperature = 0.7
 ) {
@@ -307,7 +306,7 @@ export async function POST(req: Request) {
     paymentDocRef = db.collection('payments').doc(paymentId);
 
     // --- Transaction to ensure atomicity ---
-    const reportMarkdown = await runTransaction(db, async (transaction) => {
+    const reportMarkdown = await db.runTransaction(async (transaction) => {
         const paymentDoc = await transaction.get(paymentDocRef!);
         
         // SERVER-SIDE ENTITLEMENT CHECK
@@ -366,7 +365,7 @@ export async function POST(req: Request) {
             default: throw new Error('Invalid plan.');
         }
 
-        const generatedMarkdown = await callVertexAISecurely(prompt, 'gemini-2.5-flash', maxTokens, 0.7);
+        const generatedMarkdown = await callVertexAISecurely(prompt, 'gemini-1.5-pro-001', maxTokens, 0.7);
 
         // Save report and get its ID
         newReportId = await saveReport(db, {

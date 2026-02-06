@@ -111,6 +111,10 @@ export default function PaymentPage() {
         return;
     }
     
+    // Store context for the verification page
+    localStorage.setItem('margdarshak_coupon_used', coupon);
+    localStorage.setItem('margdarshak_final_amount', finalAmount.toString());
+
     // Test coupon to bypass payment gateway
     if (coupon.toUpperCase() === 'RAGHVENDRATESTTEST') {
         setIsProcessing(true);
@@ -130,7 +134,6 @@ export default function PaymentPage() {
                 reportId: null,
             });
             
-            // Explicitly pass the new payment ID to the next page
             localStorage.setItem('margdarshak_payment_id_for_report', paymentDocRef.id);
 
             toast({ title: 'Test Payment Successful!', description: 'Proceeding to your career suggestions...' });
@@ -161,6 +164,12 @@ export default function PaymentPage() {
         throw new Error(orderData.error || 'Failed to create order');
       }
 
+      if (!window.Razorpay) {
+        toast({ title: 'Payment Gateway Not Ready', description: 'Please wait a moment and try again.', variant: 'destructive' });
+        setIsProcessing(false);
+        return;
+      }
+
       const options = {
         key: orderData.key_id,
         amount: orderData.amount,
@@ -168,49 +177,10 @@ export default function PaymentPage() {
         name: 'AI Councel',
         description: `Career Report Plan: ${selectedPlan.id}`,
         order_id: orderData.id,
-        handler: async function (response: any) {
-          toast({ title: 'Verifying Payment', description: 'Please do not close this page.' });
-          try {
-            const verificationResponse = await fetch('/api/razorpay/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-            
-            const verificationData = await verificationResponse.json();
-            
-            if (verificationData.success && db) {
-                const paymentDocRef = await addDoc(collection(db, 'payments'), {
-                    userId: user.uid,
-                    userName: userInfo.name,
-                    planId: selectedPlan.id,
-                    amountPaid: finalAmount,
-                    originalAmount: selectedPlan.price,
-                    couponUsed: coupon || null,
-                    razorpayOrderId: response.razorpay_order_id,
-                    razorpayPaymentId: response.razorpay_payment_id,
-                    status: 'SUCCESS',
-                    createdAt: serverTimestamp(),
-                    reportId: null,
-                });
-                
-                // Explicitly pass the new payment ID to the next page
-                localStorage.setItem('margdarshak_payment_id_for_report', paymentDocRef.id);
-
-                toast({ title: 'Payment Successful!', description: 'Proceeding to generate your career suggestions...' });
-                router.push('/career-suggestions');
-            } else {
-                throw new Error(verificationData.error || 'Payment verification failed.');
-            }
-
-          } catch (verifyError: any) {
-             toast({ title: 'Verification Failed', description: verifyError.message, variant: 'destructive', duration: 8000});
-             setIsProcessing(false);
-          }
+        handler: function (response: any) {
+          const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = response;
+          // Redirect to our dedicated verification page
+          router.push(`/verify-payment?razorpay_payment_id=${razorpay_payment_id}&razorpay_order_id=${razorpay_order_id}&razorpay_signature=${razorpay_signature}`);
         },
         prefill: {
           name: userInfo.name,
