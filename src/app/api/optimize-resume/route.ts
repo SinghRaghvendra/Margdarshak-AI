@@ -2,61 +2,57 @@
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { getDb } from '@/lib/firebaseAdmin';
-import { GoogleAuth } from 'google-auth-library';
+import { VertexAI } from '@google-cloud/vertexai';
 
 export const runtime = 'nodejs';
 
+
+// Initialize Vertex AI
+const PROJECT_ID = process.env.FIREBASE_PROJECT_ID!;
+const LOCATION = 'asia-south1'; // From firebase.json
+const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION });
+
 /**
- * Performs a secure, authenticated REST API call to the Gemini API using OAuth2.
+ * Performs a secure, authenticated call to the Vertex AI API.
  */
-async function callGeminiSecurely(
+async function callVertexAISecurely(
     prompt: string, 
-    model = "gemini-2.5-flash",
+    model = "gemini-1.5-flash-001",
     maxTokens = 8192,
-    temperature = 0.4
+    temperature = 0.4,
+    isJsonOutput = false
 ) {
-  const auth = new GoogleAuth({
-    scopes: 'https://www.googleapis.com/auth/cloud-platform',
+  const generativeModel = vertex_ai.getGenerativeModel({
+    model: model,
+    generationConfig: {
+      maxOutputTokens: maxTokens,
+      temperature: temperature,
+      ...(isJsonOutput && { responseMimeType: "application/json" }),
+    },
+    safetySettings: [
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+    ],
   });
-  const client = await auth.getClient();
-  const accessToken = (await client.getAccessToken())?.token;
 
-  if (!accessToken) {
-    throw new Error("Authentication failed: Could not retrieve a secure access token for the AI service.");
-  }
-  
-  const safetySettings = [
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-  ];
+  const request = { contents: [{ role: 'user', parts: [{ text: prompt }] }] };
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-    {
-      method: "POST",
-      headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          maxOutputTokens: maxTokens,
-          temperature: temperature,
-        },
-        safetySettings,
-      }),
+  try {
+    const resp = await generativeModel.generateContent(request);
+    const response = resp.response;
+    
+    if (!response.candidates?.[0]?.content?.parts?.[0]?.text) {
+       console.warn("Vertex AI Response Missing Text:", response);
+       throw new Error("The AI model returned an empty or invalid response.");
     }
-  );
-
-  const data = await response.json();
-  if (!response.ok) {
-    console.error("Gemini API Error:", data.error);
-    throw new Error(data.error?.message || `The AI model failed to respond. Status: ${response.status}`);
+    
+    return response.candidates[0].content.parts[0].text;
+  } catch (error: any) {
+      console.error("Vertex AI SDK Error:", error);
+      throw new Error(error.message || "The AI model failed to respond.");
   }
-  return data.candidates?.[0]?.content?.parts?.[0]?.text;
 }
 
 /**
@@ -172,7 +168,7 @@ export async function POST(req: Request) {
 
     // --- Simplified to a single, more reliable API call ---
     const combinedPrompt = getCombinedOptimizationPrompt(resumeText, jobDescription);
-    const resultText = await callGeminiSecurely(combinedPrompt, "gemini-2.5-flash", 8192, 0.4);
+    const resultText = await callVertexAISecurely(combinedPrompt, "gemini-1.5-flash-001", 8192, 0.4, true);
 
     if (!resultText) {
         throw new Error("The AI model returned an empty response.");

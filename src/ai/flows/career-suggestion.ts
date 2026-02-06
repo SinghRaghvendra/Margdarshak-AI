@@ -2,9 +2,9 @@
 'use server';
 /**
  * @fileOverview Provides AI-powered career suggestions based on user traits and personalized answers.
- * This file uses a direct, self-contained API call for stability and to avoid auth conflicts.
+ * This file has been updated to use the secure Vertex AI SDK.
  */
-import { GoogleAuth } from 'google-auth-library';
+import { VertexAI } from '@google-cloud/vertexai';
 import {z} from 'zod';
 
 const PersonalizedAnswersSchema = z.object({
@@ -41,77 +41,58 @@ const CareerSuggestionOutputSchema = z.object({
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
 
+// Initialize Vertex AI
+const PROJECT_ID = process.env.FIREBASE_PROJECT_ID!;
+const LOCATION = 'asia-south1'; // From firebase.json
+const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION });
+
 /**
- * Performs a secure, authenticated REST API call to the Gemini API using OAuth2.
- * This method is used on the server to leverage the application's service account identity.
+ * Performs a secure, authenticated call to the Vertex AI API.
+ * This uses the application's default service account for authentication.
  */
-async function callGeminiSecurely(
+async function callVertexAISecurely(
   prompt: string,
-  model = "gemini-2.5-flash",
+  model = "gemini-1.5-flash-001",
   maxTokens = 8192,
-  temperature = 0.5
+  temperature = 0.5,
+  isJsonOutput = false
 ) {
-  // Use GoogleAuth to get an OAuth2 access token.
-  // This works automatically in Google Cloud environments like App Hosting.
-  const auth = new GoogleAuth({
-    scopes: 'https://www.googleapis.com/auth/cloud-platform',
+  const generativeModel = vertex_ai.getGenerativeModel({
+    model: model,
+    generationConfig: {
+      maxOutputTokens: maxTokens,
+      temperature: temperature,
+      ...(isJsonOutput && { responseMimeType: "application/json" }),
+    },
+    safetySettings: [
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+    ],
   });
-  const client = await auth.getClient();
-  const accessToken = (await client.getAccessToken())?.token;
 
-  if (!accessToken) {
-    throw new Error("Authentication failed: Could not retrieve a secure access token for the AI service.");
-  }
+  const request = { contents: [{ role: 'user', parts: [{ text: prompt }] }] };
 
-  const safetySettings = [
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-  ];
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`, // Use the OAuth2 token
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          maxOutputTokens: maxTokens,
-          temperature: temperature,
-          responseMimeType: "application/json",
-        },
-        safetySettings,
-      }),
+  try {
+    const resp = await generativeModel.generateContent(request);
+    const response = resp.response;
+    
+    if (!response.candidates?.[0]?.content?.parts?.[0]?.text) {
+       console.warn("Vertex AI Response Missing Text:", response);
+       throw new Error("The AI model returned an empty or invalid response.");
     }
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    console.error("Gemini API Error:", data.error);
-    const defaultError = `The AI model failed to respond. Status: ${response.status}`;
-    const message = data.error?.message || defaultError;
-    throw new Error(message);
+    
+    return response.candidates[0].content.parts[0].text;
+  } catch (error: any) {
+      console.error("Vertex AI SDK Error:", error);
+      throw new Error(error.message || "The AI model failed to respond.");
   }
-
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!text) {
-    console.warn("Gemini Response Missing Text:", data);
-    throw new Error("The AI model returned an empty or invalid response.");
-  }
-
-  return text;
 }
+
 
 /**
  * Defensively extracts a JSON object from a string that might contain other text or markdown.
- * It finds the first '{' and the last '}' to isolate the JSON content.
  */
 function extractJSON(text: string): any {
   const firstBrace = text.indexOf('{');
@@ -202,7 +183,7 @@ export async function suggestCareers(input: CareerSuggestionInput): Promise<Care
     `;
     
     try {
-        const text = await callGeminiSecurely(prompt, "gemini-2.5-flash", 8192, 0.5);
+        const text = await callVertexAISecurely(prompt, "gemini-1.5-flash-001", 8192, 0.5, true);
         
         if (!text) {
              throw new Error("The AI model returned an empty response for career suggestions.");
