@@ -41,29 +41,8 @@ const CareerSuggestionOutputSchema = z.object({
 });
 export type CareerSuggestionOutput = z.infer<typeof CareerSuggestionOutputSchema>;
 
-// --- SECURE VERTEX AI INITIALIZATION ---
-// This initializes the VertexAI client using the service account credentials
-// stored in the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable.
-const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
-if (!credentialsJson) {
-  throw new Error(
-    'The GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable is not set. This is required for local development.'
-  );
-}
-
-const vertex_ai = new VertexAI({
-  project: 'margdarshak-ai',
-  location: 'us-central1',
-  googleAuthOptions: {
-    credentials: JSON.parse(credentialsJson),
-  },
-});
-// --- END SECURE INITIALIZATION ---
-
-
 /**
- * Performs a secure, authenticated call to the Vertex AI API.
- * This uses the application's service account credentials for authentication.
+ * Performs a secure, authenticated call to the Vertex AI API using ADC.
  */
 async function callVertexAISecurely(
   prompt: string,
@@ -72,6 +51,12 @@ async function callVertexAISecurely(
   temperature = 0.5,
   isJsonOutput = false
 ) {
+  // Initialize inside the function to be build-safe. Relies on Application Default Credentials.
+  const vertex_ai = new VertexAI({
+    project: process.env.FIREBASE_PROJECT_ID || 'margdarshak-ai',
+    location: 'us-central1',
+  });
+
   const generativeModel = vertex_ai.getGenerativeModel({
     model: model,
     generationConfig: {

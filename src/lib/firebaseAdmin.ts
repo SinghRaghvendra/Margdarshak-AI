@@ -1,4 +1,4 @@
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 
 let adminApp: App;
@@ -9,21 +9,10 @@ function initializeFirebaseAdmin(): App {
     return getApps()[0];
   }
 
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
-      throw new Error(
-        'Missing Firebase Admin credentials. Please set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables.'
-      );
-  }
-
-  return initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: privateKey,
-    }),
-  });
+  // Initialize with no arguments.
+  // The SDK will automatically detect the service account in the App Hosting environment
+  // or from the GOOGLE_APPLICATION_CREDENTIALS environment variable locally.
+  return initializeApp();
 }
 
 /**

@@ -13,10 +13,6 @@ env:
     secret: gemini-api-key
   - variable: FIREBASE_PROJECT_ID
     secret: project_id
-  - variable: FIREBASE_CLIENT_EMAIL
-    secret: client_email
-  - variable: FIREBASE_PRIVATE_KEY
-    secret: private_key
   - variable: NEXT_PUBLIC_RAZORPAY_KEY_ID
     value: "rzp_live_Rqe0Dt9aWQ4FPR"
   - variable: RAZORPAY_KEY_ID
@@ -35,8 +31,6 @@ env:
     value: "736384619713"
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: "1:736384619713:web:8f2136414ad6f5e903f040"
-  - variable: GOOGLE_APPLICATION_CREDENTIALS_JSON
-    secret: GOOGLE_APPLICATION_CREDENTIALS_JSON
 
 build:
   command: "npm run build"
