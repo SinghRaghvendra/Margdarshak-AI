@@ -10,12 +10,24 @@ import { VertexAI } from '@google-cloud/vertexai';
 
 export const runtime = 'nodejs';
 
-// Initialize Vertex AI client. This single initialization works for both local dev (using GOOGLE_APPLICATION_CREDENTIALS)
-// and production on App Hosting (using Application Default Credentials).
+// --- SECURE VERTEX AI INITIALIZATION ---
+// This initializes the VertexAI client using the service account credentials
+// stored in the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable.
+const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+if (!credentialsJson) {
+  throw new Error(
+    'The GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable is not set. This is required for local development.'
+  );
+}
+
 const vertex_ai = new VertexAI({
-  project: process.env.FIREBASE_PROJECT_ID!,
+  project: 'margdarshak-ai',
   location: 'us-central1',
+  googleAuthOptions: {
+    credentials: JSON.parse(credentialsJson),
+  },
 });
+// --- END SECURE INITIALIZATION ---
 
 
 /**
@@ -27,10 +39,6 @@ async function callVertexAISecurely(
   maxTokens = 8192,
   temperature = 0.7
 ) {
-  if (!vertex_ai) {
-      throw new Error("Vertex AI client is not initialized. Check server logs for initialization errors.");
-  }
-
   const generativeModel = vertex_ai.getGenerativeModel({
     model: model,
     generationConfig: {
