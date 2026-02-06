@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,9 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Edit3, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Edit3, ArrowRight, ArrowLeft } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteField } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 
 
@@ -113,20 +112,29 @@ export default function PersonalizedQuestionsPage() {
       return;
     }
     setIsLoading(true);
-    toast({ title: 'Saving Your Answers...', description: 'Preparing your personalized plans...' });
+    toast({ title: 'Saving Your Answers...', description: 'Preparing to generate your career matches...' });
     try {
       const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, { personalizedAnswers: data, personalizedAnswersCompleted: true }, { merge: true });
+      // Save new answers and crucially, remove old suggestions to force regeneration.
+      await setDoc(userDocRef, { 
+          personalizedAnswers: data, 
+          personalizedAnswersCompleted: true,
+          allSuggestions: deleteField() // This removes the old suggestions from the document
+      }, { merge: true });
+
+      // Store current answers in localStorage for this session
       localStorage.setItem('margdarshak_personalized_answers', JSON.stringify(data));
       
-      // Clear any data from a previous plan selection/payment flow
+      // Clear any downstream data from localStorage to ensure a fresh flow
+      localStorage.removeItem('margdarshak_all_career_suggestions');
+      localStorage.removeItem('margdarshak_selected_career');
       localStorage.removeItem('margdarshak_selected_plan');
       
-      // CORRECTED: Redirect to the pricing/plans page first.
-      router.push('/pricing');
-    } catch (error) {
+      toast({ title: 'Answers Saved!', description: 'Generating your career suggestions now...' });
+      router.push('/career-suggestions'); // The correct redirect
+    } catch (error: any) {
       console.error('Error saving personalized answers:', error);
-      toast({ title: 'Error Saving Answers', description: 'Could not save your answers. Please try again.', variant: 'destructive' });
+      toast({ title: 'Error Saving Answers', description: `Could not save your answers. Details: ${error.message}`, variant: 'destructive' });
       setIsLoading(false);
     }
   };
@@ -178,7 +186,7 @@ export default function PersonalizedQuestionsPage() {
                   <LoadingSpinner />
                 ) : (
                   <>
-                    Submit Assessment <CheckCircle className="ml-2 h-5 w-5" />
+                    Submit & See Career Matches <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>
