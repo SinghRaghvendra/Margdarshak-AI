@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -42,6 +41,7 @@ export default function CareerSuggestionsPage() {
 
     const checkAndGenerate = async (currentUser: User) => {
       try {
+        const paymentId = localStorage.getItem('margdarshak_payment_id_for_report');
         const userDocRef = doc(db, 'users', currentUser.uid);
         const userDoc = await getDoc(userDocRef);
 
@@ -50,10 +50,18 @@ export default function CareerSuggestionsPage() {
         }
         
         const userData = userDoc.data();
-        
-        let userTraits = userData.userTraits;
-        let personalizedAnswers = userData.personalizedAnswers;
         let allSuggestions = userData.allSuggestions;
+
+        // If there are no existing suggestions, a payment must have just occurred.
+        if (!allSuggestions && !paymentId) {
+             toast({
+                title: 'Plan Required',
+                description: 'Please purchase a report plan to generate new career suggestions.',
+                variant: 'destructive'
+            });
+            router.replace('/pricing');
+            return;
+        }
 
         if (allSuggestions) {
             setSuggestions(allSuggestions);
@@ -62,15 +70,15 @@ export default function CareerSuggestionsPage() {
             return;
         }
 
-        if (!userTraits || !personalizedAnswers) {
+        if (!userData.userTraits || !userData.personalizedAnswers) {
             toast({ title: 'Profile Incomplete', description: 'Please complete the psychometric test and personalized questions first.', variant: 'destructive'});
             router.replace('/personalized-questions');
             return;
         }
         
         const input: CareerSuggestionInput = {
-            traits: userTraits,
-            personalizedAnswers: personalizedAnswers,
+            traits: userData.userTraits,
+            personalizedAnswers: userData.personalizedAnswers,
         };
         
         await fetchTopCareers(currentUser, input);
@@ -123,10 +131,12 @@ export default function CareerSuggestionsPage() {
   const handleSelectCareer = (careerName: string) => {
     if (!suggestions.length) return;
     
+    // Save ALL suggestions and the selected one for the roadmap page
     localStorage.setItem('margdarshak_selected_career', careerName);
+    localStorage.setItem('margdarshak_all_career_suggestions', JSON.stringify(suggestions));
     
-    toast({ title: 'Career Selected!', description: `Now, choose a report plan for ${careerName}.` });
-    router.push('/pricing');
+    toast({ title: 'Career Selected!', description: `Now, generating your detailed report for ${careerName}.` });
+    router.push('/roadmap'); // Go to final generation
   };
 
   if (isLoading) {
@@ -145,7 +155,7 @@ export default function CareerSuggestionsPage() {
                 <Sparkles className="h-16 w-16 text-primary mx-auto mb-4" />
                 <h1 className="text-4xl font-bold mb-3">Your Top Career Matches</h1>
                 <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                    Backed by your unique personality, motivations, and working style, these careers offer the highest likelihood of long-term success and satisfaction.
+                    Here are your AI-powered career suggestions. Select one to unlock and generate your detailed, personalized report.
                 </p>
             </div>
 
@@ -197,10 +207,10 @@ export default function CareerSuggestionsPage() {
                                     className="w-full text-lg py-6"
                                     onClick={() => handleSelectCareer(career.name)}
                                 >
-                                  Generate Report Now!
+                                  Select & Generate Report
                                 </Button>
                                 <p className="text-xs text-muted-foreground text-center mt-2">
-                                  Includes skills, salary outlook & a 10-year roadmap.
+                                  Generates your purchased report for this career.
                                 </p>
                             </CardFooter>
                         </Card>

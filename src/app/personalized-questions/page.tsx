@@ -130,8 +130,8 @@ export default function PersonalizedQuestionsPage() {
       localStorage.removeItem('margdarshak_selected_career');
       localStorage.removeItem('margdarshak_selected_plan');
       
-      toast({ title: 'Answers Saved!', description: 'Generating your career suggestions now...' });
-      router.push('/career-suggestions'); // The correct redirect
+      toast({ title: 'Answers Saved!', description: 'Please choose a report plan to view your suggestions.' });
+      router.push('/pricing');
     } catch (error: any) {
       console.error('Error saving personalized answers:', error);
       toast({ title: 'Error Saving Answers', description: `Could not save your answers. Details: ${error.message}`, variant: 'destructive' });
@@ -186,7 +186,7 @@ export default function PersonalizedQuestionsPage() {
                   <LoadingSpinner />
                 ) : (
                   <>
-                    Submit & See Career Matches <ArrowRight className="ml-2 h-5 w-5" />
+                    Submit & Choose Plan <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>

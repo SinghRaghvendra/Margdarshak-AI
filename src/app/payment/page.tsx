@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -92,11 +91,11 @@ export default function PaymentPage() {
     const upperCaseCoupon = coupon.toUpperCase();
 
     if (upperCaseCoupon === 'RAGHVENDRA100') {
-      newFinalAmount = 1;
-      calculatedDiscount = originalAmount - 1;
+        newFinalAmount = 1;
+        calculatedDiscount = originalAmount - 1;
     } else if (upperCaseCoupon === 'AICOUNCEL25') {
-      calculatedDiscount = originalAmount * 0.25;
-      newFinalAmount = originalAmount - calculatedDiscount;
+        calculatedDiscount = originalAmount * 0.25;
+        newFinalAmount = originalAmount - calculatedDiscount;
     } else {
       newFinalAmount = originalAmount;
       calculatedDiscount = 0;
@@ -134,8 +133,8 @@ export default function PaymentPage() {
             // Explicitly pass the new payment ID to the next page
             localStorage.setItem('margdarshak_payment_id_for_report', paymentDocRef.id);
 
-            toast({ title: 'Test Payment Successful!', description: 'Proceeding to your report...' });
-            router.push('/roadmap');
+            toast({ title: 'Test Payment Successful!', description: 'Proceeding to your career suggestions...' });
+            router.push('/career-suggestions');
         } catch (error: any) {
             toast({ title: 'Test Coupon Failed', description: error.message || 'Could not process the test coupon.', variant: 'destructive' });
             setIsProcessing(false);
@@ -202,8 +201,8 @@ export default function PaymentPage() {
                 // Explicitly pass the new payment ID to the next page
                 localStorage.setItem('margdarshak_payment_id_for_report', paymentDocRef.id);
 
-                toast({ title: 'Payment Successful!', description: 'Proceeding to generate your report...' });
-                router.push('/roadmap');
+                toast({ title: 'Payment Successful!', description: 'Proceeding to generate your career suggestions...' });
+                router.push('/career-suggestions');
             } else {
                 throw new Error(verificationData.error || 'Payment verification failed.');
             }
