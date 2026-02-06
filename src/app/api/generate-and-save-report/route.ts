@@ -11,8 +11,8 @@ import { VertexAI } from '@google-cloud/vertexai';
 export const runtime = 'nodejs';
 
 // Initialize Vertex AI
-const PROJECT_ID = process.env.PROJECT_ID!;
-const LOCATION = process.env.LOCATION!;
+const PROJECT_ID = process.env.FIREBASE_PROJECT_ID!;
+const LOCATION = 'us-central1';
 const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION });
 
 /**
@@ -56,8 +56,38 @@ async function callVertexAISecurely(
   }
 }
 
+// Function to create a summary of traits to reduce token usage
+const summarizeTraits = (traits: any) => {
+    const summary: Record<string, any> = {};
+    if (!traits) return summary;
 
-// --- PROMPT GENERATION FUNCTIONS (omitted for brevity, they are unchanged) ---
+    if (traits.s1) {
+        summary.personality = {
+            workStyle: Number(traits.s1.s1q1) > 3 ? 'Team-oriented' : 'Independent',
+            decisionMaking: Number(traits.s1.s1q2) > 3 ? 'Intuitive' : 'Logical',
+            planningStyle: Number(traits.s1.s1q3) > 3 ? 'Organized' : 'Spontaneous',
+            socialStyle: Number(traits.s1.s1q4) > 3 ? 'Extroverted' : 'Introverted',
+        };
+    }
+     if (traits.s3) {
+        summary.motivation = {
+            primaryDriver: Number(traits.s3.s3q1) > 3 ? 'Impact-driven' : 'Security-driven',
+            jobPreference: Number(traits.s3.s3q2) > 3 ? 'Dynamic' : 'Stable',
+            rewardPreference: traits.s3.s3q13 || 'Not specified',
+        };
+    }
+    if (traits.s4) {
+        summary.cognitive = {
+           problemSolving: traits.s4.s4q1,
+           learningStyle: traits.s4.s4q2,
+           focus: Number(traits.s4.s4q3) > 3 ? 'Detail-oriented' : 'Big-picture',
+        }
+    }
+    return summary;
+}
+
+
+// --- PROMPT GENERATION FUNCTIONS ---
 function getVerdictPrompt(input: any) {
   return `
     You are an expert career counselor. Generate a concise "Career Verdict" report.
@@ -89,7 +119,7 @@ function getVerdictPrompt(input: any) {
     Return ONLY the raw markdown content. Do not include any other text or explanations.
     
     --- Internal Reference Data (Do NOT quote directly in the report) ---
-    User Traits: ${JSON.stringify(input.userTraits)}
+    User Traits Summary: ${JSON.stringify(input.traitSummary)}
     Personalized Answers: ${JSON.stringify(input.personalizedAnswers)}
   `;
 }
@@ -140,7 +170,7 @@ function getClarityPrompt(input: any) {
       
       --- Internal Reference Data (Do NOT quote directly) ---
       User Details: DOB: ${input.dateOfBirth}, Time: ${input.timeOfBirth}, Place: ${input.placeOfBirth}
-      User Traits: ${JSON.stringify(input.userTraits)}
+      User Traits Summary: ${JSON.stringify(input.traitSummary)}
       Personalized Answers: ${JSON.stringify(input.personalizedAnswers)}
     `;
   }
@@ -158,7 +188,7 @@ function getClarityPrompt(input: any) {
     User's Date of Birth: ${input.dateOfBirth}
     User's Time of Birth: ${input.timeOfBirth}
     User's Place of Birth: ${input.placeOfBirth}
-    User Traits Summary (for internal reference, do not quote these codes in the report): ${JSON.stringify(input.userTraits)}
+    User Traits Summary (for internal reference, do not quote these codes in the report): ${JSON.stringify(input.traitSummary)}
     User's Personalized Answers:
     Ideal Workday: ${input.personalizedAnswers.q1}
     Hobbies & Interests: ${input.personalizedAnswers.q2}
@@ -309,9 +339,10 @@ export async function POST(req: Request) {
 
         const age = differenceInYears(new Date(), parseISO(birthDetails.dateOfBirth));
         const lifePathNumber = calculateLifePathNumber(birthDetails.dateOfBirth);
+        const traitSummary = summarizeTraits(userTraits);
 
         const baseInput = {
-            careerSuggestion: selectedCareerDetails.name, userTraits, country, userName: name,
+            careerSuggestion: selectedCareerDetails.name, traitSummary, country, userName: name,
             dateOfBirth: birthDetails.dateOfBirth, timeOfBirth: birthDetails.timeOfBirth,
             placeOfBirth: birthDetails.placeOfBirth, age, personalizedAnswers,
             matchScore: selectedCareerDetails.matchScore || 'N/A',

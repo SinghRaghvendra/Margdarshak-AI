@@ -28,8 +28,8 @@ export type CareerInsightsOutput = z.infer<typeof CareerInsightsOutputSchema>;
 
 
 // Initialize Vertex AI
-const PROJECT_ID = process.env.PROJECT_ID!;
-const LOCATION = process.env.LOCATION!;
+const PROJECT_ID = process.env.FIREBASE_PROJECT_ID!;
+const LOCATION = 'us-central1';
 const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION });
 
 /**
