@@ -125,8 +125,8 @@ export default function CareerSuggestionsPage() {
     
     localStorage.setItem('margdarshak_selected_career', careerName);
     
-    toast({ title: 'Career Selected!', description: `Generating your personalized roadmap for ${careerName}...` });
-    router.push('/roadmap');
+    toast({ title: 'Career Selected!', description: `Now, choose a report plan for ${careerName}.` });
+    router.push('/pricing');
   };
 
   if (isLoading) {
