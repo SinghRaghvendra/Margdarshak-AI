@@ -130,8 +130,8 @@ export default function PaymentPage() {
                 createdAt: serverTimestamp(),
                 reportId: null,
             });
-            toast({ title: 'Test Payment Successful!', description: 'Proceeding to your career suggestions...' });
-            router.push('/career-suggestions');
+            toast({ title: 'Test Payment Successful!', description: 'Proceeding to your report...' });
+            router.push('/roadmap'); // CORRECTED: Redirect to the final report generation page.
         } catch (error: any) {
             toast({ title: 'Test Coupon Failed', description: error.message || 'Could not process the test coupon.', variant: 'destructive' });
             setIsProcessing(false);
@@ -182,7 +182,7 @@ export default function PaymentPage() {
             
             if (verificationData.success && db) {
                 // Create a permanent payment record in Firestore
-                await addDoc(collection(db, 'payments'), {
+                const paymentDocRef = await addDoc(collection(db, 'payments'), {
                     userId: user.uid,
                     userName: userInfo.name,
                     planId: selectedPlan.id,
@@ -196,8 +196,8 @@ export default function PaymentPage() {
                     reportId: null, // This will be filled when a report is generated
                 });
                 
-                toast({ title: 'Payment Successful!', description: 'Proceeding to your career suggestions...' });
-                router.push('/career-suggestions');
+                toast({ title: 'Payment Successful!', description: 'Proceeding to generate your report...' });
+                router.push('/roadmap');
             } else {
                 throw new Error(verificationData.error || 'Payment verification failed.');
             }
