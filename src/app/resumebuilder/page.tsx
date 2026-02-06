@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -110,10 +111,11 @@ export default function ResumeBuilderPage() {
                 body: JSON.stringify({ resumeText, jobDescription }),
             });
 
-            const data = await response.json();
+            const text = await response.text();
+            const data = text ? JSON.parse(text) : null;
 
             if (!response.ok) {
-                throw new Error(data.error || 'An unknown error occurred.');
+                throw new Error(data?.error || `Analysis failed. Status: ${response.status}`);
             }
             
             setAnalysisResult(data);

@@ -149,6 +149,9 @@ A highly motivated and results-oriented software engineer with 8+ years of exper
     `;
 }
 
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 200 });
+}
 
 export async function POST(req: Request) {
   try {

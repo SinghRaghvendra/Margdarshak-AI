@@ -57,6 +57,10 @@ export default function RoadmapPage() {
 
     try {
         const idToken = await currentUser.getIdToken(true);
+        if (!idToken) {
+            throw new Error("Authentication token not available. Please log in again.");
+        }
+
         const response = await fetch('/api/generate-and-save-report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
@@ -69,8 +73,12 @@ export default function RoadmapPage() {
             }),
         });
 
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Failed to generate report.');
+        const text = await response.text();
+        const result = text ? JSON.parse(text) : null;
+
+        if (!response.ok) {
+            throw new Error(result?.error || `Failed to generate report. Status: ${response.status}`);
+        }
         
         setGenerationProgress(100);
         setCurrentRoadmapMarkdown(result.roadmapMarkdown);

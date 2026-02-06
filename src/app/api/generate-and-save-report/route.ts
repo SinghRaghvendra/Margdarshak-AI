@@ -250,6 +250,10 @@ function getClarityPrompt(input: any) {
     `;
 }
 
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 200 });
+}
+
 export async function POST(req: Request) {
   const db = getDb();
   let paymentDocRef: FirebaseFirestore.DocumentReference | null = null;
