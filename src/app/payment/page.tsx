@@ -111,6 +111,34 @@ export default function PaymentPage() {
         toast({ title: 'Session Error', description: 'User or plan details are missing. Please try again.', variant: 'destructive' });
         return;
     }
+    
+    // Test coupon to bypass payment gateway
+    if (coupon.toUpperCase() === 'RAGHVENDRATESTTEST') {
+        setIsProcessing(true);
+        toast({ title: 'Processing Test Coupon...', description: 'Bypassing payment gateway for testing.' });
+        try {
+            await addDoc(collection(db, 'payments'), {
+                userId: user.uid,
+                userName: userInfo.name,
+                planId: selectedPlan.id,
+                amountPaid: 0,
+                originalAmount: selectedPlan.price,
+                couponUsed: coupon,
+                razorpayOrderId: `test_order_${Date.now()}`,
+                razorpayPaymentId: `test_payment_${Date.now()}`,
+                status: 'SUCCESS',
+                createdAt: serverTimestamp(),
+                reportId: null,
+            });
+            toast({ title: 'Test Payment Successful!', description: 'Proceeding to your career suggestions...' });
+            router.push('/career-suggestions');
+        } catch (error: any) {
+            toast({ title: 'Test Coupon Failed', description: error.message || 'Could not process the test coupon.', variant: 'destructive' });
+            setIsProcessing(false);
+        }
+        return; // Stop execution here for the test coupon
+    }
+    
     setIsProcessing(true);
     toast({ title: 'Initializing Payment', description: 'Please wait...' });
 
