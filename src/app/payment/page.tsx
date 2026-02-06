@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CreditCard, Loader2, ListChecks, ArrowLeft, Tag } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
-import { doc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, addDoc, collection, serverTimestamp, setDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { useAuth, useFirestore } from '@/firebase';
 import { Input } from '@/components/ui/input';
@@ -167,16 +168,6 @@ export default function PaymentPage() {
                     reportId: null, // This will be filled when a report is generated
                 });
                 
-                // Update the user doc to clear the transient `paymentSuccessful` flag
-                // which is now deprecated.
-                const userDocRef = doc(db, 'users', user.uid);
-                await setDoc(userDocRef, { 
-                  paymentSuccessful: false, // Deprecated, set to false
-                  lastPaymentId: response.razorpay_payment_id, // Keep for reference
-                  purchasedPlan: selectedPlan.id, // Keep for reference
-                }, { merge: true });
-
-
                 toast({ title: 'Payment Successful!', description: 'Proceeding to your career suggestions...' });
                 router.push('/career-suggestions');
             } else {
