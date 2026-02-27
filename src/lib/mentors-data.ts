@@ -1,4 +1,6 @@
 
+import placeholderImages from '@/app/lib/placeholder-images.json';
+
 export interface Mentor {
   id: string;
   name: string;
@@ -19,7 +21,7 @@ export const MOCK_MENTORS: Mentor[] = [
     specialization: "IT & Software Engineering",
     languages: ["English", "Hindi"],
     rating: 4.9,
-    imageUrl: "https://picsum.photos/seed/rj/400/400"
+    imageUrl: placeholderImages.mentors[0].url
   },
   {
     id: "m2",
@@ -29,7 +31,7 @@ export const MOCK_MENTORS: Mentor[] = [
     specialization: "Design & Product",
     languages: ["English", "Marathi"],
     rating: 4.8,
-    imageUrl: "https://picsum.photos/seed/sf/400/400"
+    imageUrl: placeholderImages.mentors[1].url
   },
   {
     id: "m3",
@@ -39,7 +41,7 @@ export const MOCK_MENTORS: Mentor[] = [
     specialization: "Management & Law",
     languages: ["English", "Hindi", "Punjabi"],
     rating: 4.7,
-    imageUrl: "https://picsum.photos/seed/as/400/400"
+    imageUrl: placeholderImages.mentors[2].url
   },
   {
     id: "m4",
@@ -49,6 +51,6 @@ export const MOCK_MENTORS: Mentor[] = [
     specialization: "Banking & Finance",
     languages: ["English", "Tamil"],
     rating: 4.9,
-    imageUrl: "https://picsum.photos/seed/pi/400/400"
+    imageUrl: placeholderImages.mentors[3].url
   }
 ];
