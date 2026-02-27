@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Mentor } from '@/lib/mentors-data';
@@ -16,7 +15,6 @@ export default function MentorCard({ mentor, onBook }: MentorCardProps) {
   return (
     <Card className="flex flex-col h-full hover:shadow-xl transition-all duration-300 overflow-hidden border-primary/10">
       <div className="relative h-48 w-full">
-        {/* Using standard img tag to bypass Next.js hostname whitelist restrictions which were causing build/runtime loops */}
         <img 
           src={mentor.imageUrl} 
           alt={mentor.name} 
@@ -47,7 +45,7 @@ export default function MentorCard({ mentor, onBook }: MentorCardProps) {
       </CardContent>
       <CardFooter className="pt-0 border-t bg-secondary/10 p-4">
         <Button onClick={() => onBook(mentor)} className="w-full font-bold">
-          <Calendar className="mr-2 h-4 w-4" /> Book Session
+          <Calendar className="mr-2 h-4 w-4" /> Book Call
         </Button>
       </CardFooter>
     </Card>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -24,7 +23,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const mainNavItems = [
   { label: 'AI Tools', href: '/aitools', icon: <Wand2 className="mr-2 h-5 w-5" /> },
-  { label: 'Mentors', href: '/career-mentors', icon: <MessageCircle className="mr-2 h-5 w-5" /> },
+  { label: 'Mentors & Counselors', href: '/career-mentors', icon: <MessageCircle className="mr-2 h-5 w-5" /> },
   { label: 'Blog', href: '/blog', icon: <BookOpen className="mr-2 h-5 w-5" /> },
   { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" /> },
   { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" /> },
@@ -58,7 +57,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
             <Logo />
         </div>
-        <nav className="hidden md:flex items-center space-x-1">
+        <nav className="hidden lg:flex items-center space-x-1">
           {mainNavItems.map((item) => (
             <Link key={item.label} href={item.href}>
                 <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
@@ -101,7 +100,7 @@ export default function Header() {
             )
           )}
         </nav>
-        <div className="md:hidden flex items-center gap-2">
+        <div className="lg:hidden flex items-center gap-2">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
