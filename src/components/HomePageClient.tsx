@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import SignupPopup from './SignupPopup';
 import MentorCarousel from './mentors/MentorCarousel';
+import placeholderImages from '@/app/lib/placeholder-images.json';
 
 
 export default function HomePageClient() {
@@ -75,7 +76,7 @@ export default function HomePageClient() {
     },
   ];
 
-  const heroBackgroundImage = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2070&auto=format&fit=crop";
+  const heroBackgroundImage = placeholderImages.hero[0].url;
 
   return (
     <div>
@@ -90,7 +91,7 @@ export default function HomePageClient() {
           <div className="relative z-10 container mx-auto px-4">
               <div className="mb-4 flex justify-center">
                 <div className="bg-white/90 rounded-full p-3 shadow-lg">
-                    <Image src="/logo.png" alt="AI Councel Logo" width={128} height={128} priority />
+                    <Image src="/logo.png" alt="AI Councel Logo" width={128} height={128} priority data-ai-hint="logo icon" />
                 </div>
               </div>
               <h1 className="text-4xl sm:text-5xl font-bold mb-4 leading-tight">
