@@ -16,6 +16,7 @@ import SignupPopup from './SignupPopup';
 import MentorCarousel from './mentors/MentorCarousel';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 import ExpertCTA from './mentors/ExpertCTA';
+import Logo from '@/components/Logo';
 
 export default function HomePageClient() {
   const router = useRouter();
@@ -88,14 +89,13 @@ export default function HomePageClient() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
           <div className="relative z-10 container mx-auto px-4">
               <div className="mb-6 flex justify-center">
-                <div className="bg-white/95 rounded-full p-4 shadow-2xl ring-4 ring-primary/20">
-                    <LogoIcon />
+                <div className="bg-white/95 rounded-full px-8 py-4 shadow-2xl ring-4 ring-primary/20">
+                    <Logo />
                 </div>
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight tracking-tight">
                   AI Guidance + Human Wisdom
               </h1>
-              <h2 className="text-2xl font-bold text-primary mb-2">AIC</h2>
               <p className="text-lg md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
                   Map your future with our AI discovery tool, then validate it with industry-leading mentors and counselors. The complete career clarity platform.
               </p>
@@ -391,14 +391,6 @@ export default function HomePageClient() {
       </div>
     </div>
   );
-}
-
-function LogoIcon() {
-    return (
-        <div className="text-primary text-4xl font-black flex items-center justify-center tracking-tighter">
-            <span>AIC</span>
-        </div>
-    )
 }
 
 function BlogSummaryCard({ title, excerpt, href }: { title: string, excerpt: string, href: string }) {
