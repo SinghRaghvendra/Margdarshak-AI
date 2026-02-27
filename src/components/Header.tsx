@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,19 +14,16 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle, UserPlus2 } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle, UserPlus2, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { useAuth, useUser, useFirestore } from '@/firebase';
-import AuthStatus from '@/components/AuthStatus';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 const mainNavItems = [
   { label: 'AI Tools', href: '/aitools', icon: <Wand2 className="mr-2 h-5 w-5" /> },
   { label: 'Mentors & Counselors', href: '/career-mentors', icon: <MessageCircle className="mr-2 h-5 w-5" /> },
   { label: 'Blog', href: '/blog', icon: <BookOpen className="mr-2 h-5 w-5" /> },
-  { label: 'Become a Mentor', href: '/become-mentor', icon: <UserPlus2 className="mr-2 h-5 w-5" /> },
   { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" /> },
   { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" /> },
 ];
@@ -35,6 +33,22 @@ export default function Header() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
+  const db = useFirestore();
+  const [userRole, setUserRole] = useState<'student' | 'mentor' | null>(null);
+
+  useEffect(() => {
+    if (!user || !db) {
+      setUserRole(null);
+      return;
+    }
+    const fetchRole = async () => {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        setUserRole(userDoc.data().role || 'student');
+      }
+    };
+    fetchRole();
+  }, [user, db]);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -68,17 +82,32 @@ export default function Header() {
           ))}
           {user && (
             <>
-              <Link href="/my-reports">
-                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
-                  My Reports
-                </Button>
-              </Link>
+              {userRole === 'mentor' ? (
+                <Link href="/mentor/profile">
+                  <Button variant="ghost" className="text-sm font-medium text-primary hover:text-primary/80 px-3 py-2">
+                    <ShieldCheck className="mr-2 h-4 w-4" /> Mentor Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/my-reports">
+                  <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
+                    My Reports
+                  </Button>
+                </Link>
+              )}
               <Link href="/profile">
                 <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
                   Profile
                 </Button>
               </Link>
             </>
+          )}
+          {!user && (
+            <Link href="/become-mentor">
+              <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
+                Become a Mentor
+              </Button>
+            </Link>
           )}
           {auth && (
             user ? (
@@ -118,9 +147,17 @@ export default function Header() {
                 ))}
                 {user && (
                   <>
+                    {userRole === 'mentor' && (
+                      <Link href="/mentor/profile" className="w-full">
+                        <Button variant="ghost" className="w-full justify-start text-base py-3 text-primary"><ShieldCheck className="mr-2 h-5 w-5"/> Mentor Profile</Button>
+                      </Link>
+                    )}
                     <Link href="/my-reports" className="w-full"><Button variant="ghost" className="w-full justify-start text-base py-3">My Reports</Button></Link>
                     <Link href="/profile" className="w-full"><Button variant="ghost" className="w-full justify-start text-base py-3">Profile</Button></Link>
                   </>
+                )}
+                {!user && (
+                  <Link href="/become-mentor" className="w-full"><Button variant="ghost" className="w-full justify-start text-base py-3">Become a Mentor</Button></Link>
                 )}
                 <div className="pt-4 border-t">
                   {user ? (

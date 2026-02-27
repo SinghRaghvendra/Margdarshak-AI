@@ -1,12 +1,29 @@
 
 {
   "entities": {
+    "User": {
+      "title": "User",
+      "description": "Standard user profile for students or mentors.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "contact": { "type": "string" },
+        "country": { "type": "string" },
+        "language": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "mentor"] },
+        "isMentor": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
     "Mentor": {
       "title": "Mentor",
       "description": "Professional career counselor information.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
+        "userId": { "type": "string" },
         "name": { "type": "string" },
         "bio": { "type": "string" },
         "experienceYears": { "type": "number" },
@@ -15,9 +32,11 @@
         "rating": { "type": "number" },
         "imageUrl": { "type": "string" },
         "approved": { "type": "boolean" },
+        "pricePerSession": { "type": "number" },
+        "linkedin": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "bio", "experienceYears", "specialization"]
+      "required": ["name", "bio", "experienceYears", "specialization", "userId"]
     },
     "MentorBooking": {
       "title": "MentorBooking",
@@ -51,6 +70,10 @@
     "providers": ["email"]
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Base user data."
+    },
     "/mentors/{mentorId}": {
       "schema": { "$ref": "#/entities/Mentor" },
       "description": "Approved career counselors."

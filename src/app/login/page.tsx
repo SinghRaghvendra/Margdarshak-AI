@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -54,14 +55,25 @@ export default function LoginPage() {
       return;
     }
 
-    if (authUser) {
-      const params = new URLSearchParams(window.location.search);
-      const redirectUrl = params.get('redirect');
-      router.replace(redirectUrl || '/welcome-guest');
+    if (authUser && db) {
+      const checkRole = async () => {
+        const userDoc = await getDoc(doc(db, 'users', authUser.uid));
+        const role = userDoc.exists() ? userDoc.data().role : 'student';
+        
+        const params = new URLSearchParams(window.location.search);
+        const redirectUrl = params.get('redirect');
+        
+        if (redirectUrl) {
+          router.replace(redirectUrl);
+        } else {
+          router.replace(role === 'mentor' ? '/mentor/profile' : '/welcome-guest');
+        }
+      };
+      checkRole();
     } else {
       setPageLoading(false);
     }
-  }, [authUser, authLoading, router]);
+  }, [authUser, authLoading, router, db]);
 
 
   async function onSubmit(data: LoginFormValues) {
@@ -70,17 +82,14 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      // Fetch the user's document from Firestore to get their real name
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
 
       let userProfileForLocal = {
         uid: user.uid,
         email: user.email,
-        name: 'Welcome Back', // Default name
-        contact: '',
-        country: '',
-        language: 'English',
+        name: 'Welcome Back', 
+        role: 'student'
       };
 
       if (userDoc.exists()) {
@@ -88,52 +97,32 @@ export default function LoginPage() {
         userProfileForLocal = {
             ...userProfileForLocal,
             name: userData.name || 'Welcome Back',
-            contact: userData.contact || '',
-            country: userData.country || '',
-            language: userData.language || 'English',
-        };
+            role: userData.role || 'student'
+        } as any;
       }
       
       localStorage.setItem('margdarshak_user_info', JSON.stringify(userProfileForLocal));
 
-      // Clear any stale journey data from previous sessions
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('margdarshak_') && key !== 'margdarshak_user_info') {
-          localStorage.removeItem(key);
-        }
-      });
-      
       toast({
           title: 'Login Successful',
-          description: `Welcome back, ${userProfileForLocal.name}! Redirecting...`,
+          description: `Welcome back, ${userProfileForLocal.name}!`,
       });
 
       const params = new URLSearchParams(window.location.search);
       const redirectUrl = params.get('redirect');
-      router.push(redirectUrl || '/welcome-guest');
+      
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      } else {
+        router.push(userProfileForLocal.role === 'mentor' ? '/mentor/profile' : '/welcome-guest');
+      }
 
     } catch (error: any) {
-      console.error('Login error:', error.code);
-      if (error.code === 'auth/user-not-found') {
-        toast({
-            title: 'Login Failed',
-            description: 'Email not found. Would you like to sign up?',
-            variant: 'destructive',
-            action: <Button onClick={() => router.push('/signup')}>Sign Up</Button>,
-        });
-      } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-         toast({
-            title: 'Login Failed',
-            description: 'Incorrect password. Please re-enter your password.',
-            variant: 'destructive',
-        });
-      } else {
-        toast({
-            title: 'Login Failed',
-            description: 'An unexpected error occurred. Please check your credentials and try again.',
-            variant: 'destructive',
-        });
-      }
+      toast({
+          title: 'Login Failed',
+          description: 'Incorrect email or password. Please check your credentials.',
+          variant: 'destructive',
+      });
     }
   }
 
@@ -143,70 +132,49 @@ export default function LoginPage() {
 
 
   return (
-    <>
-      <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] py-6">
-        <Card className="w-full max-w-md shadow-xl">
-          <CardHeader className="space-y-1 text-center">
-            <LogIn className="h-12 w-12 text-primary mx-auto mb-2" />
-            <CardTitle className="text-3xl font-bold">
-              Welcome Back
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Log in to continue your journey.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-6 py-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="your.email@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Your Password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <div className="text-right text-sm">
-                  <Link href="/forgot-password" passHref>
-                    <span className="text-primary hover:underline cursor-pointer">
-                      Forgot Password?
-                    </span>
-                  </Link>
-                </div>
-                <div className="flex flex-col gap-3 pt-2">
-                  <Button type="submit" className="w-full text-lg py-6" disabled={form.formState.isSubmitting}>
-                     {form.formState.isSubmitting ? <LoadingSpinner /> : 'Login & Continue Journey'}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-             <div className="mt-6 text-center text-sm">
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-primary hover:underline font-medium">
-                Sign up now
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+    <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] py-6">
+      <Card className="w-full max-w-md shadow-xl">
+        <CardHeader className="space-y-1 text-center">
+          <LogIn className="h-12 w-12 text-primary mx-auto mb-2" />
+          <CardTitle className="text-3xl font-bold">Welcome Back</CardTitle>
+          <CardDescription>Log in to your account.</CardDescription>
+        </CardHeader>
+        <CardContent className="px-6 py-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl><Input type="email" placeholder="your@email.com" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full text-lg py-6" disabled={form.formState.isSubmitting}>
+                 {form.formState.isSubmitting ? <LoadingSpinner /> : 'Login'}
+              </Button>
+            </form>
+          </Form>
+           <div className="mt-6 text-center text-sm space-y-2">
+            <p>Don't have an account? <Link href="/signup" className="text-primary hover:underline font-medium">Sign up</Link></p>
+            <p className="text-muted-foreground">Are you an expert? <Link href="/mentor/signup" className="text-primary hover:underline font-medium">Join our panel</Link></p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

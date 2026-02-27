@@ -1,18 +1,20 @@
+
 'use client';
 
-import { useState } from 'react';
-import { MOCK_MENTORS, Mentor } from '@/lib/mentors-data';
+import { useState, useEffect } from 'react';
+import { Mentor } from '@/lib/mentors-data';
 import MentorCard from '@/components/mentors/MentorCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, Users, CalendarCheck, ShieldCheck, Ticket } from 'lucide-react';
+import { Search, Filter, Users, CalendarCheck, ShieldCheck, Ticket, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import ExpertCTA from '@/components/mentors/ExpertCTA';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function CareerMentorsPage() {
   const { user } = useUser();
@@ -25,10 +27,34 @@ export default function CareerMentorsPage() {
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  
+  const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const specializations = Array.from(new Set(MOCK_MENTORS.map(m => m.specialization)));
+  useEffect(() => {
+    if (!db) return;
 
-  const filteredMentors = MOCK_MENTORS.filter(mentor => {
+    const mentorsRef = collection(db, 'mentors');
+    const q = query(mentorsRef, where('approved', '==', true));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const mentorsList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Mentor[];
+      setMentors(mentorsList);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Firestore error:", error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [db]);
+
+  const specializations = Array.from(new Set(mentors.map(m => m.specialization)));
+
+  const filteredMentors = mentors.filter(mentor => {
     const matchesSearch = mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          mentor.bio.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSpec = specFilter === 'all' || mentor.specialization === specFilter;
@@ -84,7 +110,7 @@ export default function CareerMentorsPage() {
       <div className="py-12 container mx-auto px-4">
         <header className="text-center mb-12">
           <Users className="h-16 w-16 text-primary mx-auto mb-4" />
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Find Your Career Mentor & Counselor</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Verified Career Mentors & Counselors</h1>
           <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">
             Get personalized guidance from industry experts. Book 3 sessions of 25 minutes each for just ₹999.
           </p>
@@ -116,18 +142,26 @@ export default function CareerMentorsPage() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
-          {filteredMentors.map(mentor => (
-            <MentorCard key={mentor.id} mentor={mentor} onBook={handleBookClick} />
-          ))}
-        </div>
-
-        {filteredMentors.length === 0 && (
-          <div className="text-center py-20">
-            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold">No mentors found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filters.</p>
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <LoadingSpinner size={48} />
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+              {filteredMentors.map(mentor => (
+                <MentorCard key={mentor.id} mentor={mentor} onBook={handleBookClick} />
+              ))}
+            </div>
+
+            {filteredMentors.length === 0 && (
+              <div className="text-center py-20">
+                <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold">No active experts found</h3>
+                <p className="text-muted-foreground">Try adjusting your search or check back later.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
