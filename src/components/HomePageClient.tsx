@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -88,8 +89,8 @@ export default function HomePageClient() {
       >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
           <div className="relative z-10 container mx-auto px-4">
-              <div className="mb-6 flex justify-center">
-                <div className="bg-white/95 rounded-full px-8 py-4 shadow-2xl ring-4 ring-primary/20">
+              <div className="mb-8 flex justify-center">
+                <div className="bg-white/95 rounded-xl px-10 py-5 shadow-2xl ring-4 ring-primary/20">
                     <Logo />
                 </div>
               </div>
@@ -290,7 +291,9 @@ export default function HomePageClient() {
         </section>
 
         {/* Expert CTA Section */}
-        <ExpertCTA />
+        <div className="mt-8">
+          <ExpertCTA />
+        </div>
 
         {/* Blog Preview Section */}
         <section className="py-16 md:py-24 bg-background">
@@ -367,7 +370,7 @@ export default function HomePageClient() {
                     </Accordion>
                     <div className="mt-8 text-center">
                         <Link href="/career-faqs">
-                            <Button variant="link" className="text-primary font-bold">View All FAQs <ArrowRight className="ml-2 h-4 w-4"/></Button>
+                            <Button variant="link" className="text-primary font-bold">View All FAQs <ArrowRight className="ml-2 h-5 w-5"/></Button>
                         </Link>
                     </div>
                 </div>
