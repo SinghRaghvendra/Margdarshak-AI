@@ -79,60 +79,65 @@ export default function RootLayout({
           <main className="flex-grow">
             {children}
           </main>
-          <footer className="py-8 text-sm border-t bg-secondary/30">
-              <div className="container mx-auto px-4 grid md:grid-cols-3 gap-8">
-                  {/* Left Column: Policies & Contact */}
-                  <div className="space-y-4">
+          <footer className="py-12 text-sm border-t bg-secondary/30">
+              <div className="container mx-auto px-4 space-y-12">
+                  <div className="grid md:grid-cols-1 gap-8">
+                      <div className="space-y-4">
+                          <h3 className="text-xl font-bold text-foreground">About AI Councel Lab</h3>
+                          <div className="text-muted-foreground space-y-4 leading-relaxed max-w-5xl">
+                              <p>
+                                  AI Councel Lab is an AI-powered career counselling platform in India designed to help students and professionals make informed, confident career decisions. We combine advanced artificial intelligence with experienced human career counsellors to deliver personalized, science-backed career guidance that aligns with individual strengths, interests, and long-term goals.
+                              </p>
+                              <p>
+                                  Our platform provides comprehensive online career counselling, AI-based career assessments, psychometric analysis, and one-on-one mentoring sessions to help individuals navigate important academic and professional milestones. Whether you are searching for career options after 10th, career guidance after 12th, choosing the right stream, exploring high-growth fields like data science or artificial intelligence, or planning a career transition, AI Councel Lab offers structured and reliable support.
+                              </p>
+                              <p>
+                                  Unlike traditional career counselling services, our AI-driven system analyzes skills, aptitude, personality traits, and market trends to generate personalized career recommendations. These insights are further validated by certified career counsellors and industry mentors, ensuring clarity and practical direction.
+                              </p>
+                              <p>
+                                  We serve students across India seeking affordable and effective career counselling solutions. By making professional career guidance accessible online, we aim to remove confusion, reduce career-related stress, and empower individuals to take control of their future.
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-12 pt-12 border-t border-border/50">
                       <div>
-                          <h3 className="font-semibold text-foreground">Our Tools</h3>
-                          <ul className="space-y-1 text-muted-foreground mt-1">
-                              <li><Link href="/aitools" className="hover:text-primary hover:underline">AI Tools</Link></li>
+                          <h3 className="font-bold text-foreground mb-4">Our Tools</h3>
+                          <ul className="space-y-2 text-muted-foreground mt-1">
+                              <li><Link href="/aitools" className="hover:text-primary hover:underline">AI Tools & Optimization</Link></li>
                               <li><Link href="/career-mentors" className="hover:text-primary hover:underline">Mentors & Counselors</Link></li>
                               <li><Link href="/become-mentor" className="hover:text-primary hover:underline">Become a Mentor</Link></li>
+                              <li><Link href="/resumebuilder" className="hover:text-primary hover:underline">AI Resume Optimizer</Link></li>
                           </ul>
                       </div>
                       <div>
-                          <h3 className="font-semibold text-foreground">Policies</h3>
-                          <ul className="space-y-1 text-muted-foreground mt-1">
+                          <h3 className="font-bold text-foreground mb-4">Policies & Compliance</h3>
+                          <ul className="space-y-2 text-muted-foreground mt-1">
                               <li><Link href="/privacy-policy" className="hover:text-primary hover:underline">Privacy Policy</Link></li>
                               <li><Link href="/terms-conditions" className="hover:text-primary hover:underline">Terms & Conditions</Link></li>
                               <li><Link href="/cancellation-refund" className="hover:text-primary hover:underline">Cancellation & Refund</Link></li>
                           </ul>
                       </div>
                       <div>
-                          <h3 className="font-semibold text-foreground">Contact Us</h3>
-                          <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                              <Mail className="h-4 w-4 flex-shrink-0" />
-                              <a href="mailto:support@aicouncel.com" className="hover:text-primary hover:underline">
-                                  support@aicouncel.com
-                              </a>
+                          <h3 className="font-bold text-foreground mb-4">Support & Contact</h3>
+                          <div className="space-y-3 text-muted-foreground mt-1">
+                              <div className="flex items-center gap-3">
+                                  <Mail className="h-4 w-4 flex-shrink-0 text-primary" />
+                                  <a href="mailto:support@aicouncel.com" className="hover:text-primary hover:underline">
+                                      support@aicouncel.com
+                                  </a>
+                              </div>
+                              <p className="text-xs mt-4">
+                                  Our vision is to help people discover their true potential and secure the best opportunities to grow and succeed with confidence. We create AI products that make careers smarter and opportunities more accessible.
+                              </p>
                           </div>
                       </div>
                   </div>
-
-                  {/* Middle Column: About Us */}
-                  <div className="space-y-4">
-                      <div>
-                          <h3 className="font-semibold text-foreground">About Us</h3>
-                          <p className="text-muted-foreground mt-1">
-                              AI Councel Lab is an innovation-driven AI company that builds next-generation artificial intelligence solutions for individuals and businesses. We specialize in practical and impactful tools powered by advanced AI research and design to deliver measurable value.
-                          </p>
-                      </div>
-                  </div>
-
-                  {/* Right Column: Our Vision */}
-                  <div className="space-y-4">
-                      <div>
-                          <h3 className="font-semibold text-foreground">Our Vision</h3>
-                          <p className="text-muted-foreground mt-1">
-                              Our vision is to help people discover their true potential and secure the best opportunities to grow and succeed with confidence. We create AI products that make careers smarter and opportunities more accessible.
-                          </p>
-                      </div>
-                  </div>
               </div>
-              <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 pt-6 border-t border-border">
+              <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 mt-12 pt-8 border-t border-border/50">
                   <p className="text-xs text-muted-foreground text-center sm:text-left">
-                      © 2024 AI Councel Lab. All rights reserved.
+                      © 2024 AI Councel Lab. All rights reserved. Registered in India.
                   </p>
               </div>
           </footer>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -379,10 +378,7 @@ export default function HomePageClient() {
             </div>
         </section>
 
-        {/* 8. Are You an Expert Section */}
-        <ExpertCTA />
-
-        {/* 9. Blog Section */}
+        {/* 8. Blog Section */}
         <section className="py-16 md:py-24 bg-background">
             <div className="container mx-auto px-4">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
@@ -415,7 +411,7 @@ export default function HomePageClient() {
             </div>
         </section>
 
-        {/* 10. FAQ Section */}
+        {/* 9. FAQ Section */}
         <section id="faq" className="py-16 md:py-24 bg-secondary/30">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
@@ -463,6 +459,9 @@ export default function HomePageClient() {
                 </div>
             </div>
         </section>
+
+        {/* 10. Are You an Expert Section */}
+        <ExpertCTA />
       </div>
     </div>
   );
