@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, MessageSquare, Calendar, Globe } from 'lucide-react';
-import Image from 'next/image';
 
 interface MentorCardProps {
   mentor: Mentor;
@@ -17,11 +16,11 @@ export default function MentorCard({ mentor, onBook }: MentorCardProps) {
   return (
     <Card className="flex flex-col h-full hover:shadow-xl transition-all duration-300 overflow-hidden border-primary/10">
       <div className="relative h-48 w-full">
-        <Image 
+        {/* Using standard img tag to bypass Next.js hostname whitelist restrictions which were causing build/runtime loops */}
+        <img 
           src={mentor.imageUrl} 
           alt={mentor.name} 
-          fill 
-          className="object-cover"
+          className="absolute inset-0 w-full h-full object-cover"
           data-ai-hint="professional portrait"
         />
         <div className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 text-xs font-bold shadow-sm">
