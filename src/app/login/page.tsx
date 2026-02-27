@@ -67,7 +67,8 @@ export default function LoginPage() {
           if (redirectUrl) {
             router.replace(redirectUrl);
           } else {
-            router.replace(role === 'mentor' ? '/mentor/profile' : '/welcome-guest');
+            // Updated redirection logic for mentors
+            router.replace(role === 'mentor' ? '/mentor/dashboard' : '/welcome-guest');
           }
         } catch (error) {
           console.error("Redirection error:", error);

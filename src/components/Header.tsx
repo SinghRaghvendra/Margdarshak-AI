@@ -14,7 +14,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle, UserPlus2, ShieldCheck } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle, UserPlus2, ShieldCheck, LayoutDashboard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { useAuth, useUser, useFirestore } from '@/firebase';
@@ -83,9 +83,9 @@ export default function Header() {
           {user && (
             <>
               {userRole === 'mentor' ? (
-                <Link href="/mentor/profile">
+                <Link href="/mentor/dashboard">
                   <Button variant="ghost" className="text-sm font-medium text-primary hover:text-primary/80 px-3 py-2">
-                    <ShieldCheck className="mr-2 h-4 w-4" /> Mentor Dashboard
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> Mentor Hub
                   </Button>
                 </Link>
               ) : (
@@ -148,8 +148,8 @@ export default function Header() {
                 {user && (
                   <>
                     {userRole === 'mentor' && (
-                      <Link href="/mentor/profile" className="w-full">
-                        <Button variant="ghost" className="w-full justify-start text-base py-3 text-primary"><ShieldCheck className="mr-2 h-5 w-5"/> Mentor Profile</Button>
+                      <Link href="/mentor/dashboard" className="w-full">
+                        <Button variant="ghost" className="w-full justify-start text-base py-3 text-primary"><LayoutDashboard className="mr-2 h-5 w-5"/> Mentor Hub</Button>
                       </Link>
                     )}
                     <Link href="/my-reports" className="w-full"><Button variant="ghost" className="w-full justify-start text-base py-3">My Reports</Button></Link>
