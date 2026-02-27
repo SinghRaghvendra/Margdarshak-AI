@@ -1,8 +1,9 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { HelpCircle, CheckCircle, ArrowRight, Brain, Target, MapPinned, Workflow, Search, Group, Cpu, Milestone, BookOpen, UserCheck, MessageCircle, Info, TrendingUp, Sparkles, GraduationCap } from 'lucide-react';
+import { HelpCircle, CheckCircle, ArrowRight, Brain, Target, MapPinned, Workflow, Search, Cpu, Milestone, BookOpen, UserCheck, MessageCircle, Info, TrendingUp, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -81,7 +82,7 @@ export default function HomePageClient() {
     <div>
       <SignupPopup isOpen={isPopupOpen} onOpenChange={setIsPopupOpen} />
       
-      {/* Hero Section */}
+      {/* 1. Hero Section */}
       <section
         className="relative bg-cover bg-center py-20 md:py-28 text-center text-white overflow-hidden"
         style={{ backgroundImage: `url(${heroBackgroundImage})` }}
@@ -121,17 +122,12 @@ export default function HomePageClient() {
                     </Button>
                 </Link>
               </div>
-              <div className="mt-8">
-                <Link href="/become-mentor" className="text-sm font-medium text-white/70 hover:text-white underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all">
-                  Are you an expert? Join our Mentor Panel &rarr;
-                </Link>
-              </div>
           </div>
       </section>
 
       <div id="page-content" className="relative z-10 bg-background">
         
-        {/* Feeling Lost Section */}
+        {/* 2. Feeling Lost Section */}
         <section className="py-16 md:py-24">
             <div className="container mx-auto px-4">
                 <div className="max-w-4xl mx-auto text-center mb-16">
@@ -211,8 +207,77 @@ export default function HomePageClient() {
             </div>
         </section>
 
-        {/* Features Bento Grid Section */}
-        <section className="py-16 md:py-24 bg-secondary/30">
+        {/* 3. Career Counselling Through AI Section */}
+        <section className="py-16 md:py-24 bg-primary/5">
+            <div className="container mx-auto px-4">
+                <div className="flex flex-col lg:flex-row items-center gap-12 max-w-6xl mx-auto">
+                    <div className="flex-1 space-y-6">
+                        <div className="inline-block px-4 py-1.5 bg-primary/20 text-primary-foreground font-bold rounded-full text-sm uppercase tracking-wider">
+                            Future-Proof Guidance
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-bold leading-tight">
+                            Smart Career Discovery Powered by Advanced AI
+                        </h2>
+                        <p className="text-xl text-muted-foreground">
+                            We use logic, not just interest. Our AI engine processes millions of data points to find the career path where you have the highest probability of success.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                            <div className="flex gap-3">
+                                <div className="bg-primary/10 p-2 rounded-lg h-fit text-primary"><Cpu className="h-5 w-5"/></div>
+                                <div>
+                                    <h4 className="font-bold">Neural Matching</h4>
+                                    <p className="text-sm text-muted-foreground">Aligns your cognitive patterns with industry needs.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <div className="bg-primary/10 p-2 rounded-lg h-fit text-primary"><Workflow className="h-5 w-5"/></div>
+                                <div>
+                                    <h4 className="font-bold">Bias-Free Logic</h4>
+                                    <p className="text-sm text-muted-foreground">Recommendations based on data, not societal pressure.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex-1 relative">
+                        <div className="relative z-10 bg-card p-8 rounded-3xl shadow-2xl border-2 border-primary/20">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="bg-primary/20 p-3 rounded-2xl">
+                                    <Brain className="h-8 w-8 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-xl">The AI Advantage</h3>
+                                    <p className="text-sm text-muted-foreground">Mapping your professional DNA</p>
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="bg-secondary/50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p className="text-sm font-semibold">"You match 94.2% with Strategic Product Management based on your high empathy and analytical logic scores."</p>
+                                </div>
+                                <div className="flex justify-between items-center text-sm font-medium">
+                                    <span>Cognitive Alignment</span>
+                                    <span className="text-primary">98%</span>
+                                </div>
+                                <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+                                    <div className="bg-primary h-full w-[98%]"></div>
+                                </div>
+                                <div className="flex justify-between items-center text-sm font-medium">
+                                    <span>Market Demand</span>
+                                    <span className="text-accent">High</span>
+                                </div>
+                                <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+                                    <div className="bg-accent h-full w-[85%]"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="absolute -top-6 -right-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl -z-0"></div>
+                        <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-accent/10 rounded-full blur-3xl -z-0"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {/* 4. Career Clarity Toolkit Section */}
+        <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">Your Career Clarity Toolkit</h2>
@@ -241,8 +306,8 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        {/* Mentor & Counselor Carousel Section */}
-        <section className="py-16 md:py-24 bg-background">
+        {/* 5. Meet Our Mentors & Counselors Section */}
+        <section className="py-16 md:py-24 bg-secondary/30">
           <div className="container mx-auto px-4 text-center mb-12">
             <UserCheck className="h-12 w-12 text-primary mx-auto mb-4" />
             <h2 className="text-3xl md:text-4xl font-bold">Meet Our Mentors & Counselors</h2>
@@ -260,8 +325,8 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        {/* Testimonials Section */}
-        <section className="py-16 md:py-24 bg-secondary/30">
+        {/* 6. What Users Are Saying Section */}
+        <section className="py-16 md:py-24 bg-background">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
                     <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -299,12 +364,25 @@ export default function HomePageClient() {
             </div>
         </section>
 
-        {/* Expert CTA Section */}
-        <div className="mt-8">
-          <ExpertCTA />
-        </div>
+        {/* 7. Ready to Take Control Section */}
+        <section className="py-20 bg-primary text-primary-foreground text-center">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to Take Control of Your Career?</h2>
+                <p className="text-xl opacity-90 mb-10 max-w-2xl mx-auto">
+                    Take the first step towards a career that aligns with your true potential and secures your future.
+                </p>
+                <Link href={careerGuidanceHref}>
+                    <Button size="lg" variant="secondary" className="px-12 py-8 text-xl font-bold shadow-2xl hover:scale-105 transition-transform">
+                        Start Your Free Assessment
+                    </Button>
+                </Link>
+            </div>
+        </section>
 
-        {/* Blog Preview Section */}
+        {/* 8. Are You an Expert Section */}
+        <ExpertCTA />
+
+        {/* 9. Blog Section */}
         <section className="py-16 md:py-24 bg-background">
             <div className="container mx-auto px-4">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
@@ -337,7 +415,7 @@ export default function HomePageClient() {
             </div>
         </section>
 
-        {/* FAQ Section */}
+        {/* 10. FAQ Section */}
         <section id="faq" className="py-16 md:py-24 bg-secondary/30">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
@@ -383,21 +461,6 @@ export default function HomePageClient() {
                         </Link>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        {/* Final CTA Section */}
-        <section className="py-20 bg-primary text-primary-foreground text-center">
-            <div className="container mx-auto px-4">
-                <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to Take Control of Your Career?</h2>
-                <p className="text-xl opacity-90 mb-10 max-w-2xl mx-auto">
-                    Take the first step towards a career that aligns with your true potential and secures your future.
-                </p>
-                <Link href={careerGuidanceHref}>
-                    <Button size="lg" variant="secondary" className="px-12 py-8 text-xl font-bold shadow-2xl hover:scale-105 transition-transform">
-                        Start Your Free Assessment
-                    </Button>
-                </Link>
             </div>
         </section>
       </div>
