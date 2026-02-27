@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -102,13 +101,13 @@ export default function HomePageClient() {
                 </div>
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight tracking-tight max-w-4xl mx-auto">
-                  AI Based Career Councelling with Experienced Human Councellors to help you find and navigate your career.
+                  Confused About Your Career? Let AI and Expert Mentors Guide You.
               </h1>
               <h2 className="text-xl md:text-2xl font-bold text-primary mb-6">
-                  The World’s First AI Career Discovery Platform with Human Wisdom
+                  World’s First AI Career Discovery Platform with Human Wisdom
               </h2>
               <p className="text-lg md:text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed font-medium">
-                  Take a science-backed career assessment and book verified mentors for personalized guidance.
+                  Take a data-driven career assessment and book sessions with experienced counselors to confidently choose your future.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link href={careerGuidanceHref}>
