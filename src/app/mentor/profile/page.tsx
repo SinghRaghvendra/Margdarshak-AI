@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -13,8 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { UserCheck, Globe, Star, Linkedin, Camera, ArrowRight, ShieldCheck, Plus, Trash2, Tag } from 'lucide-react';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { UserCheck, Globe, Star, Linkedin, Camera, ArrowRight, ShieldCheck, Plus, Trash2, Tag, Image as ImageIcon } from 'lucide-react';
+import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 
@@ -133,9 +132,14 @@ export default function MentorProfilePage() {
         <div className="max-w-4xl mx-auto space-y-8">
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-2xl shadow-sm border">
-            <div>
-              <h1 className="text-3xl font-bold">Professional Expert Profile</h1>
-              <p className="text-muted-foreground mt-1">Manage your public presence and marketplace listing.</p>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => router.push('/mentor/dashboard')} className="rounded-full">
+                <ArrowRight className="rotate-180 h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold">Public Profile Settings</h1>
+                <p className="text-muted-foreground mt-1">Manage your identity and marketplace appearance.</p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {status === 'approved' ? (
@@ -150,41 +154,44 @@ export default function MentorProfilePage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               
               <div className="lg:col-span-1 space-y-6">
-                <Card className="shadow-lg">
-                  <CardHeader className="text-center">
-                    <div className="relative w-32 h-32 mx-auto mb-4 group cursor-pointer">
+                <Card className="shadow-lg overflow-hidden border-primary/10">
+                  <CardHeader className="text-center border-b bg-secondary/10">
+                    <div className="relative w-32 h-32 mx-auto group mb-2">
                       <img 
                         src={form.watch('imageUrl') || 'https://picsum.photos/seed/expert/400/400'} 
-                        className="rounded-full object-cover w-full h-full border-4 border-primary/20"
+                        className="rounded-full object-cover w-full h-full border-4 border-white shadow-xl"
                         alt="Profile"
                       />
                       <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <Camera className="text-white h-8 w-8" />
                       </div>
                     </div>
-                    <CardTitle className="line-clamp-1">{form.watch('name') || 'Your Name'}</CardTitle>
-                    <CardDescription className="line-clamp-1">{form.watch('specialization') || 'Specialization'}</CardDescription>
+                    <CardTitle className="text-xl">{form.watch('name') || 'Expert Name'}</CardTitle>
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Profile Photo Preview</p>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="p-6 space-y-4">
                     <FormField
                       control={form.control}
                       name="imageUrl"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Profile Image URL</FormLabel>
-                          <FormControl><Input placeholder="https://..." {...field} /></FormControl>
+                          <FormLabel className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> Profile Image URL</FormLabel>
+                          <FormControl><Input placeholder="Paste image link here..." {...field} /></FormControl>
+                          <FormDescription className="text-[10px]">Use a professional portrait URL (PNG/JPG).</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <div className="pt-4 border-t space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <span>Rating: 4.9 (New)</span>
+                    <div className="pt-4 border-t space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Expert Rating</span>
+                        <div className="flex items-center gap-1 font-bold text-yellow-600">
+                          <Star className="h-3 w-3 fill-current" /> 4.9
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Globe className="h-4 w-4" />
-                        <span>Visible globally</span>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Verification</span>
+                        <Badge variant="outline" className="text-[10px] h-5">{status}</Badge>
                       </div>
                     </div>
                   </CardContent>
@@ -192,9 +199,9 @@ export default function MentorProfilePage() {
               </div>
 
               <div className="lg:col-span-2 space-y-6">
-                <Card className="shadow-lg">
+                <Card className="shadow-lg border-primary/5">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><UserCheck className="text-primary"/> Professional Details</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><UserCheck className="text-primary h-5 w-5"/> Biography & Skills</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -267,12 +274,12 @@ export default function MentorProfilePage() {
                           <FormLabel>Professional Bio</FormLabel>
                           <FormControl>
                             <Textarea 
-                              className="min-h-[120px] resize-none" 
+                              className="min-h-[150px] resize-none leading-relaxed" 
                               placeholder="Describe your journey, expertise, and how you help students succeed..."
                               {...field} 
                             />
                           </FormControl>
-                          <FormDescription>This bio appears on your public card. Be impactful.</FormDescription>
+                          <FormDescription>Min 100 chars. This is your primary sales pitch to students.</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -280,25 +287,24 @@ export default function MentorProfilePage() {
                   </CardContent>
                 </Card>
 
-                {/* Additional Services Section */}
                 <Card className="shadow-lg border-primary/10">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="text-xl flex items-center gap-2"><Tag className="text-primary h-5 w-5" /> Specialized Services</CardTitle>
-                      <CardDescription>Offer specific tasks like resume reviews or mock interviews.</CardDescription>
+                      <CardDescription>Add custom offerings like Mock Interviews or SOP Reviews.</CardDescription>
                     </div>
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ title: '', description: '', price: '499' as any })}>
-                      <Plus className="h-4 w-4 mr-1" /> Add Service
+                      <Plus className="h-4 w-4 mr-1" /> Add New
                     </Button>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {fields.length === 0 && (
-                      <div className="text-center py-8 bg-secondary/20 rounded-lg border border-dashed">
-                        <p className="text-sm text-muted-foreground">No additional services listed yet.</p>
+                      <div className="text-center py-10 bg-secondary/20 rounded-lg border border-dashed">
+                        <p className="text-sm text-muted-foreground">You haven't listed any specialized services yet.</p>
                       </div>
                     )}
                     {fields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-xl bg-card relative group">
+                      <div key={field.id} className="p-5 border rounded-xl bg-card relative group transition-all hover:ring-1 hover:ring-primary/20">
                         <Button 
                           type="button" 
                           variant="ghost" 
@@ -315,7 +321,7 @@ export default function MentorProfilePage() {
                             render={({ field }) => (
                               <FormItem className="md:col-span-2">
                                 <FormLabel>Service Title</FormLabel>
-                                <FormControl><Input placeholder="e.g., Resume & LinkedIn Review" {...field} /></FormControl>
+                                <FormControl><Input placeholder="e.g., Mock Technical Interview" {...field} /></FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -336,8 +342,8 @@ export default function MentorProfilePage() {
                             name={`additionalServices.${index}.description`}
                             render={({ field }) => (
                               <FormItem className="md:col-span-3">
-                                <FormLabel>Brief Description</FormLabel>
-                                <FormControl><Textarea placeholder="What's included in this service?" className="min-h-[60px]" {...field} /></FormControl>
+                                <FormLabel>Short Description</FormLabel>
+                                <FormControl><Textarea placeholder="What will the student get from this?" className="min-h-[60px]" {...field} /></FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -346,10 +352,11 @@ export default function MentorProfilePage() {
                       </div>
                     ))}
                   </CardContent>
-                  <CardFooter className="bg-secondary/10 flex justify-end p-6">
-                    <Button type="submit" size="lg" className="px-8 font-bold" disabled={form.formState.isSubmitting}>
-                      {form.formState.isSubmitting ? <LoadingSpinner className="mr-2" /> : <ArrowRight className="mr-2 h-5 w-5" />}
-                      Save All Changes
+                  <CardFooter className="bg-secondary/10 flex justify-between p-6">
+                    <p className="text-xs text-muted-foreground max-w-xs">Note: Changes to verified profiles may take up to 24 hours to reflect globally.</p>
+                    <Button type="submit" size="lg" className="px-10 font-bold shadow-lg" disabled={form.formState.isSubmitting}>
+                      {form.formState.isSubmitting ? <LoadingSpinner className="mr-2" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
+                      Publish Profile
                     </Button>
                   </CardFooter>
                 </Card>
