@@ -1,10 +1,30 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Allow read access to all documents
     match /{document=**} {
-      // Allow read and write access for all documents for development purposes.
-      // WARNING: This is insecure and should be replaced with proper rules for production.
-      allow read, write: if true;
+      allow read: if true;
+    }
+    
+    // Mentor onboarding (anyone can apply)
+    match /mentors_pending/{requestId} {
+      allow write: if request.auth != null;
+    }
+    
+    // Mentor bookings (only users can book)
+    match /mentor_bookings/{bookingId} {
+      allow write: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Sessions (only involved parties can view/edit)
+    match /mentor_sessions/{sessionId} {
+      allow read, write: if request.auth != null && (
+        request.auth.uid == resource.data.studentId || 
+        request.auth.uid == resource.data.mentorId
+      );
+      // Allow initial creation by student
+      allow create: if request.auth != null;
     }
   }
 }

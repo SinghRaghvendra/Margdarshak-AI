@@ -1,8 +1,9 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { HelpCircle, CheckCircle, ArrowRight, Brain, Target, MapPinned, Workflow, Search, Group, Cpu, Milestone, BookOpen } from 'lucide-react';
+import { HelpCircle, CheckCircle, ArrowRight, Brain, Target, MapPinned, Workflow, Search, Group, Cpu, Milestone, BookOpen, UserCheck, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,37 +15,27 @@ import { testimonials } from '@/lib/testimonials';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import SignupPopup from './SignupPopup';
+import MentorCarousel from './mentors/MentorCarousel';
 
 
 export default function HomePageClient() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
-  const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  // Effect to trigger the popup
   useEffect(() => {
-    // Wait until the auth state is resolved to avoid showing popup to logged-in users
-    if (userLoading) {
-      return;
-    }
-
-    // Only run this effect on the client
+    if (userLoading) return;
     if (typeof window !== 'undefined') {
-        // Check if the popup has been shown in this session
         const popupShown = sessionStorage.getItem('margdarshak_popup_shown');
-        
-        // If there is NO user and the popup has NOT been shown this session
         if (!user && !popupShown) {
             const timer = setTimeout(() => {
                 setIsPopupOpen(true);
-                // Mark that the popup has been shown for this session
                 sessionStorage.setItem('margdarshak_popup_shown', 'true');
-            }, 3000); // 3 seconds
-
-            return () => clearTimeout(timer); // Cleanup the timer
+            }, 3000);
+            return () => clearTimeout(timer);
         }
     }
-  }, [user, userLoading]); // Rerun when user state changes or loading finishes
+  }, [user, userLoading]);
 
   const isLoggedIn = !!user;
   const careerGuidanceHref = isLoggedIn ? "/welcome-guest" : "/signup";
@@ -59,12 +50,12 @@ export default function HomePageClient() {
       cta: 'Start Your Assessment'
     },
     {
-      icon: <Target className="h-8 w-8 text-primary mb-4" />,
-      title: 'AI-Powered Career Matching',
-      description: 'Receive a data-driven list of your top 3 career matches, complete with a "fit score".',
+      icon: <MessageCircle className="h-8 w-8 text-primary mb-4" />,
+      title: 'Expert Mentorship',
+      description: 'Book one-on-one sessions with industry veterans to get real-world advice and networking tips.',
        className: 'md:col-span-1',
-       href: careerGuidanceHref,
-       cta: 'See Your Matches'
+       href: '/career-mentors',
+       cta: 'Find a Mentor'
     },
     {
       icon: <MapPinned className="h-8 w-8 text-primary mb-4" />,
@@ -84,87 +75,10 @@ export default function HomePageClient() {
     },
   ];
 
-  const problemsAndSolutions = [
-      {
-        icon: <Search className="h-8 w-8 text-primary" />,
-        painPoint: 'Overwhelmed by countless options?',
-        solutionPoints: [
-            'AI matching narrows thousands of careers to your top 3.',
-            'Analyzes your personality, interests & motivations.',
-            'Replaces confusion with a clear, ranked list.'
-        ]
-      },
-       {
-        icon: <Group className="h-8 w-8 text-primary" />,
-        painPoint: 'Relying on biased, unsolicited advice?',
-        solutionPoints: [
-            'Get objective, data-driven suggestions.',
-            'Based on your unique profile, not popular opinion.',
-            'Make choices with confidence, backed by science.'
-        ]
-      },
-      {
-        icon: <Cpu className="h-8 w-8 text-primary" />,
-        painPoint: 'Unsure how skills translate to a real job?',
-        solutionPoints: [
-           'Maps your specific traits to real-world roles.',
-           'Identifies "adjacent skills" for career pivots.',
-           'Shows you where you already have an advantage.'
-        ]
-      },
-      {
-        icon: <Milestone className="h-8 w-8 text-primary" />,
-        painPoint: 'Lacking a clear, long-term direction?',
-        solutionPoints: [
-            'Receive a step-by-step 10-year career roadmap.',
-            'Outlines skills to learn and salary expectations.',
-            'Turns your career into a manageable project plan.'
-        ]
-      },
-  ];
-
-  const homeFaqs = [
-      {
-          question: 'Which career is best for me?',
-          answer: "Choosing the best career depends on your skills, interests, and personality. Instead of guessing, an AI-based career assessment analyzes these factors to recommend careers that match your profile.",
-      },
-      {
-          question: 'What career suits my personality?',
-          answer: "Personality plays a major role in career satisfaction. Career tests evaluate traits like introversion, creativity, and problem-solving style to suggest suitable career paths.",
-      },
-      {
-          question: 'Are career tests accurate?',
-          answer: "Career tests are accurate when they analyze multiple factors like skills, interests, and behavior patterns. AI-powered career assessments improve accuracy by learning from large datasets and real career outcomes.",
-      },
-      {
-          question: 'Can AI help me choose a career?',
-          answer: "Yes. AI helps eliminate bias and guesswork by matching your profile with career paths that have historically led to success for similar individuals.",
-      }
-  ];
-
-  const blogPosts = [
-    {
-      title: 'Which Career Is Best for Students?',
-      excerpt: 'Struggling with career confusion as a student? Learn how to find a path that aligns with your skills, interests, and personality using data-driven insights.',
-      href: '/blog/which-career-is-best-for-students',
-    },
-    {
-      title: 'Best Career Move for Professionals Feeling Stuck?',
-      excerpt: 'The best career move is not quitting blindly—it’s making a strategic, informed transition. Here\'s how to find your next step with confidence.',
-      href: '/blog/best-career-move-for-working-professionals',
-    },
-    {
-      title: 'Best Career Options for 2026',
-      excerpt: "The job market is changing fast. To succeed in 2026 and beyond, choosing a future-proof career is essential. Discover top options here.",
-      href: '/blog/best-career-options-for-2026',
-    },
-  ];
-  
   const heroBackgroundImage = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2070&auto=format&fit=crop";
 
   return (
     <div>
-      {/* Render the popup */}
       <SignupPopup isOpen={isPopupOpen} onOpenChange={setIsPopupOpen} />
       
       {/* Hero Section */}
@@ -180,20 +94,26 @@ export default function HomePageClient() {
                 </div>
               </div>
               <h1 className="text-4xl sm:text-5xl font-bold mb-4 leading-tight">
-                  AI-Powered Career Guidance
+                  AI Guidance + Human Wisdom
               </h1>
               <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  Stop Guessing. Start Planning. Get a data-driven, personalized 10-year career roadmap. Our AI analyzes your unique strengths to find the path you're built for.
+                  Map your future with our AI discovery tool, then validate it with industry-leading mentors. The complete career clarity platform.
               </p>
-              <Link href={careerGuidanceHref}>
-                  <Button size="lg" className="text-lg py-6 px-8 shadow-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90" suppressHydrationWarning={true}>
-                      Start Your Free Assessment <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href={careerGuidanceHref}>
+                    <Button size="lg" className="text-lg py-6 px-8 shadow-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90">
+                        Start Free Assessment <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                </Link>
+                <Link href="/career-mentors">
+                    <Button size="lg" variant="outline" className="text-lg py-6 px-8 border-white text-white hover:bg-white/10 font-bold">
+                        Talk to a Mentor <MessageCircle className="ml-2 h-5 w-5" />
+                    </Button>
+                </Link>
+              </div>
           </div>
       </section>
 
-      {/* Page Content */}
       <div id="page-content" className="relative z-10 bg-background">
         
         {/* Features Bento Grid Section */}
@@ -202,7 +122,7 @@ export default function HomePageClient() {
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">Your Career Clarity Toolkit</h2>
               <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-                From self-discovery to job application, our AI-powered tools guide you at every step.
+                From self-discovery to expert guidance and job application.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -226,176 +146,72 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        {/* Pain Points Section */}
-        <section id="features" className="py-16 md:py-24 bg-background">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Feeling Lost? You're Not Alone.</h2>
-              <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                The modern job market is confusing. AI COUNCEL replaces that confusion with a clear, data-driven action plan so you can move forward with confidence.
-              </p>
-            </div>
-            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-              {problemsAndSolutions.map((item, index) => (
-                <Card key={index} className="bg-card shadow-md hover:shadow-lg transition-shadow">
-                  <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-3">
-                    {item.icon}
-                    <CardTitle className="text-lg font-semibold">{item.painPoint}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                        {item.solutionPoints.map((solution, i) => (
-                            <li key={i} className="flex items-start">
-                                <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                <span>{solution}</span>
-                            </li>
-                        ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-             <div className="text-center mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href={careerGuidanceHref}>
-                    <Button size="lg" className="text-lg py-6 px-8 shadow-md font-bold" suppressHydrationWarning>
-                        Start Career Quiz Now
-                    </Button>
-                </Link>
-                <Link href="/pricing">
-                    <Button size="lg" variant="outline" className="text-lg py-6 px-8 shadow-md">
-                        View Pricing
-                    </Button>
-                </Link>
-            </div>
+        {/* Mentor Carousel Section */}
+        <section className="py-16 md:py-24 bg-background">
+          <div className="container mx-auto px-4 text-center mb-12">
+            <UserCheck className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h2 className="text-3xl md:text-4xl font-bold">Meet Our Top Mentors</h2>
+            <p className="text-lg text-muted-foreground mt-2 max-w-2xl mx-auto">
+              Industry veterans ready to help you navigate your professional journey.
+            </p>
+          </div>
+          <MentorCarousel />
+          <div className="text-center mt-12">
+            <Link href="/career-mentors">
+              <Button size="lg" variant="outline">
+                View All Mentors <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </section>
+
+        {/* Call to Action Section */}
+        <section className="py-16 md:py-24 bg-primary text-primary-foreground">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Are you an industry expert?</h2>
+            <p className="text-xl mb-8 max-w-xl mx-auto opacity-90">
+              Join our panel of elite mentors and help shape the careers of thousands of ambitious students.
+            </p>
+            <Link href="/become-mentor">
+              <Button size="lg" variant="secondary" className="text-lg py-7 px-10 shadow-lg font-bold">
+                Apply to Become a Mentor
+              </Button>
+            </Link>
           </div>
         </section>
         
-        {/* Testimonials Section */}
-        <section className="py-16 md:py-24 bg-secondary/30">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">What People Are Saying</h2>
-              <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-                Real stories from students, parents, and professionals who found clarity with us.
-              </p>
-            </div>
-            <Carousel
-              opts={{ align: "start", loop: true }}
-              plugins={[ Autoplay({ delay: 4000, stopOnInteraction: true })]}
-              className="w-full max-w-4xl mx-auto"
-            >
-              <CarouselContent>
-                {testimonials.map((testimonial, index) => (
-                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1 h-full">
-                      <Card className="flex flex-col h-full justify-between bg-card">
-                        <CardContent className="pt-6">
-                          <p className="text-sm md:text-base text-muted-foreground italic">"{testimonial.quote}"</p>
-                        </CardContent>
-                        <CardHeader>
-                          <CardTitle className="text-base font-bold">{testimonial.name}</CardTitle>
-                          <CardDescription className="text-sm">{testimonial.role}</CardDescription>
-                        </CardHeader>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex" />
-              <CarouselNext className="hidden md:flex" />
-            </Carousel>
-          </div>
-        </section>
-
-        {/* Blog Section */}
-        <section id="blog" className="py-16 md:py-24 bg-background">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">From Our Blog</h2>
-              <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-                Explore our latest articles for insights and guidance on your career journey.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              {blogPosts.map((post, index) => (
-                <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col bg-card">
-                  <CardHeader>
-                    <CardTitle className="text-xl leading-snug">
-                      <Link href={post.href} className="hover:text-primary transition-colors">{post.title}</Link>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-grow">
-                    <p className="text-sm text-muted-foreground">{post.excerpt}</p>
-                  </CardContent>
-                  <CardContent>
-                    <Link href={post.href}>
-                      <Button variant="link" className="p-0">Read More <ArrowRight className="ml-2 h-4 w-4" /></Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="text-center mt-12">
-              <Link href="/blog">
-                <Button variant="outline" size="lg">
-                  View All Articles
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
+        {/* Rest of homepage contents... */}
         <section id="faq" className="py-16 md:py-24 bg-secondary/30">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
                     <HelpCircle className="h-12 w-12 text-primary mx-auto mb-4" />
                     <h2 className="text-3xl md:text-4xl font-bold text-foreground">Frequently Asked Questions</h2>
-                    <p className="text-md md:text-lg text-muted-foreground mt-3 max-w-xl mx-auto">
-                        Quick answers to your most pressing career questions.
-                    </p>
                 </div>
                 <div className="max-w-3xl mx-auto">
                     <Accordion type="single" collapsible className="w-full space-y-3">
-                        {homeFaqs.map((faq, index) => (
-                            <AccordionItem value={`item-${index}`} key={index}>
-                                <Card className="bg-card/50 hover:bg-card transition-shadow shadow-sm hover:shadow-md">
-                                    <AccordionTrigger className="text-lg font-semibold text-left px-6 py-4 hover:no-underline">
-                                        {faq.question}
-                                    </AccordionTrigger>
-                                    <AccordionContent className="px-6 pb-4 text-base text-muted-foreground">
-                                        {faq.answer}
-                                    </AccordionContent>
-                                </Card>
-                            </AccordionItem>
-                        ))}
+                        <AccordionItem value="item-1">
+                            <Card className="bg-card/50 hover:bg-card transition-shadow shadow-sm hover:shadow-md">
+                                <AccordionTrigger className="text-lg font-semibold text-left px-6 py-4 hover:no-underline">
+                                    How does the mentorship package work?
+                                </AccordionTrigger>
+                                <AccordionContent className="px-6 pb-4 text-base text-muted-foreground">
+                                    You can purchase a "Mentorship Starter Pack" for ₹999 which includes 3 one-on-one video calls (25 mins each). You can choose your preferred mentor and schedule sessions based on their availability.
+                                </AccordionContent>
+                            </Card>
+                        </AccordionItem>
+                        <AccordionItem value="item-2">
+                            <Card className="bg-card/50 hover:bg-card transition-shadow shadow-sm hover:shadow-md">
+                                <AccordionTrigger className="text-lg font-semibold text-left px-6 py-4 hover:no-underline">
+                                    Will I get a recording of my session?
+                                </AccordionTrigger>
+                                <AccordionContent className="px-6 pb-4 text-base text-muted-foreground">
+                                    Yes! All sessions are recorded and automatically transcribed. You will receive meeting minutes and a summary in your "My Reports" dashboard.
+                                </AccordionContent>
+                            </Card>
+                        </AccordionItem>
                     </Accordion>
                 </div>
-                <div className="text-center mt-12">
-                  <Link href="/career-faqs" passHref>
-                    <Button variant="outline">
-                      View All FAQs <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
             </div>
-        </section>
-        
-        {/* Final Call to Action Section */}
-        <section className="py-16 md:py-24 bg-background">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Ready to Take Control of Your Career?</h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-              Take the first step towards a career that aligns with your true potential.
-            </p>
-            <Link href={careerGuidanceHref}>
-              <Button size="lg" className="text-lg py-7 px-10 shadow-lg font-bold" suppressHydrationWarning={true}>
-                {isLoggedIn ? "Continue Your Journey" : "Start Your Free Assessment"}
-              </Button>
-            </Link>
-          </div>
         </section>
       </div>
     </div>

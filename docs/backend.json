@@ -1,0 +1,71 @@
+
+{
+  "entities": {
+    "Mentor": {
+      "title": "Mentor",
+      "description": "Professional career counselor information.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "bio": { "type": "string" },
+        "experienceYears": { "type": "number" },
+        "specialization": { "type": "string" },
+        "languages": { "type": "array", "items": { "type": "string" } },
+        "rating": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "approved": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "bio", "experienceYears", "specialization"]
+    },
+    "MentorBooking": {
+      "title": "MentorBooking",
+      "description": "Tracks purchased session packages for a student.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "mentorId": { "type": "string" },
+        "sessionCredits": { "type": "number", "description": "Remaining sessions in package" },
+        "paymentStatus": { "type": "string", "enum": ["SUCCESS", "PENDING", "FAILED"] },
+        "amountPaid": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "MentorSession": {
+      "title": "MentorSession",
+      "description": "Details of an individual counseling session.",
+      "type": "object",
+      "properties": {
+        "bookingId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "mentorId": { "type": "string" },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["scheduled", "completed", "cancelled"] },
+        "transcript": { "type": "string" },
+        "summary": { "type": "string" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["email"]
+  },
+  "firestore": {
+    "/mentors/{mentorId}": {
+      "schema": { "$ref": "#/entities/Mentor" },
+      "description": "Approved career counselors."
+    },
+    "/mentors_pending/{requestId}": {
+      "schema": { "$ref": "#/entities/Mentor" },
+      "description": "Onboarding applications for mentors."
+    },
+    "/mentor_bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/MentorBooking" },
+      "description": "Package purchases for sessions."
+    },
+    "/mentor_sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/MentorSession" },
+      "description": "Individual counseling calls."
+    }
+  }
+}
