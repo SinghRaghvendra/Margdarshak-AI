@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Link from 'next/link';
 import Script from 'next/script';
-import { Mail } from 'lucide-react';
+import { Mail, ShieldAlert } from 'lucide-react';
 import AppProviders from '@/components/AppProviders';
 
 export const dynamic = 'force-dynamic';
@@ -151,6 +151,9 @@ export default function RootLayout({
                   <p className="text-xs text-muted-foreground text-center sm:text-left">
                       © 2024 AI Councel Lab. All rights reserved. Registered in India.
                   </p>
+                  <Link href="/login?redirect=/admin/dashboard" className="text-[10px] text-muted-foreground/20 hover:text-primary transition-colors flex items-center gap-1">
+                    <ShieldAlert className="h-2.5 w-2.5" /> Staff Access
+                  </Link>
               </div>
           </footer>
           <Toaster />
