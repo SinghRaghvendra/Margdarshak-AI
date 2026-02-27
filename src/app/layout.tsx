@@ -101,8 +101,16 @@ export default function RootLayout({
                       </div>
                   </div>
 
-                  <div className="pt-8 border-t border-border/50 text-[11px] text-muted-foreground/60 leading-relaxed uppercase tracking-wider">
-                      career counselling, career counselling in India, online career counselling, professional career guidance, career options after 10th, career guidance after 12th, stream selection guidance, career planning for students, data science careers, artificial intelligence careers, high-growth career options, future-ready skills, AI-based career assessment, psychometric analysis, AI-powered career platform
+                  <div className="pt-8 border-t border-border/50 text-[10px] text-muted-foreground/50 leading-relaxed uppercase tracking-widest space-y-4">
+                      <p>best career counselling platform, affordable career counselling, certified career counsellor, career counselling for students, career counselling for working professionals, online career guidance India, career guidance consultation, personalized career counselling, expert career advice, career decision support</p>
+                      <p>career counselling in India, online career counselling in India, best career counsellor in India, career guidance services India, virtual career counselling India, career counsellor near me, career guidance for Indian students, career counselling after 10th in India, career counselling after 12th in India</p>
+                      <p>career options after 10th, best career options after 10th, career guidance after 12th, career options after 12th science, career options after 12th commerce, career options after 12th arts, how to choose the right career, stream selection after 10th, science vs commerce vs arts decision, career planning for students, career roadmap for students, confusion about career choice</p>
+                      <p>data science careers, artificial intelligence careers, machine learning career path, cybersecurity career options, digital marketing career, UI UX design career, product management career path, high paying careers in India, future career opportunities, high-growth career options, future-ready skills, in-demand careers in India</p>
+                      <p>AI-based career assessment, AI career guidance platform, AI career counselling, AI-powered career platform, smart career recommendation system, machine learning career prediction, AI psychometric assessment, digital career counselling, tech-enabled career planning, AI career discovery tool</p>
+                      <p>psychometric analysis, career aptitude test, career assessment test online, personality test for career, skill-based career assessment, aptitude test after 10th, career interest test, online career test India, scientific career assessment</p>
+                      <p>career guidance for my child, best career after 10th for my child, career counselling for parents, how to help my child choose career, career planning for teenagers, safe career options in India</p>
+                      <p>long-term career planning, career growth strategy, career development roadmap, career clarity platform, structured career guidance, professional growth planning, academic and career planning</p>
+                      <p>confused about career, don’t know what career to choose, career confusion after 12th, unsure about future career, lost in career decisions, need career advice urgently</p>
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-12 pt-12 border-t border-border/50">
