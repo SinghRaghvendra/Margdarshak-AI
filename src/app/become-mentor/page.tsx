@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -15,6 +14,7 @@ import { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import ExpertCTA from '@/components/mentors/ExpertCTA';
 
 const mentorSchema = z.object({
   fullName: z.string().min(3, "Name required"),
@@ -76,14 +76,16 @@ export default function BecomeMentorPage() {
   }
 
   return (
-    <div className="py-12 bg-secondary/30 min-h-screen">
-      <div className="container mx-auto px-4">
+    <div className="bg-secondary/30 min-h-screen">
+      <ExpertCTA />
+      
+      <div className="py-12 container mx-auto px-4">
         <Card className="max-w-2xl mx-auto shadow-2xl border-primary/10">
           <CardHeader className="text-center">
             <div className="p-4 bg-primary/10 rounded-full w-fit mx-auto mb-4">
               <UserCheck className="h-12 w-12 text-primary" />
             </div>
-            <CardTitle className="text-3xl font-bold">Join Our Expert Mentor Panel</CardTitle>
+            <CardTitle className="text-3xl font-bold">Apply to the Expert Panel</CardTitle>
             <CardDescription className="text-lg">
               Share your wisdom, guide the next generation, and earn while you do it.
             </CardDescription>

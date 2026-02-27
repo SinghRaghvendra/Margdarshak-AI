@@ -12,10 +12,10 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from "embla-carousel-autoplay";
 import { testimonials } from '@/lib/testimonials';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 import SignupPopup from './SignupPopup';
 import MentorCarousel from './mentors/MentorCarousel';
 import placeholderImages from '@/app/lib/placeholder-images.json';
+import ExpertCTA from './mentors/ExpertCTA';
 
 export default function HomePageClient() {
   const router = useRouter();
@@ -95,6 +95,7 @@ export default function HomePageClient() {
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight tracking-tight">
                   AI Guidance + Human Wisdom
               </h1>
+              <h2 className="text-2xl font-bold text-primary mb-2">AIC</h2>
               <p className="text-lg md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
                   Map your future with our AI discovery tool, then validate it with industry-leading mentors and counselors. The complete career clarity platform.
               </p>
@@ -105,7 +106,7 @@ export default function HomePageClient() {
                     </Button>
                 </Link>
                 <Link href="/career-mentors">
-                    <Button size="lg" variant="outline" className="text-lg py-7 px-10 border-2 border-white text-white bg-white/10 hover:bg-white/20 backdrop-blur-md font-bold transition-all hover:scale-105">
+                    <Button size="lg" variant="outline" className="text-lg py-7 px-10 border-2 border-primary text-primary bg-primary/10 hover:bg-primary/20 backdrop-blur-md font-bold transition-all hover:scale-105">
                         Talk to a Mentor <MessageCircle className="ml-2 h-5 w-5" />
                     </Button>
                 </Link>
@@ -288,43 +289,8 @@ export default function HomePageClient() {
             </div>
         </section>
 
-        {/* For Experts Section */}
-        <section className="py-16 md:py-24 bg-primary text-primary-foreground">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
-              <div className="flex-1 text-center md:text-left">
-                <GraduationCap className="h-16 w-16 mb-6 mx-auto md:mx-0 opacity-90" />
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Are you an expert mentor or career counselor?</h2>
-                <p className="text-xl opacity-90 mb-8">
-                  Join our global panel of professionals. Help the next generation find their path while growing your own coaching practice.
-                </p>
-                <Link href="/become-mentor">
-                  <Button size="lg" variant="secondary" className="font-bold px-8 py-6 text-lg">
-                    Join Our Expert Panel &rarr;
-                  </Button>
-                </Link>
-              </div>
-              <div className="flex-1 grid grid-cols-2 gap-4">
-                <div className="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
-                  <h4 className="text-2xl font-bold mb-1">500+</h4>
-                  <p className="text-sm opacity-80 uppercase tracking-wider font-semibold">Active Students</p>
-                </div>
-                <div className="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
-                  <h4 className="text-2xl font-bold mb-1">₹999</h4>
-                  <p className="text-sm opacity-80 uppercase tracking-wider font-semibold">Base Payout</p>
-                </div>
-                <div className="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
-                  <h4 className="text-2xl font-bold mb-1">Flex</h4>
-                  <p className="text-sm opacity-80 uppercase tracking-wider font-semibold">Schedule Your Way</p>
-                </div>
-                <div className="bg-white/10 p-6 rounded-2xl backdrop-blur-md">
-                  <h4 className="text-2xl font-bold mb-1">AI Tools</h4>
-                  <p className="text-sm opacity-80 uppercase tracking-wider font-semibold">Auto-Transcripts</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Expert CTA Section */}
+        <ExpertCTA />
 
         {/* Blog Preview Section */}
         <section className="py-16 md:py-24 bg-background">

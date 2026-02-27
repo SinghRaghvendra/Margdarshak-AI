@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -13,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import ExpertCTA from '@/components/mentors/ExpertCTA';
 
 export default function CareerMentorsPage() {
   const { user } = useUser();
@@ -71,7 +71,6 @@ export default function CareerMentorsPage() {
       });
       
       setIsBookingOpen(false);
-      // In a real app, go to scheduling calendar
       router.push('/my-reports'); 
     } catch (err: any) {
       toast({ title: "Booking Failed", description: err.message, variant: "destructive" });
@@ -81,11 +80,11 @@ export default function CareerMentorsPage() {
   };
 
   return (
-    <div className="py-12 bg-secondary/30 min-h-screen">
-      <div className="container mx-auto px-4">
+    <div className="bg-secondary/30 min-h-screen">
+      <div className="py-12 container mx-auto px-4">
         <header className="text-center mb-12">
           <Users className="h-16 w-16 text-primary mx-auto mb-4" />
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Find Your Career Mentor</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Find Your Career Mentor & Counselor</h1>
           <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">
             Get personalized guidance from industry experts. Book 3 sessions of 25 minutes each for just ₹999.
           </p>
@@ -117,7 +116,7 @@ export default function CareerMentorsPage() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
           {filteredMentors.map(mentor => (
             <MentorCard key={mentor.id} mentor={mentor} onBook={handleBookClick} />
           ))}
@@ -131,6 +130,8 @@ export default function CareerMentorsPage() {
           </div>
         )}
       </div>
+
+      <ExpertCTA />
 
       {/* Booking Dialog */}
       <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
