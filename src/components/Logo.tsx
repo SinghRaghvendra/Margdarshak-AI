@@ -1,18 +1,12 @@
 
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function Logo() {
   return (
-    <Link href="/" className="flex items-center">
-      <Image 
-        src="/logo.png" 
-        alt="AI COUNCEL" 
-        width={180} 
-        height={45} 
-        className="h-10 w-auto object-contain"
-        priority
-      />
+    <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+      <span className="text-xl md:text-2xl font-black tracking-tighter text-primary">
+        AI Councel Lab
+      </span>
     </Link>
   );
 }

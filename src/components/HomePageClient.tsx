@@ -17,7 +17,7 @@ import SignupPopup from './SignupPopup';
 import MentorCarousel from './mentors/MentorCarousel';
 import placeholderImages from '@/app/lib/placeholder-images.json';
 import ExpertCTA from './mentors/ExpertCTA';
-import Logo from '@/components/Logo';
+import Image from 'next/image';
 
 export default function HomePageClient() {
   const router = useRouter();
@@ -87,18 +87,28 @@ export default function HomePageClient() {
         className="relative bg-cover bg-center py-20 md:py-28 text-center text-white overflow-hidden"
         style={{ backgroundImage: `url(${heroBackgroundImage})` }}
       >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
           <div className="relative z-10 container mx-auto px-4">
-              <div className="mb-8 flex justify-center">
-                <div className="bg-white/95 rounded-xl px-10 py-5 shadow-2xl ring-4 ring-primary/20">
-                    <Logo />
+              <div className="mb-10 flex justify-center">
+                <div className="bg-white rounded-full w-[200px] h-[200px] shadow-2xl ring-8 ring-primary/20 overflow-hidden flex items-center justify-center p-4">
+                    <Image 
+                      src="/logo.png" 
+                      alt="AI COUNCEL" 
+                      width={200} 
+                      height={200} 
+                      className="object-contain"
+                      priority
+                    />
                 </div>
               </div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight tracking-tight">
-                  AI Guidance + Human Wisdom
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight tracking-tight max-w-4xl mx-auto">
+                  AI Based Career Councelling with Experienced Human Councellors to help you find and navigate your career.
               </h1>
-              <p className="text-lg md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
-                  Map your future with our AI discovery tool, then validate it with industry-leading mentors and counselors. The complete career clarity platform.
+              <h2 className="text-xl md:text-2xl font-bold text-primary mb-6">
+                  The World’s First AI Career Discovery Platform with Human Wisdom
+              </h2>
+              <p className="text-lg md:text-xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed font-medium">
+                  Take a science-backed career assessment and book verified mentors for personalized guidance.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link href={careerGuidanceHref}>
