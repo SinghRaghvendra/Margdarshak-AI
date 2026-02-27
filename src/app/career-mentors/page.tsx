@@ -5,7 +5,7 @@ import { Mentor, MOCK_MENTORS } from '@/lib/mentors-data';
 import MentorCard from '@/components/mentors/MentorCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, Users, CalendarCheck, ShieldCheck, Ticket, Loader2, Star, History, Globe, MessageSquareQuote } from 'lucide-react';
+import { Search, Filter, Users, CalendarCheck, ShieldCheck, Ticket, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -14,8 +14,6 @@ import { collection, addDoc, serverTimestamp, query, where, onSnapshot } from 'f
 import { useRouter } from 'next/navigation';
 import ExpertCTA from '@/components/mentors/ExpertCTA';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 
 export default function CareerMentorsPage() {
   const { user } = useUser();
@@ -27,7 +25,6 @@ export default function CareerMentorsPage() {
   const [specFilter, setSpecFilter] = useState('all');
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   
   const [mentors, setMentors] = useState<Mentor[]>([]);
@@ -35,7 +32,6 @@ export default function CareerMentorsPage() {
 
   useEffect(() => {
     if (!db) {
-      // Fallback to mock data if db is not ready yet
       setMentors(MOCK_MENTORS);
       setIsLoading(false);
       return;
@@ -50,7 +46,6 @@ export default function CareerMentorsPage() {
         ...doc.data()
       })) as Mentor[];
       
-      // Merge with MOCK if Firestore is empty for demonstration
       if (mentorsList.length === 0) {
         setMentors(MOCK_MENTORS);
       } else {
@@ -81,8 +76,7 @@ export default function CareerMentorsPage() {
   };
 
   const handleViewProfile = (mentor: Mentor) => {
-    setSelectedMentor(mentor);
-    setIsProfileOpen(true);
+    router.push(`/mentors/${mentor.id}`);
   };
 
   const handlePurchasePackage = async () => {
@@ -94,7 +88,6 @@ export default function CareerMentorsPage() {
 
     setIsPurchasing(true);
     try {
-      // MOCK PAYMENT FLOW
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const bookingData = {
@@ -112,11 +105,10 @@ export default function CareerMentorsPage() {
       
       toast({ 
         title: "Package Purchased!", 
-        description: `You have 3 session credits with ${selectedMentor.name}. Redirecting to schedule...` 
+        description: `You have 3 session credits with ${selectedMentor.name}. Redirecting...` 
       });
       
       setIsBookingOpen(false);
-      setIsProfileOpen(false);
       router.push('/my-reports'); 
     } catch (err: any) {
       toast({ title: "Booking Failed", description: err.message, variant: "destructive" });
@@ -170,14 +162,19 @@ export default function CareerMentorsPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
               {filteredMentors.map(mentor => (
-                <MentorCard key={mentor.id} mentor={mentor} onBook={handleBookClick} onViewProfile={handleViewProfile} />
+                <MentorCard 
+                  key={mentor.id} 
+                  mentor={mentor} 
+                  onBook={handleBookClick} 
+                  onViewProfile={handleViewProfile} 
+                />
               ))}
             </div>
 
             {filteredMentors.length === 0 && (
               <div className="text-center py-20 bg-card rounded-2xl shadow-sm border border-dashed">
                 <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold">No active experts found</h3>
+                <h3 className="text-xl font-semibold text-foreground">No active experts found</h3>
                 <p className="text-muted-foreground">Try adjusting your search or check back later.</p>
               </div>
             )}
@@ -186,96 +183,6 @@ export default function CareerMentorsPage() {
       </div>
 
       <ExpertCTA />
-
-      {/* Mentor Profile Detail Modal */}
-      <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] p-0 overflow-hidden flex flex-col">
-          <ScrollArea className="flex-grow">
-            <div className="relative h-48 sm:h-64 bg-secondary">
-              {selectedMentor && (
-                <img 
-                  src={selectedMentor.imageUrl} 
-                  alt={selectedMentor.name} 
-                  className="w-full h-full object-cover"
-                />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-6 left-6 text-white">
-                <h2 className="text-3xl font-bold">{selectedMentor?.name}</h2>
-                <p className="text-primary font-semibold">{selectedMentor?.specialization}</p>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="flex flex-wrap gap-4 items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{selectedMentor?.rating}</p>
-                    <div className="flex text-yellow-500 mb-1">
-                      {[...Array(5)].map((_, i) => <Star key={i} className={`h-3 w-3 ${i < Math.floor(selectedMentor?.rating || 0) ? 'fill-current' : ''}`} />)}
-                    </div>
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Rating</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{selectedMentor?.sessionsCompleted}</p>
-                    <History className="h-4 w-4 mx-auto text-primary mb-1" />
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Sessions</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{selectedMentor?.experienceYears}</p>
-                    <ShieldCheck className="h-4 w-4 mx-auto text-primary mb-1" />
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Years Exp</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {selectedMentor?.languages.map(lang => (
-                    <Badge key={lang} variant="secondary"><Globe className="mr-1 h-3 w-3" /> {lang}</Badge>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h4 className="text-lg font-bold mb-2">Professional Bio</h4>
-                <p className="text-muted-foreground leading-relaxed">
-                  {selectedMentor?.bio}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <MessageSquareQuote className="text-primary h-5 w-5" /> 
-                  Student Reviews
-                </h4>
-                <div className="space-y-4">
-                  {selectedMentor?.reviews.map((review, idx) => (
-                    <div key={idx} className="bg-secondary/30 p-4 rounded-xl border border-secondary">
-                      <div className="flex justify-between items-start mb-2">
-                        <p className="font-bold text-sm">{review.userName}</p>
-                        <span className="text-[10px] text-muted-foreground">{review.date}</span>
-                      </div>
-                      <div className="flex text-yellow-500 mb-2">
-                        {[...Array(review.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
-                      </div>
-                      <p className="text-sm italic text-muted-foreground">"{review.comment}"</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </ScrollArea>
-          
-          <div className="p-6 bg-background border-t">
-            <Button className="w-full py-6 text-lg font-bold shadow-lg" onClick={() => {
-              setIsProfileOpen(false);
-              setIsBookingOpen(true);
-            }}>
-              Book 3 Sessions for ₹999
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Booking Package Dialog */}
       <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
@@ -301,12 +208,12 @@ export default function CareerMentorsPage() {
                 <li className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Actionable Roadmap & Minutes</li>
               </ul>
             </div>
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-xs text-center text-muted-foreground px-4">
               Sessions can be scheduled at your convenience after payment.
             </p>
           </div>
           <DialogFooter>
-            <Button className="w-full py-6 text-lg font-bold" onClick={handlePurchasePackage} disabled={isPurchasing}>
+            <Button className="w-full py-6 text-lg font-bold shadow-lg" onClick={handlePurchasePackage} disabled={isPurchasing}>
               {isPurchasing ? <Loader2 className="animate-spin mr-2" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
               Pay ₹999 & Book Now
             </Button>
