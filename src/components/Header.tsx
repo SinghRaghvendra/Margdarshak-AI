@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,7 +13,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle, UserPlus2, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle, UserPlus2, ShieldCheck, LayoutDashboard, Settings2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { useAuth, useUser, useFirestore } from '@/firebase';
@@ -35,16 +34,20 @@ export default function Header() {
   const auth = useAuth();
   const db = useFirestore();
   const [userRole, setUserRole] = useState<'student' | 'mentor' | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!user || !db) {
       setUserRole(null);
+      setIsAdmin(false);
       return;
     }
     const fetchRole = async () => {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
-        setUserRole(userDoc.data().role || 'student');
+        const data = userDoc.data();
+        setUserRole(data.role || 'student');
+        setIsAdmin(data.isAdmin === true);
       }
     };
     fetchRole();
@@ -82,6 +85,13 @@ export default function Header() {
           ))}
           {user && (
             <>
+              {isAdmin && (
+                <Link href="/admin/dashboard">
+                  <Button variant="ghost" className="text-sm font-bold text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2">
+                    <Settings2 className="mr-2 h-4 w-4" /> Admin Panel
+                  </Button>
+                </Link>
+              )}
               {userRole === 'mentor' ? (
                 <Link href="/mentor/dashboard">
                   <Button variant="ghost" className="text-sm font-medium text-primary hover:text-primary/80 px-3 py-2">
@@ -147,6 +157,11 @@ export default function Header() {
                 ))}
                 {user && (
                   <>
+                    {isAdmin && (
+                      <Link href="/admin/dashboard" className="w-full">
+                        <Button variant="ghost" className="w-full justify-start text-base py-3 text-red-600 font-bold"><Settings2 className="mr-2 h-5 w-5"/> Admin Panel</Button>
+                      </Link>
+                    )}
                     {userRole === 'mentor' && (
                       <Link href="/mentor/dashboard" className="w-full">
                         <Button variant="ghost" className="w-full justify-start text-base py-3 text-primary"><LayoutDashboard className="mr-2 h-5 w-5"/> Mentor Hub</Button>
