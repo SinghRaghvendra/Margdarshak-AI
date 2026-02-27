@@ -87,25 +87,25 @@ export default function HomePageClient() {
       >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
           <div className="relative z-10 container mx-auto px-4">
-              <div className="mb-4 flex justify-center">
-                <div className="bg-white/90 rounded-full p-3 shadow-lg">
+              <div className="mb-6 flex justify-center">
+                <div className="bg-white/95 rounded-full p-4 shadow-2xl ring-4 ring-primary/20">
                     <LogoIcon />
                 </div>
               </div>
-              <h1 className="text-4xl sm:text-5xl font-bold mb-4 leading-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 leading-tight tracking-tight">
                   AI Guidance + Human Wisdom
               </h1>
-              <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+              <p className="text-lg md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed">
                   Map your future with our AI discovery tool, then validate it with industry-leading mentors and counselors. The complete career clarity platform.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link href={careerGuidanceHref}>
-                    <Button size="lg" className="text-lg py-6 px-8 shadow-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Button size="lg" className="text-lg py-7 px-10 shadow-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:scale-105">
                         Start Free Assessment <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                 </Link>
                 <Link href="/career-mentors">
-                    <Button size="lg" variant="outline" className="text-lg py-6 px-8 border-white text-white bg-transparent hover:bg-white/10 font-bold">
+                    <Button size="lg" variant="outline" className="text-lg py-7 px-10 border-2 border-white text-white bg-white/10 hover:bg-white/20 backdrop-blur-md font-bold transition-all hover:scale-105">
                         Talk to a Mentor <MessageCircle className="ml-2 h-5 w-5" />
                     </Button>
                 </Link>
@@ -121,13 +121,13 @@ export default function HomePageClient() {
                 <div className="max-w-4xl mx-auto text-center mb-16">
                     <HelpCircle className="h-16 w-16 text-primary mx-auto mb-6" />
                     <h2 className="text-3xl md:text-5xl font-bold mb-6">Feeling Lost? You're Not Alone.</h2>
-                    <p className="text-xl text-muted-foreground">
+                    <p className="text-xl text-muted-foreground leading-relaxed">
                         The modern job market is confusing. AI COUNCEL replaces that confusion with a clear, data-driven action plan so you can move forward with confidence.
                     </p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         <div className="flex gap-4">
                             <div className="bg-primary/10 p-3 rounded-xl h-fit">
                                 <Search className="h-6 w-6 text-primary" />
@@ -155,7 +155,7 @@ export default function HomePageClient() {
                             </div>
                         </div>
                     </div>
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         <div className="flex gap-4">
                             <div className="bg-primary/10 p-3 rounded-xl h-fit">
                                 <TrendingUp className="h-6 w-6 text-primary" />
@@ -225,7 +225,7 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        {/* Mentor Carousel Section */}
+        {/* Mentor & Counselor Carousel Section */}
         <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 text-center mb-12">
             <UserCheck className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -265,7 +265,7 @@ export default function HomePageClient() {
                                         <div className="flex gap-1 mb-4">
                                             {[...Array(5)].map((_, i) => <span key={i} className="text-primary text-sm">★</span>)}
                                         </div>
-                                        <p className="italic text-muted-foreground mb-6">"{t.quote}"</p>
+                                        <p className="italic text-muted-foreground mb-6 leading-relaxed">"{t.quote}"</p>
                                         <div>
                                             <p className="font-bold">{t.name}</p>
                                             <p className="text-xs text-muted-foreground">{t.role}</p>
@@ -386,7 +386,7 @@ export default function HomePageClient() {
 
 function LogoIcon() {
     return (
-        <div className="text-primary text-4xl font-extrabold flex items-center justify-center">
+        <div className="text-primary text-4xl font-black flex items-center justify-center tracking-tighter">
             <span>AIC</span>
         </div>
     )
@@ -399,7 +399,7 @@ function BlogSummaryCard({ title, excerpt, href }: { title: string, excerpt: str
                 <CardTitle className="group-hover:text-primary transition-colors">{title}</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="text-muted-foreground text-sm line-clamp-3">{excerpt}</p>
+                <p className="text-muted-foreground text-sm line-clamp-3 leading-relaxed">{excerpt}</p>
             </CardContent>
             <div className="p-6 pt-0">
                 <Link href={href}>
