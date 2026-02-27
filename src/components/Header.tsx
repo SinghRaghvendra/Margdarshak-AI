@@ -13,7 +13,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle } from 'lucide-react';
+import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle, UserPlus2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { useAuth, useUser, useFirestore } from '@/firebase';
@@ -25,6 +25,7 @@ const mainNavItems = [
   { label: 'AI Tools', href: '/aitools', icon: <Wand2 className="mr-2 h-5 w-5" /> },
   { label: 'Mentors & Counselors', href: '/career-mentors', icon: <MessageCircle className="mr-2 h-5 w-5" /> },
   { label: 'Blog', href: '/blog', icon: <BookOpen className="mr-2 h-5 w-5" /> },
+  { label: 'Become a Mentor', href: '/become-mentor', icon: <UserPlus2 className="mr-2 h-5 w-5" /> },
   { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" /> },
   { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" /> },
 ];

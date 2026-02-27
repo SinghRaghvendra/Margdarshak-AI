@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
@@ -88,6 +87,8 @@ export default function RootLayout({
                           <h3 className="font-semibold text-foreground">Our Tools</h3>
                           <ul className="space-y-1 text-muted-foreground mt-1">
                               <li><Link href="/aitools" className="hover:text-primary hover:underline">AI Tools</Link></li>
+                              <li><Link href="/career-mentors" className="hover:text-primary hover:underline">Mentors & Counselors</Link></li>
+                              <li><Link href="/become-mentor" className="hover:text-primary hover:underline">Become a Mentor</Link></li>
                           </ul>
                       </div>
                       <div>
