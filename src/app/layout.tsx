@@ -101,6 +101,10 @@ export default function RootLayout({
                       </div>
                   </div>
 
+                  <div className="pt-8 border-t border-border/50 text-[11px] text-muted-foreground/60 leading-relaxed uppercase tracking-wider">
+                      career counselling, career counselling in India, online career counselling, professional career guidance, career options after 10th, career guidance after 12th, stream selection guidance, career planning for students, data science careers, artificial intelligence careers, high-growth career options, future-ready skills, AI-based career assessment, psychometric analysis, AI-powered career platform
+                  </div>
+
                   <div className="grid md:grid-cols-3 gap-12 pt-12 border-t border-border/50">
                       <div>
                           <h3 className="font-bold text-foreground mb-4">Our Tools</h3>
@@ -139,28 +143,6 @@ export default function RootLayout({
                   <p className="text-xs text-muted-foreground text-center sm:text-left">
                       © 2024 AI Councel Lab. All rights reserved. Registered in India.
                   </p>
-              </div>
-
-              {/* SEO Keyword Clusters Section */}
-              <div className="container mx-auto px-4 mt-12 pt-8 border-t border-border/50">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-[11px] text-muted-foreground/60 leading-relaxed uppercase tracking-wider">
-                      <div>
-                          <h4 className="font-bold mb-2 text-foreground/70">Primary Cluster</h4>
-                          <p>career counselling, career counselling in India, online career counselling, professional career guidance</p>
-                      </div>
-                      <div>
-                          <h4 className="font-bold mb-2 text-foreground/70">Student-Focused Cluster</h4>
-                          <p>career options after 10th, career guidance after 12th, stream selection guidance, career planning for students</p>
-                      </div>
-                      <div>
-                          <h4 className="font-bold mb-2 text-foreground/70">Emerging Careers Cluster</h4>
-                          <p>data science careers, artificial intelligence careers, high-growth career options, future-ready skills</p>
-                      </div>
-                      <div>
-                          <h4 className="font-bold mb-2 text-foreground/70">Technology Cluster</h4>
-                          <p>AI-based career assessment, psychometric analysis, AI-powered career platform</p>
-                      </div>
-                  </div>
               </div>
           </footer>
           <Toaster />
