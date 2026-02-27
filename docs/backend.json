@@ -34,6 +34,17 @@
         "approved": { "type": "boolean" },
         "pricePerSession": { "type": "number" },
         "linkedin": { "type": "string" },
+        "additionalServices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "price": { "type": "number" }
+            }
+          }
+        },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "bio", "experienceYears", "specialization", "userId"]

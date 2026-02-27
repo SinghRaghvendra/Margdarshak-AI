@@ -21,8 +21,8 @@ import { LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { signInWithEmailAndPassword, User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 
 const loginFormSchema = z.object({
@@ -31,7 +31,6 @@ const loginFormSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
-
 
 export default function LoginPage() {
   const router = useRouter();
@@ -56,25 +55,30 @@ export default function LoginPage() {
     }
 
     if (authUser && db) {
-      const checkRole = async () => {
-        const userDoc = await getDoc(doc(db, 'users', authUser.uid));
-        const role = userDoc.exists() ? userDoc.data().role : 'student';
-        
-        const params = new URLSearchParams(window.location.search);
-        const redirectUrl = params.get('redirect');
-        
-        if (redirectUrl) {
-          router.replace(redirectUrl);
-        } else {
-          router.replace(role === 'mentor' ? '/mentor/profile' : '/welcome-guest');
+      const checkRoleAndRedirect = async () => {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', authUser.uid));
+          const userData = userDoc.exists() ? userDoc.data() : { role: 'student' };
+          const role = userData.role || 'student';
+          
+          const params = new URLSearchParams(window.location.search);
+          const redirectUrl = params.get('redirect');
+          
+          if (redirectUrl) {
+            router.replace(redirectUrl);
+          } else {
+            router.replace(role === 'mentor' ? '/mentor/profile' : '/welcome-guest');
+          }
+        } catch (error) {
+          console.error("Redirection error:", error);
+          router.replace('/welcome-guest');
         }
       };
-      checkRole();
+      checkRoleAndRedirect();
     } else {
       setPageLoading(false);
     }
   }, [authUser, authLoading, router, db]);
-
 
   async function onSubmit(data: LoginFormValues) {
     if (!auth || !db) return;
@@ -108,14 +112,7 @@ export default function LoginPage() {
           description: `Welcome back, ${userProfileForLocal.name}!`,
       });
 
-      const params = new URLSearchParams(window.location.search);
-      const redirectUrl = params.get('redirect');
-      
-      if (redirectUrl) {
-        router.push(redirectUrl);
-      } else {
-        router.push(userProfileForLocal.role === 'mentor' ? '/mentor/profile' : '/welcome-guest');
-      }
+      // Navigation is handled by the useEffect watching authUser
 
     } catch (error: any) {
       toast({
@@ -130,14 +127,13 @@ export default function LoginPage() {
     return <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]"><LoadingSpinner /></div>;
   }
 
-
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] py-6">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <LogIn className="h-12 w-12 text-primary mx-auto mb-2" />
           <CardTitle className="text-3xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Log in to your account.</CardDescription>
+          <CardDescription>Log in to your professional or student account.</CardDescription>
         </CardHeader>
         <CardContent className="px-6 py-4">
           <Form {...form}>

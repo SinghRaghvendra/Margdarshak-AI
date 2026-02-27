@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { UserCheck, Globe, Star, Linkedin, Camera, ArrowRight, ShieldCheck } from 'lucide-react';
+import { UserCheck, Globe, Star, Linkedin, Camera, ArrowRight, ShieldCheck, Plus, Trash2, Tag } from 'lucide-react';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,11 @@ const profileSchema = z.object({
   bio: z.string().min(100, "Bio must be at least 100 characters for visibility"),
   linkedin: z.string().url("Valid LinkedIn URL required"),
   imageUrl: z.string().url("Valid profile image URL required").optional().default('https://picsum.photos/seed/expert/400/400'),
+  additionalServices: z.array(z.object({
+    title: z.string().min(3, "Service title required"),
+    description: z.string().min(10, "Brief description required"),
+    price: z.string().transform(v => parseFloat(v)).pipe(z.number().min(1, "Price must be positive")),
+  })).default([]),
 });
 
 type ProfileValues = z.infer<typeof profileSchema>;
@@ -48,7 +53,13 @@ export default function MentorProfilePage() {
       bio: '',
       linkedin: '',
       imageUrl: '',
+      additionalServices: [],
     }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "additionalServices"
   });
 
   useEffect(() => {
@@ -60,28 +71,22 @@ export default function MentorProfilePage() {
 
     const fetchProfile = async () => {
       try {
-        // Check approved list
         const mentorDoc = await getDoc(doc(db, 'mentors', user.uid));
-        if (mentorDoc.exists()) {
-          const data = mentorDoc.data();
+        const pendingDoc = await getDoc(doc(db, 'mentors_pending', user.uid));
+        
+        const existingData = mentorDoc.exists() ? mentorDoc.data() : (pendingDoc.exists() ? pendingDoc.data() : null);
+        
+        if (existingData) {
           form.reset({
-            ...data,
-            experienceYears: data.experienceYears.toString() as any,
-            languages: data.languages.join(', ')
-          } as ProfileValues);
-          setStatus('approved');
-        } else {
-          // Check pending list
-          const pendingDoc = await getDoc(doc(db, 'mentors_pending', user.uid));
-          if (pendingDoc.exists()) {
-            const data = pendingDoc.data();
-            form.reset({
-              ...data,
-              experienceYears: (data.experienceYears || '5').toString() as any,
-              languages: (data.languages || ['English']).join(', ')
-            } as any);
-            setStatus('pending');
-          }
+            ...existingData,
+            experienceYears: (existingData.experienceYears || 5).toString() as any,
+            languages: Array.isArray(existingData.languages) ? existingData.languages.join(', ') : (existingData.languages || 'English'),
+            additionalServices: (existingData.additionalServices || []).map((s: any) => ({
+              ...s,
+              price: s.price.toString() as any
+            }))
+          } as any);
+          setStatus(mentorDoc.exists() ? 'approved' : 'pending');
         }
       } catch (err) {
         console.error(err);
@@ -102,7 +107,8 @@ export default function MentorProfilePage() {
         userId: user.uid,
         languages: data.languages.split(',').map(l => l.trim()),
         updatedAt: new Date().toISOString(),
-        approved: status === 'approved'
+        approved: status === 'approved',
+        additionalServices: data.additionalServices
       };
 
       const targetCollection = status === 'approved' ? 'mentors' : 'mentors_pending';
@@ -156,8 +162,8 @@ export default function MentorProfilePage() {
                         <Camera className="text-white h-8 w-8" />
                       </div>
                     </div>
-                    <CardTitle>{form.watch('name') || 'Your Name'}</CardTitle>
-                    <CardDescription>{form.watch('specialization') || 'Specialization'}</CardDescription>
+                    <CardTitle className="line-clamp-1">{form.watch('name') || 'Your Name'}</CardTitle>
+                    <CardDescription className="line-clamp-1">{form.watch('specialization') || 'Specialization'}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <FormField
@@ -261,7 +267,7 @@ export default function MentorProfilePage() {
                           <FormLabel>Professional Bio</FormLabel>
                           <FormControl>
                             <Textarea 
-                              className="min-h-[180px] resize-none" 
+                              className="min-h-[120px] resize-none" 
                               placeholder="Describe your journey, expertise, and how you help students succeed..."
                               {...field} 
                             />
@@ -272,10 +278,78 @@ export default function MentorProfilePage() {
                       )}
                     />
                   </CardContent>
+                </Card>
+
+                {/* Additional Services Section */}
+                <Card className="shadow-lg border-primary/10">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl flex items-center gap-2"><Tag className="text-primary h-5 w-5" /> Specialized Services</CardTitle>
+                      <CardDescription>Offer specific tasks like resume reviews or mock interviews.</CardDescription>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ title: '', description: '', price: '499' as any })}>
+                      <Plus className="h-4 w-4 mr-1" /> Add Service
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {fields.length === 0 && (
+                      <div className="text-center py-8 bg-secondary/20 rounded-lg border border-dashed">
+                        <p className="text-sm text-muted-foreground">No additional services listed yet.</p>
+                      </div>
+                    )}
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="p-4 border rounded-xl bg-card relative group">
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          className="absolute top-2 right-2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`additionalServices.${index}.title`}
+                            render={({ field }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel>Service Title</FormLabel>
+                                <FormControl><Input placeholder="e.g., Resume & LinkedIn Review" {...field} /></FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`additionalServices.${index}.price`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Price (₹)</FormLabel>
+                                <FormControl><Input type="number" {...field} /></FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`additionalServices.${index}.description`}
+                            render={({ field }) => (
+                              <FormItem className="md:col-span-3">
+                                <FormLabel>Brief Description</FormLabel>
+                                <FormControl><Textarea placeholder="What's included in this service?" className="min-h-[60px]" {...field} /></FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
                   <CardFooter className="bg-secondary/10 flex justify-end p-6">
                     <Button type="submit" size="lg" className="px-8 font-bold" disabled={form.formState.isSubmitting}>
                       {form.formState.isSubmitting ? <LoadingSpinner className="mr-2" /> : <ArrowRight className="mr-2 h-5 w-5" />}
-                      Update Profile
+                      Save All Changes
                     </Button>
                   </CardFooter>
                 </Card>
