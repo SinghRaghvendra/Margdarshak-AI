@@ -11,20 +11,36 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, Home, Info, DollarSign, Mail, LogIn, UserPlus, LogOut, BookUser, User as UserIcon, BookOpen, Globe, Wand2, MessageCircle, UserPlus2, ShieldCheck, LayoutDashboard, Settings2 } from 'lucide-react';
+import { 
+  Menu, 
+  Home, 
+  DollarSign, 
+  Mail, 
+  LogOut, 
+  User as UserIcon, 
+  BookOpen, 
+  Wand2, 
+  MessageCircle, 
+  ShieldCheck, 
+  LayoutDashboard, 
+  Settings2,
+  FileText,
+  ChevronRight,
+  UserPlus
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { Separator } from '@/components/ui/separator';
 
-const mainNavItems = [
-  { label: 'AI Tools', href: '/aitools', icon: <Wand2 className="mr-2 h-5 w-5" /> },
-  { label: 'Mentors & Counselors', href: '/career-mentors', icon: <MessageCircle className="mr-2 h-5 w-5" /> },
-  { label: 'Blog', href: '/blog', icon: <BookOpen className="mr-2 h-5 w-5" /> },
-  { label: 'Pricing', href: '/pricing', icon: <DollarSign className="mr-2 h-5 w-5" /> },
-  { label: 'Contact', href: '/contact', icon: <Mail className="mr-2 h-5 w-5" /> },
+const navLinks = [
+  { label: 'AI Tools', href: '/aitools', icon: <Wand2 className="h-4 w-4" /> },
+  { label: 'Mentors', href: '/career-mentors', icon: <MessageCircle className="h-4 w-4" /> },
+  { label: 'Blog', href: '/blog', icon: <BookOpen className="h-4 w-4" /> },
+  { label: 'Pricing', href: '/pricing', icon: <DollarSign className="h-4 w-4" /> },
+  { label: 'Contact', href: '/contact', icon: <Mail className="h-4 w-4" /> },
 ];
 
 export default function Header() {
@@ -35,6 +51,7 @@ export default function Header() {
   const db = useFirestore();
   const [userRole, setUserRole] = useState<'student' | 'mentor' | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
     if (!user || !db) {
@@ -62,7 +79,8 @@ export default function Header() {
           localStorage.removeItem(key);
         }
       });
-      toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+      toast({ title: 'Logged Out', description: 'See you again soon!' });
+      setIsSheetOpen(false);
       router.push('/');
     } catch (error) {
       toast({ title: 'Logout Failed', variant: 'destructive' });
@@ -70,125 +88,195 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-background/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+    <header className="bg-background/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-border/40">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-            <Logo />
-        </div>
+        <Logo />
+
+        {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center space-x-1">
-          {mainNavItems.map((item) => (
+          {navLinks.map((item) => (
             <Link key={item.label} href={item.href}>
-                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
-                  {item.label}
-                </Button>
+              <Button variant="ghost" className="text-sm font-medium hover:text-primary transition-colors">
+                {item.label}
+              </Button>
             </Link>
           ))}
-          {user && (
-            <>
+          
+          <div className="h-6 w-px bg-border mx-2" />
+
+          {user ? (
+            <div className="flex items-center gap-2">
               {isAdmin && (
                 <Link href="/admin/dashboard">
-                  <Button variant="ghost" className="text-sm font-bold text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2">
-                    <Settings2 className="mr-2 h-4 w-4" /> Admin Panel
+                  <Button variant="ghost" size="sm" className="text-red-600 font-bold hover:bg-red-50">
+                    <Settings2 className="mr-2 h-4 w-4" /> Admin
                   </Button>
                 </Link>
               )}
               {userRole === 'mentor' ? (
                 <Link href="/mentor/dashboard">
-                  <Button variant="ghost" className="text-sm font-medium text-primary hover:text-primary/80 px-3 py-2">
+                  <Button variant="ghost" size="sm" className="text-primary font-semibold">
                     <LayoutDashboard className="mr-2 h-4 w-4" /> Mentor Hub
                   </Button>
                 </Link>
               ) : (
                 <Link href="/my-reports">
-                  <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
-                    My Reports
+                  <Button variant="ghost" size="sm" className="font-medium">
+                    <FileText className="mr-2 h-4 w-4" /> My Reports
                   </Button>
                 </Link>
               )}
               <Link href="/profile">
-                <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
-                  Profile
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <UserIcon className="h-5 w-5" />
                 </Button>
               </Link>
-            </>
-          )}
-          {!user && (
-            <Link href="/become-mentor">
-              <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
-                Become a Mentor
+              <Button onClick={handleLogout} variant="outline" size="sm" className="ml-2">
+                <LogOut className="h-4 w-4" />
               </Button>
-            </Link>
-          )}
-          {auth && (
-            user ? (
-              <Button onClick={handleLogout} variant="outline" className="text-sm ml-2 px-4 py-2">
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </Button>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2">
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/signup">
-                  <Button className="text-sm ml-2 px-4 py-2">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            )
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/login">
+                <Button variant="ghost" size="sm">Login</Button>
+              </Link>
+              <Link href="/signup">
+                <Button size="sm" className="shadow-md">Sign Up</Button>
+              </Link>
+            </div>
           )}
         </nav>
-        <div className="lg:hidden flex items-center gap-2">
-          <Sheet>
+
+        {/* Mobile Menu Trigger */}
+        <div className="lg:hidden">
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="rounded-full">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[280px]">
-              <div className="flex flex-col space-y-2 p-4 mt-8">
-                <Link href="/"><Button variant="ghost" className="w-full justify-start text-base py-3">Home</Button></Link>
-                {mainNavItems.map((item) => (
-                  <Link key={item.label} href={item.href} className="w-full">
-                    <Button variant="ghost" className="w-full justify-start text-base py-3">{item.label}</Button>
-                  </Link>
-                ))}
-                {user && (
-                  <>
-                    {isAdmin && (
-                      <Link href="/admin/dashboard" className="w-full">
-                        <Button variant="ghost" className="w-full justify-start text-base py-3 text-red-600 font-bold"><Settings2 className="mr-2 h-5 w-5"/> Admin Panel</Button>
-                      </Link>
-                    )}
-                    {userRole === 'mentor' && (
-                      <Link href="/mentor/dashboard" className="w-full">
-                        <Button variant="ghost" className="w-full justify-start text-base py-3 text-primary"><LayoutDashboard className="mr-2 h-5 w-5"/> Mentor Hub</Button>
-                      </Link>
-                    )}
-                    <Link href="/my-reports" className="w-full"><Button variant="ghost" className="w-full justify-start text-base py-3">My Reports</Button></Link>
-                    <Link href="/profile" className="w-full"><Button variant="ghost" className="w-full justify-start text-base py-3">Profile</Button></Link>
-                  </>
-                )}
-                {!user && (
-                  <Link href="/become-mentor" className="w-full"><Button variant="ghost" className="w-full justify-start text-base py-3">Become a Mentor</Button></Link>
-                )}
-                <div className="pt-4 border-t">
-                  {user ? (
-                    <Button onClick={handleLogout} className="w-full text-base py-3 mt-2"><LogOut className="mr-2 h-5 w-5" /> Logout</Button>
-                  ) : (
-                    <>
-                      <Link href="/login" className="w-full"><Button variant="ghost" className="w-full justify-start text-base py-3">Login</Button></Link>
-                      <Link href="/signup" className="w-full"><Button className="w-full text-base py-3 mt-2">Sign Up</Button></Link>
-                    </>
-                  )}
+            <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0 flex flex-col">
+              <SheetHeader className="p-6 text-left border-b">
+                <SheetTitle><Logo /></SheetTitle>
+              </SheetHeader>
+              
+              <div className="flex-grow overflow-y-auto py-4">
+                {/* Main Navigation Group */}
+                <div className="px-4 mb-6">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 mb-2">Main Menu</p>
+                  <div className="space-y-1">
+                    <MobileNavLink href="/" icon={<Home />} label="Home" onClick={() => setIsSheetOpen(false)} />
+                    {navLinks.map((link) => (
+                      <MobileNavLink 
+                        key={link.label} 
+                        href={link.href} 
+                        icon={link.icon} 
+                        label={link.label} 
+                        onClick={() => setIsSheetOpen(false)} 
+                      />
+                    ))}
+                  </div>
                 </div>
+
+                <Separator className="mx-6 mb-6" />
+
+                {/* User Context Group */}
+                <div className="px-4 mb-6">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 mb-2">Account</p>
+                  <div className="space-y-1">
+                    {user ? (
+                      <>
+                        {isAdmin && (
+                          <MobileNavLink 
+                            href="/admin/dashboard" 
+                            icon={<ShieldCheck className="text-red-500" />} 
+                            label="Admin Dashboard" 
+                            onClick={() => setIsSheetOpen(false)} 
+                          />
+                        )}
+                        {userRole === 'mentor' ? (
+                          <MobileNavLink 
+                            href="/mentor/dashboard" 
+                            icon={<LayoutDashboard className="text-primary" />} 
+                            label="Mentor Hub" 
+                            onClick={() => setIsSheetOpen(false)} 
+                          />
+                        ) : (
+                          <MobileNavLink 
+                            href="/my-reports" 
+                            icon={<FileText className="text-primary" />} 
+                            label="My Reports" 
+                            onClick={() => setIsSheetOpen(false)} 
+                          />
+                        )}
+                        <MobileNavLink 
+                          href="/profile" 
+                          icon={<UserIcon />} 
+                          label="My Profile" 
+                          onClick={() => setIsSheetOpen(false)} 
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <MobileNavLink 
+                          href="/login" 
+                          icon={<UserIcon />} 
+                          label="Login" 
+                          onClick={() => setIsSheetOpen(false)} 
+                        />
+                        <MobileNavLink 
+                          href="/signup" 
+                          icon={<UserPlus />} 
+                          label="Join AI Councel" 
+                          onClick={() => setIsSheetOpen(false)} 
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {!user && (
+                  <div className="px-6 mt-4">
+                    <Link href="/become-mentor" onClick={() => setIsSheetOpen(false)}>
+                      <div className="bg-primary/10 border border-primary/20 p-4 rounded-xl flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <ShieldCheck className="h-5 w-5 text-primary" />
+                          <span className="text-sm font-bold text-primary">Become a Mentor</span>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-primary group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </Link>
+                  </div>
+                )}
               </div>
+
+              {user && (
+                <div className="p-6 border-t mt-auto">
+                  <Button variant="destructive" className="w-full justify-start font-bold" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                  </Button>
+                </div>
+              )}
             </SheetContent>
           </Sheet>
         </div>
       </div>
     </header>
-  )
+  );
+}
+
+function MobileNavLink({ href, icon, label, onClick }: { href: string, icon: React.ReactNode, label: string, onClick: () => void }) {
+  return (
+    <Link href={href} onClick={onClick} className="block group">
+      <div className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/50 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="text-muted-foreground group-hover:text-primary transition-colors">
+            {icon}
+          </div>
+          <span className="font-semibold text-foreground/80 group-hover:text-foreground transition-colors">{label}</span>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+      </div>
+    </Link>
+  );
 }
