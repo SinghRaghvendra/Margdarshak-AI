@@ -5,9 +5,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "rm -rf .next",
+    "predev": "node -e \"fs.rmSync('.next', {force:true, recursive:true})\"",
     "dev": "next dev --port 3001",
-    "prebuild": "rm -rf .next",
+    "prebuild": "node -e \"fs.rmSync('.next', {force:true, recursive:true})\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
